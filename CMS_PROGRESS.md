@@ -7,15 +7,17 @@ Updated: 2026-07-16
 - Secure administrator setup, login, logout, database-backed sessions, and role storage
 - Neon/PostgreSQL schema and migrations for users, sessions, pages, sections, revisions, and settings
 - Draft and published content separation for sections
-- Hero text/button/link/video draft editing, protected preview, publishing, and revision creation
+- WordPress-style `/admin` dashboard and navigation connected to live database metrics
+- Functional Pages create/edit/duplicate/preview/publish/draft/trash/restore/delete lifecycle
+- Dedicated `/admin/pages/[id]/builder` rendering the complete real website design
+- Hero content, typography, color, spacing, alignment, background, border, icon, hover, animation, and responsive controls
+- Hero draft editing, protected preview, publishing, and revision creation
 - GitHub and Vercel production deployment pipeline
 
 ## In progress
 
-- WordPress-style `/admin` dashboard and navigation
-- Functional Pages management lifecycle
-- Dedicated `/admin/pages/[id]/builder` visual editor
-- Complete Hero content, style, responsive, hover, and animation controls
+- Hero production acceptance testing and control refinements
+- Converting the remaining live homepage sections to editable components
 
 ## Needs testing
 

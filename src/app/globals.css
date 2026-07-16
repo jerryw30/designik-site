@@ -102,3 +102,18 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+.hero-editable .hero-content { padding-top: var(--hero-top-mobile); }
+.hero-editable .hero-heading { font-size: var(--hero-h1-mobile); }
+.hero-editable .hero-description { font-size: var(--hero-p-mobile); }
+.hero-editable .hero-primary:hover, .hero-editable .hero-secondary:hover { background: var(--hover-bg) !important; color: var(--hover-color) !important; transform: scale(var(--hover-scale)); }
+@media (min-width: 640px) {
+  .hero-editable .hero-content { padding-top: var(--hero-top-tablet); }
+  .hero-editable .hero-heading { font-size: var(--hero-h1-tablet); }
+  .hero-editable .hero-description { font-size: var(--hero-p-tablet); }
+}
+@media (min-width: 1024px) {
+  .hero-editable .hero-content { padding-top: var(--hero-top-desktop); }
+  .hero-editable .hero-heading { font-size: var(--hero-h1-desktop); }
+  .hero-editable .hero-description { font-size: var(--hero-p-desktop); }
+}
