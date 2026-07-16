@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@layer components {
+  .admin-input { @apply block w-full rounded-xl border border-white/15 bg-black/25 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-pink-400; }
+  .admin-button { @apply inline-flex items-center justify-center rounded-lg bg-pink-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-pink-500; }
+}
+
 @theme {
   /* ---- Brand palette (extracted from Figma) ---- */
   --color-wine-950: #3f0119;
