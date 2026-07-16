@@ -1,7 +1,7 @@
 "use server";
 
 import { compare, hash } from "bcryptjs";
-import { asc, count, eq } from "drizzle-orm";
+import { and, asc, count, eq, isNotNull } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
@@ -42,11 +42,50 @@ export async function ensureHomepage() {
 }
 
 export async function updatePage(form: FormData) {
+  await requireUser();
   const id = String(form.get("id"));
   const title = String(form.get("title") || "").trim();
   const slug = String(form.get("slug") || "").trim().toLowerCase().replace(/[^a-z0-9-]/g, "-");
   if (id && title && slug) await db.update(pages).set({ title, slug, updatedAt: new Date() }).where(eq(pages.id, id));
+  revalidatePath("/admin/pages");
 }
+
+async function requireUser() { const user = await currentUser(); if (!user) redirect("/admin/login"); return user; }
+
+export async function createPage(form: FormData) {
+  const user = await requireUser();
+  const title = String(form.get("title") || "Untitled page").trim() || "Untitled page";
+  const base = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "page";
+  const slug = `${base}-${Date.now().toString(36)}`;
+  const [page] = await db.insert(pages).values({ title, slug, authorId: user.id }).returning({ id: pages.id });
+  revalidatePath("/admin/pages"); redirect(`/admin/pages/${page.id}/builder`);
+}
+
+export async function duplicatePage(id: string) {
+  const user = await requireUser();
+  const [source] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
+  if (!source) return;
+  const [copy] = await db.insert(pages).values({ title: `${source.title} Copy`, slug: `${source.slug}-copy-${Date.now().toString(36)}`, status: "DRAFT", authorId: user.id, seo: source.seo, settings: source.settings }).returning({ id: pages.id });
+  const sourceSections = await db.select().from(sections).where(eq(sections.pageId, id));
+  if (sourceSections.length) await db.insert(sections).values(sourceSections.map((section) => ({
+    pageId: copy.id, type: section.type, name: section.name, position: section.position, content: section.content,
+    draftContent: section.draftContent, publishedContent: section.publishedContent, styles: section.styles,
+    responsive: section.responsive, animation: section.animation, visible: section.visible, locked: section.locked,
+  })));
+  revalidatePath("/admin/pages");
+}
+
+export async function setPageStatus(id: string, status: "DRAFT" | "PUBLISHED") {
+  const user = await requireUser();
+  const [page] = await db.select().from(pages).where(eq(pages.id, id)).limit(1); if (!page) return;
+  await db.insert(revisions).values({ pageId: id, authorId: user.id, label: status === "PUBLISHED" ? "Page published" : "Page changed to draft", snapshot: page });
+  await db.update(pages).set({ status, publishedAt: status === "PUBLISHED" ? new Date() : page.publishedAt, updatedAt: new Date() }).where(eq(pages.id, id));
+  revalidatePath("/admin/pages"); revalidatePath("/");
+}
+
+export async function trashPage(id: string) { await requireUser(); await db.update(pages).set({ deletedAt: new Date(), status: "ARCHIVED", updatedAt: new Date() }).where(eq(pages.id, id)); revalidatePath("/admin/pages"); }
+export async function restorePage(id: string) { await requireUser(); await db.update(pages).set({ deletedAt: null, status: "DRAFT", updatedAt: new Date() }).where(eq(pages.id, id)); revalidatePath("/admin/pages"); }
+export async function deletePageForever(id: string) { await requireUser(); await db.delete(pages).where(and(eq(pages.id, id), isNotNull(pages.deletedAt))); revalidatePath("/admin/pages"); }
 
 export async function getHomepageSections(pageId: string) {
   return db.select().from(sections).where(eq(sections.pageId, pageId)).orderBy(asc(sections.position));

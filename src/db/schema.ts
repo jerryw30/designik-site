@@ -21,7 +21,7 @@ export const sessions = pgTable("sessions", {
 
 export const pages = pgTable("pages", {
   id: uuid("id").defaultRandom().primaryKey(), title: text("title").notNull(), slug: text("slug").notNull(), status: pageStatus("status").default("DRAFT").notNull(),
-  seo: jsonb("seo").default({}).notNull(), settings: jsonb("settings").default({}).notNull(), publishedAt: timestamp("published_at", { withTimezone: true }), ...audit,
+  authorId: uuid("author_id").references(() => users.id), seo: jsonb("seo").default({}).notNull(), settings: jsonb("settings").default({}).notNull(), publishedAt: timestamp("published_at", { withTimezone: true }), deletedAt: timestamp("deleted_at", { withTimezone: true }), ...audit,
 }, (t) => [uniqueIndex("pages_slug_unique").on(t.slug)]);
 
 export const sections = pgTable("sections", {

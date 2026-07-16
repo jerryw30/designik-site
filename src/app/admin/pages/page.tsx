@@ -1,0 +1,21 @@
+import Link from "next/link";
+import { asc, isNotNull, isNull } from "drizzle-orm";
+import { redirect } from "next/navigation";
+import { db } from "@/db";
+import { pages } from "@/db/schema";
+import { currentUser } from "@/lib/auth";
+import { AdminShell } from "../admin-shell";
+import { createPage, deletePageForever, duplicatePage, restorePage, setPageStatus, trashPage } from "../actions";
+
+export const dynamic = "force-dynamic";
+
+export default async function Pages({ searchParams }: { searchParams: Promise<{ trash?: string; new?: string }> }) {
+  const user = await currentUser(); if (!user) redirect("/admin/login");
+  const query = await searchParams; const trash = query.trash === "1";
+  const list = await db.select().from(pages).where(trash ? isNotNull(pages.deletedAt) : isNull(pages.deletedAt)).orderBy(asc(pages.title));
+  return <AdminShell user={user} title="Pages">
+    <div className="flex items-center justify-between"><div><h2 className="text-2xl font-semibold">All pages</h2><p className="mt-1 text-sm text-neutral-500">Create, preview, visually edit, publish, duplicate, or safely trash pages.</p></div><div className="flex gap-2"><Link href={trash ? "/admin/pages" : "/admin/pages?trash=1"} className="rounded-lg border bg-white px-4 py-2 text-sm">{trash ? "All pages" : "Trash"}</Link><Link href="/admin/pages?new=1" className="rounded-lg bg-pink-600 px-4 py-2 text-sm font-semibold text-white">Add new page</Link></div></div>
+    {query.new === "1" && <form action={createPage} className="mt-6 flex gap-3 rounded-2xl border bg-white p-5"><input name="title" required autoFocus placeholder="New page title" className="flex-1 rounded-lg border px-4 py-2 outline-none focus:border-pink-500" /><button className="rounded-lg bg-pink-600 px-5 py-2 font-semibold text-white">Create and edit visually</button><Link href="/admin/pages" className="px-3 py-2 text-neutral-500">Cancel</Link></form>}
+    <section className="mt-6 overflow-hidden rounded-2xl border bg-white"><table className="w-full text-left text-sm"><thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500"><tr><th className="p-4">Page</th><th>Status</th><th>URL</th><th>Modified</th><th className="p-4 text-right">Actions</th></tr></thead><tbody className="divide-y">{list.map((page) => <tr key={page.id}><td className="p-4"><div className="font-semibold">{page.title}</div><div className="mt-1 text-xs text-neutral-400">{page.slug === "home" ? "Homepage" : "Standard page"}</div></td><td><span className={`rounded-full px-2.5 py-1 text-xs font-medium ${page.status === "PUBLISHED" ? "bg-emerald-100 text-emerald-700" : page.status === "DRAFT" ? "bg-amber-100 text-amber-700" : "bg-neutral-100"}`}>{page.status}</span></td><td className="text-neutral-500">/{page.slug === "home" ? "" : page.slug}</td><td className="text-neutral-500">{page.updatedAt.toLocaleDateString()}</td><td className="p-4"><div className="flex flex-wrap justify-end gap-2">{trash ? <><form action={restorePage.bind(null,page.id)}><button className="rounded border px-3 py-1.5">Restore</button></form>{page.slug !== "home" && <form action={deletePageForever.bind(null,page.id)}><button className="rounded border border-red-200 px-3 py-1.5 text-red-600">Delete forever</button></form>}</> : <><Link href={`/admin/pages/${page.id}/edit`} className="rounded border px-3 py-1.5">Edit</Link><Link href={`/admin/pages/${page.id}/builder`} className="rounded bg-pink-600 px-3 py-1.5 font-medium text-white">Edit visually</Link><a href={`/admin/pages/${page.id}/preview`} target="_blank" className="rounded border px-3 py-1.5">Preview</a><form action={duplicatePage.bind(null,page.id)}><button className="rounded border px-3 py-1.5">Duplicate</button></form><form action={setPageStatus.bind(null,page.id,page.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED")}><button className="rounded border px-3 py-1.5">{page.status === "PUBLISHED" ? "Unpublish" : "Publish"}</button></form>{page.slug !== "home" && <form action={trashPage.bind(null,page.id)}><button className="rounded border border-red-200 px-3 py-1.5 text-red-600">Trash</button></form>}</>}</div></td></tr>)}</tbody></table>{!list.length && <div className="p-12 text-center text-neutral-400">No pages found.</div>}</section>
+  </AdminShell>;
+}
