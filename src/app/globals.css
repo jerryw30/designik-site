@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+@theme {
+  /* ---- Brand palette (extracted from Figma) ---- */
+  --color-wine-950: #3f0119;
+  --color-wine-900: #530823;
+  --color-wine-850: #580a25;
+  --color-wine-800: #720130;
+  --color-wine-700: #840135;
+  --color-wine-600: #8e0038;
+  --color-wine-500: #a10140;
+  --color-wine-400: #ad0b4b;
+  --color-wine-300: #b12a4a;
+  --color-pink-brand: #db2f73;
+  --color-magenta: #c4136a;
+
+  --color-orange-brand: #f16f04;
+  --color-orange-light: #ff8e22;
+  --color-redorange: #fe503f;
+
+  --color-cream-50: #fff7f3;
+  --color-cream-100: #fff3e9;
+  --color-blush-100: #ffefef;
+  --color-blush-200: #fdeded;
+  --color-blush-300: #ffe3e3;
+  --color-blush-400: #ffc5c4;
+  --color-rose-200: #ceacac;
+
+  --color-lilac: #d1b7ff;
+  --color-mint: #ebf5f4;
+  --color-ink: #1a1416;
+
+  /* ---- Fonts ---- */
+  --font-display: var(--font-oswald), "Oswald", system-ui, sans-serif;
+  --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
+  --font-marquee: var(--font-akshar), "Akshar", system-ui, sans-serif;
+
+  /* ---- Motion ---- */
+  --animate-marquee: marquee var(--marquee-duration, 30s) linear infinite;
+  --animate-marquee-rev: marquee-rev var(--marquee-duration, 30s) linear infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes marquee-rev {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #1a1416;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar utility for marquees */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
