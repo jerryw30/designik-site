@@ -27,6 +27,7 @@ export const pages = pgTable("pages", {
 export const sections = pgTable("sections", {
   id: uuid("id").defaultRandom().primaryKey(), pageId: uuid("page_id").references(() => pages.id, { onDelete: "cascade" }).notNull(),
   type: text("type").notNull(), name: text("name").notNull(), position: integer("position").notNull(), content: jsonb("content").default({}).notNull(),
+  draftContent: jsonb("draft_content").default({}).notNull(), publishedContent: jsonb("published_content").default({}).notNull(),
   styles: jsonb("styles").default({}).notNull(), responsive: jsonb("responsive").default({}).notNull(), animation: jsonb("animation").default({}).notNull(), visible: boolean("visible").default(true).notNull(), locked: boolean("locked").default(false).notNull(), ...audit,
 }, (t) => [index("sections_page_position_idx").on(t.pageId, t.position)]);
 

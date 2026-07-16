@@ -11,12 +11,19 @@ import Interactive from "@/components/sections/Interactive";
 import Testimonials from "@/components/sections/Testimonials";
 import Footer from "@/components/sections/Footer";
 import AgencyMarquee from "@/components/ui/AgencyMarquee";
+import { db } from "@/db";
+import { sections } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { heroContent } from "@/cms/defaults";
 
-export default function Home() {
+export const revalidate = 60;
+
+export default async function Home() {
+  const [heroSection] = await db.select({ content: sections.publishedContent }).from(sections).where(eq(sections.type, "hero")).limit(1);
   return (
     <main className="relative overflow-x-hidden">
       <Nav />
-      <Hero />
+      <Hero content={heroContent(heroSection?.content)} />
       <AgencyMarquee />
 
       <StatsBar />

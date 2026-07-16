@@ -8,6 +8,13 @@
       "when": 1784240048231,
       "tag": "0000_real_morgan_stark",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784241304526,
+      "tag": "0001_flashy_vulcan",
+      "breakpoints": true
     }
   ]
 }

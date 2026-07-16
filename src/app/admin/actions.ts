@@ -3,9 +3,11 @@
 import { compare, hash } from "bcryptjs";
 import { asc, count, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { db } from "@/db";
-import { pages, sections, users } from "@/db/schema";
-import { createSession, destroySession } from "@/lib/auth";
+import { pages, revisions, sections, users } from "@/db/schema";
+import { createSession, currentUser, destroySession } from "@/lib/auth";
+import { heroContent } from "@/cms/defaults";
 
 export async function setupAdmin(form: FormData) {
   const [{ total }] = await db.select({ total: count() }).from(users);
@@ -48,4 +50,26 @@ export async function updatePage(form: FormData) {
 
 export async function getHomepageSections(pageId: string) {
   return db.select().from(sections).where(eq(sections.pageId, pageId)).orderBy(asc(sections.position));
+}
+
+export async function saveHeroDraft(sectionId: string, value: unknown) {
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
+  const content = heroContent(value);
+  await db.update(sections).set({ draftContent: content, updatedAt: new Date() }).where(eq(sections.id, sectionId));
+  return content;
+}
+
+export async function publishHero(sectionId: string) {
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
+  const [section] = await db.select().from(sections).where(eq(sections.id, sectionId)).limit(1);
+  if (!section) throw new Error("Section not found");
+  const content = heroContent(section.draftContent);
+  await db.transaction(async (tx) => {
+    await tx.insert(revisions).values({ pageId: section.pageId, authorId: user.id, label: "Published Hero", snapshot: { sectionId, content: section.publishedContent } });
+    await tx.update(sections).set({ publishedContent: content, updatedAt: new Date() }).where(eq(sections.id, sectionId));
+  });
+  revalidatePath("/");
+  return content;
 }

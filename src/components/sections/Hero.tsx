@@ -4,10 +4,12 @@ import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { assets } from "@/lib/assets";
+import { heroContent, type HeroContent } from "@/cms/defaults";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
-export default function Hero() {
+export default function Hero({ content: input }: { content?: Partial<HeroContent> } = {}) {
+  const content = heroContent(input);
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "14%"]);
@@ -64,7 +66,7 @@ export default function Hero() {
               preload="auto"
               aria-label="Designik portfolio showcase"
             >
-              <source src="/video/portfolio.mp4" type="video/mp4" />
+              <source src={content.video} type="video/mp4" />
             </video>
 
             {/* Curved CRT glass: edge shade plus a restrained reflection. */}
@@ -97,7 +99,7 @@ export default function Hero() {
           transition={{ duration: 0.9, ease, delay: 0.25 }}
           className="font-display font-normal uppercase leading-[0.9] tracking-[-0.02em] text-white text-[clamp(44px,7.2vw,72px)]"
         >
-          Design with ease
+          {content.heading}
         </motion.h1>
 
         <motion.p
@@ -106,7 +108,7 @@ export default function Hero() {
           transition={{ duration: 0.9, ease, delay: 0.42 }}
           className="mt-5 max-w-[34ch] font-sans text-[clamp(15px,1.5vw,20px)] font-light leading-relaxed text-white/90"
         >
-          Designik drives brand engagement with innovative digital solutions.
+          {content.description}
         </motion.p>
 
         <motion.div
@@ -116,20 +118,20 @@ export default function Hero() {
           className="mt-8 flex items-center gap-3"
         >
           <a
-            href="#contact"
+            href={content.primaryLink}
             className="group inline-flex items-center gap-2 rounded-full bg-white py-2 pl-6 pr-2 font-display text-[13px] font-semibold uppercase tracking-wide text-wine-500 shadow-lg transition-transform duration-300 hover:scale-[1.04] active:scale-95"
           >
-            Get Started
+            {content.primaryLabel}
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-wine-500 text-white transition-transform duration-300 group-hover:rotate-45">
               <ArrowIcon />
             </span>
           </a>
           <a
-            href="#portfolio"
+            href={content.secondaryLink}
             className="group inline-flex items-center gap-2 rounded-full border border-white/80 px-6 py-2.5 font-sans text-[13px] font-semibold uppercase tracking-wide text-white transition-colors duration-300 hover:bg-white/10"
           >
             <PlayIcon />
-            Watch Video
+            {content.secondaryLabel}
           </a>
         </motion.div>
       </motion.div>
