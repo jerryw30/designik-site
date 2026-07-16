@@ -105,10 +105,10 @@ export async function publishHero(sectionId: string) {
   const [section] = await db.select().from(sections).where(eq(sections.id, sectionId)).limit(1);
   if (!section) throw new Error("Section not found");
   const content = heroContent(section.draftContent);
-  await db.transaction(async (tx) => {
-    await tx.insert(revisions).values({ pageId: section.pageId, authorId: user.id, label: "Published Hero", snapshot: { sectionId, content: section.publishedContent } });
-    await tx.update(sections).set({ publishedContent: content, updatedAt: new Date() }).where(eq(sections.id, sectionId));
-  });
+  // The Neon HTTP driver used by Vercel does not support SQL transactions.
+  // Preserve the old published value first, then publish the validated draft.
+  await db.insert(revisions).values({ pageId: section.pageId, authorId: user.id, label: "Published Hero", snapshot: { sectionId, content: section.publishedContent } });
+  await db.update(sections).set({ publishedContent: content, updatedAt: new Date() }).where(eq(sections.id, sectionId));
   revalidatePath("/");
   return content;
 }
