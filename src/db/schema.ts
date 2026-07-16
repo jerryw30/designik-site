@@ -39,3 +39,9 @@ export const revisions = pgTable("revisions", {
 export const siteSettings = pgTable("site_settings", {
   key: text("key").primaryKey(), value: jsonb("value").notNull(), updatedBy: uuid("updated_by").references(() => users.id), updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const adminResources = pgTable("admin_resources", {
+  id: uuid("id").defaultRandom().primaryKey(), module: text("module").notNull(), title: text("title").notNull(), slug: text("slug").notNull(),
+  status: text("status").default("DRAFT").notNull(), data: jsonb("data").default({}).notNull(), createdBy: uuid("created_by").references(() => users.id),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }), ...audit,
+}, (t) => [index("admin_resources_module_idx").on(t.module), uniqueIndex("admin_resources_module_slug_unique").on(t.module, t.slug)]);

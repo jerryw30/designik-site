@@ -13,11 +13,15 @@ Updated: 2026-07-16
 - Hero content, typography, color, spacing, alignment, background, border, icon, hover, animation, and responsive controls
 - Hero draft editing, protected preview, publishing, and revision creation
 - GitHub and Vercel production deployment pipeline
+- Every visible admin sidebar option opens a persistent database-backed management screen
+- Shared CRUD foundation for posts, media records, templates, saved sections, headers, footers, popups, forms, menus, styles, SEO, and settings
+- Database-backed Users activation controls and Revisions listing
 
 ## In progress
 
 - Hero production acceptance testing and control refinements
 - Converting the remaining live homepage sections to editable components
+- Expanding each CMS module from its working CRUD foundation into its specialized builder workflow
 
 ## Needs testing
 
