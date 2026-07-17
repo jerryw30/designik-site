@@ -39,6 +39,10 @@ Updated: 2026-07-17
 - Users and Roles management with account creation, role assignment, profile editing, password reset, activation, session revocation, and guarded deletion
 - Central role permission matrix enforced across page, section, post, menu, media, forms, SEO, settings, and template mutations
 - Automated Users lifecycle and authenticated production-route test
+- Form Builder with draggable fields, field types/options/validation, draft preview, publish, duplicate, trash, restore, and delete
+- Public form rendering with server validation, honeypot protection, hourly IP rate limiting, and Neon submission storage
+- Submissions inbox with read/unread state, deletion, and authenticated CSV export
+- Automated production form validation, submission, inbox, export, and lifecycle test
 
 ## In progress
 
@@ -58,7 +62,6 @@ Updated: 2026-07-17
 - Author management and public category/tag archive filtering
 - Media library and Vercel Blob uploads
 - Specialized global templates, header/footer, and popup builders
-- Forms builder and submissions
 - SEO center, global styles/fonts, revision restore UI, custom code, and tools
 - Complete advanced widget controls, inline element editing, and import/export
 - Full editable-element audit and cross-browser/device acceptance testing
