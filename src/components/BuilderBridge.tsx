@@ -5,10 +5,22 @@ export default function BuilderBridge() {
     let outlined: HTMLElement | null = null;
     const target = (event: Event) => {
       const node = event.target as HTMLElement | null;
-      return (
-        node?.closest<HTMLElement>("[data-cms-element],[data-cms-section]") ||
-        null
-      );
+      if (!node) return null;
+      const section = node.closest<HTMLElement>("[data-cms-section]");
+      if (!section) return null;
+      const leaf =
+        node.childElementCount === 0 &&
+        (node.textContent?.trim() ||
+          node instanceof HTMLImageElement ||
+          node instanceof HTMLVideoElement)
+          ? node
+          : null;
+      const candidate =
+        leaf ||
+        node.closest<HTMLElement>(
+          "[data-cms-element],h1,h2,h3,h4,h5,h6,p,a,button,img,video",
+        );
+      return candidate && section.contains(candidate) ? candidate : section;
     };
     const over = (event: MouseEvent) => {
       const node = target(event);
@@ -34,11 +46,20 @@ export default function BuilderBridge() {
       if (!section) return;
       event.preventDefault();
       event.stopPropagation();
+      const elementSource =
+        node instanceof HTMLImageElement || node instanceof HTMLVideoElement
+          ? node.getAttribute("src")
+          : node instanceof HTMLAnchorElement
+            ? node.getAttribute("href")
+            : null;
       window.parent.postMessage(
         {
           source: "designik-builder",
           sectionId: section.dataset.cmsSection,
           elementId: node.dataset.cmsElement || null,
+          elementText: node.textContent?.trim() || "",
+          elementSource: elementSource || "",
+          elementTag: node.tagName.toLowerCase(),
         },
         window.location.origin,
       );

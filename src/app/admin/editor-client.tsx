@@ -34,6 +34,7 @@ type Section = {
 };
 type Tab = "content" | "style" | "advanced" | "responsive";
 type MediaAsset = { id: string; title: string; mimeType: string };
+type SelectedTarget = { text: string; source: string; tag: string } | null;
 
 export default function EditorClient({
   page,
@@ -58,6 +59,7 @@ export default function EditorClient({
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [selected, setSelected] = useState(hero?.id ?? sections[0]?.id);
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  const [selectedTarget, setSelectedTarget] = useState<SelectedTarget>(null);
   const [content, setContent] = useState(initialHero);
   const [tab, setTab] = useState<Tab>("content");
   const [message, setMessage] = useState("");
@@ -78,6 +80,12 @@ export default function EditorClient({
       if (sectionList.some((section) => section.id === event.data.sectionId)) {
         setSelected(event.data.sectionId);
         setSelectedElement(event.data.elementId || null);
+        setTab("content");
+        setSelectedTarget({
+          text: event.data.elementText || "",
+          source: event.data.elementSource || "",
+          tag: event.data.elementTag || "element",
+        });
       }
     };
     window.addEventListener("message", receive);
@@ -198,7 +206,11 @@ export default function EditorClient({
               className={`group flex items-center rounded-lg ${selected === section.id ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5"}`}
             >
               <button
-                onClick={() => setSelected(section.id)}
+                onClick={() => {
+                  setSelected(section.id);
+                  setSelectedElement(null);
+                  setSelectedTarget(null);
+                }}
                 className="flex min-w-0 flex-1 items-center gap-2 px-3 py-2 text-left text-sm"
               >
                 <span className="cursor-grab text-white/30">⠿</span>
@@ -394,6 +406,7 @@ export default function EditorClient({
               value={content}
               update={update}
               media={media}
+              selectedTarget={selectedTarget}
             />
           ) : selectedSection && selectedSection.type in sectionDefaults ? (
             <SectionPanel
@@ -403,6 +416,7 @@ export default function EditorClient({
               tab={tab}
               media={media}
               selectedElement={selectedElement}
+              selectedTarget={selectedTarget}
             />
           ) : (
             <p className="text-sm leading-6 text-white/45">
@@ -446,12 +460,14 @@ function SectionPanel({
   tab,
   media,
   selectedElement,
+  selectedTarget,
 }: {
   section: Section;
   refresh: () => void;
   tab: Tab;
   media: MediaAsset[];
   selectedElement: string | null;
+  selectedTarget: SelectedTarget;
 }) {
   const type = section.type as EditableSectionType;
   const [value, setValue] = useState<Record<string, unknown>>(
@@ -469,6 +485,16 @@ function SectionPanel({
     setPast((items) => [...items, value]);
     setFuture([]);
     setValue((old) => ({ ...old, [key]: next }));
+  };
+  const changePath = (path: (string | number)[], next: unknown) => {
+    const updated = cloneValue(value);
+    let cursor = updated as Record<string | number, unknown>;
+    for (let index = 0; index < path.length - 1; index++)
+      cursor = cursor[path[index]] as Record<string | number, unknown>;
+    cursor[path.at(-1)!] = next;
+    setPast((items) => [...items, value]);
+    setFuture([]);
+    setValue(updated);
   };
   const undo = () => {
     const previous = past.at(-1);
@@ -576,6 +602,14 @@ function SectionPanel({
           Redo ↷
         </button>
       </div>
+      {selectedTarget && (
+        <InlineSelection
+          value={value}
+          target={selectedTarget}
+          onChange={changePath}
+          media={media}
+        />
+      )}
       {panel ||
         Object.entries(value)
           .filter(([key]) => key !== "_layout")
@@ -639,6 +673,111 @@ function SectionPanel({
 
 function cloneValue<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function editableMatches(
+  value: unknown,
+  target: SelectedTarget,
+  path: (string | number)[] = [],
+): { path: (string | number)[]; value: string | number }[] {
+  if (!target) return [];
+  if (typeof value === "string") {
+    const normalize = (input: string) => input.replace(/\s+/g, " ").trim();
+    const needle = normalize(target.source || target.text);
+    const current = normalize(value);
+    return needle &&
+      (current === needle ||
+        current.endsWith(needle) ||
+        needle.endsWith(current))
+      ? [{ path, value }]
+      : [];
+  }
+  if (typeof value === "number") {
+    const displayed = (target.text || target.source).replace(/[^0-9.-]/g, "");
+    return displayed && Number(displayed) === value ? [{ path, value }] : [];
+  }
+  if (Array.isArray(value))
+    return value.flatMap((item, index) =>
+      editableMatches(item, target, [...path, index]),
+    );
+  if (value && typeof value === "object")
+    return Object.entries(value as Record<string, unknown>)
+      .filter(([key]) => key !== "_layout")
+      .flatMap(([key, item]) => editableMatches(item, target, [...path, key]));
+  return [];
+}
+
+function InlineSelection({
+  value,
+  target,
+  onChange,
+  media,
+}: {
+  value: Record<string, unknown>;
+  target: NonNullable<SelectedTarget>;
+  onChange: (path: (string | number)[], value: unknown) => void;
+  media: MediaAsset[];
+}) {
+  const matches = editableMatches(value, target);
+  return (
+    <div className="rounded-lg border border-pink-400/30 bg-pink-500/10 p-3">
+      <div className="text-[10px] font-semibold uppercase text-pink-200">
+        Selected {target.tag}
+      </div>
+      <div className="mt-1 truncate text-xs text-white/55">
+        {target.source || target.text || "Element"}
+      </div>
+      {matches.length ? (
+        <div className="mt-3 space-y-3">
+          {matches.map((match) => (
+            <label
+              key={match.path.join(".")}
+              className="block text-[10px] text-white/50"
+            >
+              {match.path.join(" > ")}
+              <input
+                aria-label={`Inline ${match.path.join(" ")}`}
+                className="admin-input mt-1"
+                type={typeof match.value === "number" ? "number" : "text"}
+                value={match.value}
+                onChange={(event) =>
+                  onChange(
+                    match.path,
+                    typeof match.value === "number"
+                      ? Number(event.target.value)
+                      : event.target.value,
+                  )
+                }
+              />
+              {/image|video|photo|logo|background/i.test(
+                match.path.join("."),
+              ) && (
+                <select
+                  className="admin-input mt-1"
+                  value=""
+                  onChange={(event) =>
+                    event.target.value &&
+                    onChange(match.path, event.target.value)
+                  }
+                >
+                  <option value="">Choose from Media Library...</option>
+                  {media.map((asset) => (
+                    <option key={asset.id} value={`/api/media/${asset.id}`}>
+                      {asset.title}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </label>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-xs text-white/40">
+          This element is generated by component layout. Use the controls below.
+        </p>
+      )}
+    </div>
+  );
 }
 
 function StructuredField({
@@ -1112,20 +1251,78 @@ function WidgetList({
   );
 }
 
+function HeroInlineSelection({
+  value,
+  target,
+  update,
+}: {
+  value: HeroContent;
+  target: NonNullable<SelectedTarget>;
+  update: <K extends keyof HeroContent>(key: K, value: HeroContent[K]) => void;
+}) {
+  const normalize = (input: string) => input.replace(/\s+/g, " ").trim();
+  const needle = normalize(target.source || target.text);
+  const matches = Object.entries(value).filter(
+    ([, current]) =>
+      typeof current === "string" &&
+      needle &&
+      (normalize(current) === needle ||
+        normalize(current).endsWith(needle) ||
+        needle.endsWith(normalize(current))),
+  ) as [keyof HeroContent, string][];
+  return (
+    <div className="rounded-lg border border-pink-400/30 bg-pink-500/10 p-3">
+      <div className="text-[10px] font-semibold uppercase text-pink-200">
+        Selected {target.tag}
+      </div>
+      {matches.map(([key, current]) => (
+        <label
+          key={String(key)}
+          className="mt-2 block text-[10px] text-white/50"
+        >
+          {String(key).replace(/([A-Z])/g, " $1")}
+          <input
+            aria-label={`Inline hero ${String(key)}`}
+            className="admin-input mt-1"
+            value={current}
+            onChange={(event) =>
+              update(key, event.target.value as HeroContent[typeof key])
+            }
+          />
+        </label>
+      ))}
+      {!matches.length && (
+        <p className="mt-2 text-xs text-white/40">
+          Use the Hero controls below for this visual element.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function HeroPanel({
   tab,
   value,
   update,
   media,
+  selectedTarget,
 }: {
   tab: Tab;
   value: HeroContent;
   update: <K extends keyof HeroContent>(key: K, value: HeroContent[K]) => void;
   media: MediaAsset[];
+  selectedTarget: SelectedTarget;
 }) {
   if (tab === "content")
     return (
       <div className="space-y-5">
+        {selectedTarget && (
+          <HeroInlineSelection
+            value={value}
+            target={selectedTarget}
+            update={update}
+          />
+        )}
         <Group title="Text">
           <Text
             label="Heading"

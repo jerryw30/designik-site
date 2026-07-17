@@ -248,6 +248,35 @@ try {
     throw new Error(
       `Advanced widget controls failed: ${JSON.stringify(advanced)}`,
     );
+  const heroHeading = await previewFrame.$("h1");
+  if (!heroHeading) throw new Error("Hero heading was not rendered in preview");
+  await heroHeading.click();
+  await page.waitForSelector('[aria-label="Inline hero heading"]', {
+    timeout: 10000,
+  });
+  const directHero = Boolean(
+    await page.$('[aria-label="Inline hero heading"]'),
+  );
+  const statsLeaf = await previewFrame.evaluateHandle(() => {
+    const stats = [...document.querySelectorAll("[data-cms-section]")].find(
+      (section) => section.textContent?.includes("Clutch"),
+    );
+    return (
+      [...(stats?.querySelectorAll("span") || [])].find(
+        (span) => span.textContent?.trim() === "Clutch",
+      ) || null
+    );
+  });
+  const statsElement = statsLeaf.asElement();
+  if (!statsElement) throw new Error("Stats nested text was not rendered");
+  await statsElement.click();
+  await page.waitForFunction(
+    () => Boolean(document.querySelector('[aria-label="Inline reviewSite"]')),
+    { timeout: 10000 },
+  );
+  const directLegacyNested = Boolean(
+    await page.$('[aria-label="Inline reviewSite"]'),
+  );
   console.log(
     JSON.stringify({
       status: "ok",
@@ -256,6 +285,8 @@ try {
       mobileWidth,
       ...controls,
       ...advanced,
+      directHero,
+      directLegacyNested,
     }),
   );
 } finally {
