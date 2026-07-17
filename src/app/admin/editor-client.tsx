@@ -11,6 +11,7 @@ import {
 import {
   addSection,
   addSavedSectionToPage,
+  applyPageTemplate,
   copySectionToPage,
   deleteSection,
   duplicateSection,
@@ -40,6 +41,7 @@ export default function EditorClient({
   initialHero,
   previewUrl,
   templates,
+  pageTemplates,
   media,
 }: {
   page: { id: string; title: string; slug: string; status: string };
@@ -47,6 +49,7 @@ export default function EditorClient({
   initialHero: HeroContent;
   previewUrl: string;
   templates: { id: string; title: string }[];
+  pageTemplates: { id: string; title: string }[];
   media: MediaAsset[];
 }) {
   const hero = sections.find((item) => item.type === "hero");
@@ -150,6 +153,11 @@ export default function EditorClient({
   const addTemplate = (id: string) =>
     startTransition(async () => {
       await addSavedSectionToPage(id, page.id);
+      window.location.reload();
+    });
+  const applyTemplate = (id: string) =>
+    startTransition(async () => {
+      await applyPageTemplate(id, page.id);
       window.location.reload();
     });
   const toggleState = (id: string, field: "visible" | "locked") => {
@@ -295,6 +303,23 @@ export default function EditorClient({
             Insert saved section
           </option>
           {templates.map((template) => (
+            <option key={template.id} value={template.id}>
+              {template.title}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="Apply page template"
+          defaultValue=""
+          onChange={(event) =>
+            event.target.value && applyTemplate(event.target.value)
+          }
+          className="mt-2 w-full rounded-lg border border-white/10 bg-[#17181d] p-2 text-xs text-white/60"
+        >
+          <option value="" disabled>
+            Apply page template
+          </option>
+          {pageTemplates.map((template) => (
             <option key={template.id} value={template.id}>
               {template.title}
             </option>

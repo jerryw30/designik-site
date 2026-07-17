@@ -1,7 +1,7 @@
 "use server";
 
 import { compare, hash } from "bcryptjs";
-import { and, asc, count, eq, isNotNull } from "drizzle-orm";
+import { and, asc, count, eq, isNotNull, isNull } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
@@ -11,8 +11,10 @@ import { requirePermission } from "@/lib/permissions";
 import { heroContent } from "@/cms/defaults";
 import {
   sectionContent,
+  sectionDefaults,
   type EditableSectionType,
 } from "@/cms/section-defaults";
+import { designValue } from "@/cms/design-resources";
 
 export async function setupAdmin(form: FormData) {
   const [{ total }] = await db.select({ total: count() }).from(users);
@@ -583,5 +585,49 @@ export async function addSavedSectionToPage(
     visible: data.visible !== false,
     locked: false,
   });
+  revalidatePath(`/admin/pages/${pageId}/builder`);
+}
+
+export async function applyPageTemplate(templateId: string, pageId: string) {
+  await requireUser();
+  const [template] = await db
+    .select()
+    .from(adminResources)
+    .where(
+      and(
+        eq(adminResources.id, templateId),
+        eq(adminResources.module, "templates"),
+        isNull(adminResources.deletedAt),
+      ),
+    )
+    .limit(1);
+  if (!template) return;
+  const value = designValue("templates", template.data);
+  const source = (value.published || value.draft).content.sections;
+  if (!Array.isArray(source) || !source.length) return;
+  const current = await db
+    .select({ id: sections.id })
+    .from(sections)
+    .where(eq(sections.pageId, pageId));
+  let position = current.length;
+  for (const item of source) {
+    if (!item || typeof item !== "object") continue;
+    const data = item as Record<string, unknown>;
+    const type = String(data.type || "widgets") as EditableSectionType;
+    if (!(type in sectionDefaults) || ["header", "footer"].includes(type))
+      continue;
+    const content = sectionContent(type, data.content);
+    await db.insert(sections).values({
+      pageId,
+      type,
+      name: String(data.name || `${type.replaceAll("-", " ")} section`),
+      position: position++,
+      content,
+      draftContent: content,
+      publishedContent: { _cmsPublished: false },
+      visible: true,
+      locked: false,
+    });
+  }
   revalidatePath(`/admin/pages/${pageId}/builder`);
 }

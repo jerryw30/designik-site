@@ -15,7 +15,8 @@ const [activeHeader] = await sql.query(
 );
 const designModule = activeHeader ? "popups" : "headers";
 const id = crypto.randomUUID(),
-  duplicateId = crypto.randomUUID();
+  duplicateId = crypto.randomUUID(),
+  templateId = crypto.randomUUID();
 const marker = `Global Design Smoke ${Date.now()}`;
 const content =
   designModule === "headers"
@@ -193,6 +194,56 @@ try {
   );
   if (copy.deleted_at) throw new Error("Design restore failed");
   await sql.query("delete from admin_resources where id=$1", [duplicateId]);
+  const [homePage] = await sql.query(
+    "select id from pages where slug='home' limit 1",
+    [],
+  );
+  const templateMarker = `Template section ${Date.now()}`;
+  const templateDesign = {
+    ...design,
+    content: {
+      templateType: "page",
+      description: "Smoke page template",
+      sections: [
+        {
+          type: "widgets",
+          name: templateMarker,
+          content: {
+            backgroundColor: "#ffffff",
+            paddingTop: 32,
+            paddingBottom: 32,
+            maxWidth: 1280,
+            widgets: [],
+          },
+        },
+      ],
+    },
+  };
+  await sql.query(
+    "insert into admin_resources(id,module,title,slug,status,data,created_by) values($1,'templates',$2,$3,'PUBLISHED',$4::jsonb,$5)",
+    [
+      templateId,
+      templateMarker,
+      `template-smoke-${Date.now()}`,
+      JSON.stringify({ draft: templateDesign, published: templateDesign }),
+      admin.id,
+    ],
+  );
+  await page.goto(
+    `https://designik-site.vercel.app/admin/pages/${homePage.id}/builder`,
+    { waitUntil: "networkidle2", timeout: 60000 },
+  );
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: "networkidle2", timeout: 60000 }),
+    page.select('select[aria-label="Apply page template"]', templateId),
+  ]);
+  const [insertedSection] = await sql.query(
+    "select id from sections where page_id=$1 and name=$2 limit 1",
+    [homePage.id, templateMarker],
+  );
+  if (!insertedSection) throw new Error("Page template insertion failed");
+  await sql.query("delete from sections where id=$1", [insertedSection.id]);
+  await sql.query("delete from admin_resources where id=$1", [templateId]);
   for (const route of [
     "headers",
     "footers",
@@ -222,13 +273,18 @@ try {
       restore: true,
       delete: true,
       allManagementRoutes: true,
+      templateInsertion: true,
       cleanup: true,
     }),
   );
 } finally {
   if (browser) await browser.close();
   await sql.query("delete from admin_resources where id=any($1::uuid[])", [
-    [id, duplicateId],
+    [id, duplicateId, templateId],
   ]);
+  await sql.query(
+    "delete from sections where name like 'Template section %'",
+    [],
+  );
   await sql.query("delete from sessions where token_hash=$1", [tokenHash]);
 }

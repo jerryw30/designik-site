@@ -28,6 +28,10 @@ export default async function Builder({
     .select({ id: adminResources.id, title: adminResources.title })
     .from(adminResources)
     .where(eq(adminResources.module, "saved-sections"));
+  const pageTemplates = await db
+    .select({ id: adminResources.id, title: adminResources.title })
+    .from(adminResources)
+    .where(eq(adminResources.module, "templates"));
   const media = await db
     .select({
       id: mediaAssets.id,
@@ -84,6 +88,7 @@ export default async function Builder({
         initialHero={heroContent(hero?.draftContent)}
         previewUrl={`/admin/pages/${page.id}/preview`}
         templates={templates}
+        pageTemplates={pageTemplates}
         media={media}
       />
     </main>

@@ -91,7 +91,13 @@ export function designDefault(module: DesignModule): GlobalDesign {
             ? {
                 templateType: "page",
                 description: "Reusable page layout",
-                sections: [],
+                sections: [
+                  {
+                    type: "widgets",
+                    name: "Content section",
+                    content: sectionContent("widgets", {}),
+                  },
+                ],
               }
             : {
                 type: "widgets",
