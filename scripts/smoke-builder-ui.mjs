@@ -15,6 +15,7 @@ const [pageRecord] = await sql.query(
   [],
 );
 const widgetSectionId = crypto.randomUUID();
+const legacySectionId = crypto.randomUUID();
 const widgetId = `widget-smoke-${Date.now()}`;
 const candidates = [
   "C:/Program Files/Google/Chrome/Application/chrome.exe",
@@ -27,6 +28,22 @@ if (!executablePath) throw new Error("Chrome or Edge executable not found");
 await sql.query(
   "insert into sessions(user_id,token_hash,expires_at) values($1,$2,now()+interval '5 minutes')",
   [user.id, tokenHash],
+);
+await sql.query(
+  `insert into sections(id,page_id,type,name,position,content,draft_content,published_content,styles,responsive,animation,visible,locked)
+   values($1,$2,'about','Legacy style smoke',(select coalesce(max(position),0)+1 from sections where page_id=$2),$3::jsonb,$3::jsonb,'{"_cmsPublished":false}'::jsonb,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb,true,false)`,
+  [
+    legacySectionId,
+    pageRecord.id,
+    JSON.stringify({
+      eyebrow: "Style smoke eyebrow",
+      headingAccent: "Visual",
+      heading: "Inline style smoke",
+      description: "Temporary legacy style test",
+      buttonLabel: "Style test button",
+      buttonLink: "#style-test",
+    }),
+  ],
 );
 await sql.query(
   `insert into sections(id,page_id,type,name,position,content,draft_content,published_content,styles,responsive,animation,visible,locked)
@@ -294,6 +311,49 @@ try {
   const directLegacyNested = Boolean(
     await page.$('[aria-label="Inline reviewSite"]'),
   );
+  const styleHeading = await previewFrame.evaluateHandle((sectionId) => {
+    const section = document.querySelector(`[data-cms-section="${sectionId}"]`);
+    return [...(section?.querySelectorAll("span") || [])].find(
+      (span) => span.textContent?.trim() === "Inline style smoke",
+    );
+  }, legacySectionId);
+  if (!styleHeading.asElement())
+    throw new Error("Legacy style target was not rendered");
+  await styleHeading.asElement().click();
+  await page.waitForSelector('[aria-label="Element Text color"]', {
+    timeout: 10000,
+  });
+  const colorControl = await page.$('[aria-label="Element Text color"]');
+  await colorControl.click({ clickCount: 3 });
+  await colorControl.type("#123456");
+  const saveButton = await page
+    .$$("aside:last-child button")
+    .then(async (buttons) => {
+      for (const button of buttons)
+        if (
+          (await button.evaluate((node) => node.textContent?.trim())) ===
+          "Save draft"
+        )
+          return button;
+    });
+  if (!saveButton) throw new Error("Legacy section save control not found");
+  await saveButton.click();
+  await page.waitForFunction(
+    () => document.body.innerText.includes("Draft saved"),
+    { timeout: 10000 },
+  );
+  const [savedLegacy] = await sql.query(
+    "select draft_content from sections where id=$1",
+    [legacySectionId],
+  );
+  const elementStyles = Object.values(
+    savedLegacy.draft_content._elementStyles || {},
+  );
+  const independentElementStyle = elementStyles.some(
+    (style) => style.color === "#123456",
+  );
+  if (!independentElementStyle)
+    throw new Error("Independent legacy element style did not persist");
   console.log(
     JSON.stringify({
       status: "ok",
@@ -305,10 +365,12 @@ try {
       directHero,
       directLinkAndLabel,
       directLegacyNested,
+      independentElementStyle,
     }),
   );
 } finally {
   if (browser) await browser.close();
   await sql.query("delete from sessions where token_hash=$1", [tokenHash]);
   await sql.query("delete from sections where id=$1", [widgetSectionId]);
+  await sql.query("delete from sections where id=$1", [legacySectionId]);
 }

@@ -22,6 +22,22 @@ export default function BuilderBridge() {
         node.closest<HTMLElement>("h1,h2,h3,h4,h5,h6,p,a,button,img,video");
       return candidate && section.contains(candidate) ? candidate : section;
     };
+    const selector = (node: HTMLElement, section: HTMLElement) => {
+      const parts: string[] = [];
+      let current: HTMLElement | null = node;
+      while (current && current !== section) {
+        const tag = current.tagName.toLowerCase();
+        const siblings = current.parentElement
+          ? [...current.parentElement.children].filter(
+              (item) => item.tagName === current?.tagName,
+            )
+          : [];
+        const position = siblings.indexOf(current) + 1;
+        parts.unshift(`${tag}:nth-of-type(${Math.max(1, position)})`);
+        current = current.parentElement;
+      }
+      return parts.join(" > ");
+    };
     const over = (event: MouseEvent) => {
       const node = target(event);
       if (!node || node === outlined) return;
@@ -60,6 +76,7 @@ export default function BuilderBridge() {
           elementText: node.textContent?.trim() || "",
           elementSource: elementSource || "",
           elementTag: node.tagName.toLowerCase(),
+          elementSelector: selector(node, section),
         },
         window.location.origin,
       );

@@ -22,6 +22,7 @@ import {
 import BuilderBridge from "@/components/BuilderBridge";
 import GlobalPopup from "@/components/GlobalPopup";
 import type { GlobalDesign } from "@/cms/design-resources";
+import ElementStyleRuntime from "@/components/ElementStyleRuntime";
 
 export type SiteSection = {
   id: string;
@@ -91,6 +92,16 @@ export default function SiteHome({
                 animationDuration: `${layout.animationDuration}s`,
               }}
             >
+              <ElementStyleRuntime
+                sectionId={section.id}
+                styles={
+                  (
+                    section.content as {
+                      _elementStyles?: Record<string, never>;
+                    }
+                  )?._elementStyles
+                }
+              />
               {section.type === "widgets" ? (
                 <WidgetSection content={section.content} forms={forms} />
               ) : (
