@@ -45,7 +45,7 @@ function WidgetView({ widget }: { widget: Widget }) {
     return (
       <div style={{ textAlign: style.textAlign }}>
         <a
-          className="inline-flex rounded-full bg-wine-500 px-6 py-3 text-white"
+          className="cms-global-button inline-flex bg-wine-500 text-white"
           href={String(widget.settings.href || "#")}
         >
           {widget.content}

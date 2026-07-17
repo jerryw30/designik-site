@@ -99,6 +99,15 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  font-size: var(--global-body-size, 16px);
+  line-height: var(--global-body-line-height, 1.5);
+}
+
+.cms-global-button {
+  border-radius: var(--global-button-radius, 999px);
+  padding: var(--global-button-padding-y, 12px)
+    var(--global-button-padding-x, 24px);
+  font-weight: var(--global-button-weight, 600);
 }
 
 /* Hide scrollbar utility for marquees */
