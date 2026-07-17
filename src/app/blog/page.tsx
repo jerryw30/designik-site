@@ -10,8 +10,15 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 60;
-export default async function BlogPage() {
-  const posts = await db
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const query = String((await searchParams).q || "")
+    .trim()
+    .toLowerCase();
+  const allPosts = await db
     .select()
     .from(adminResources)
     .where(
@@ -22,6 +29,27 @@ export default async function BlogPage() {
       ),
     )
     .orderBy(desc(adminResources.updatedAt));
+  const posts = query
+    ? allPosts.filter((post) => {
+        const data = post.data as {
+          excerpt?: string;
+          content?: string;
+          category?: string;
+          tags?: string[];
+        };
+        return [
+          post.title,
+          data.excerpt,
+          data.content,
+          data.category,
+          ...(data.tags || []),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(query);
+      })
+    : allPosts;
   return (
     <main className="min-h-screen bg-cream-50 px-6 py-20">
       <div className="mx-auto max-w-6xl">
@@ -29,8 +57,22 @@ export default async function BlogPage() {
           Designik Journal
         </h1>
         <p className="mt-3 text-neutral-600">
-          Ideas, insights, and studio updates.
+          {query
+            ? `${posts.length} result${posts.length === 1 ? "" : "s"} for “${query}”`
+            : "Ideas, insights, and studio updates."}
         </p>
+        <form action="/blog" className="mt-8 flex max-w-xl">
+          <input
+            name="q"
+            defaultValue={query}
+            aria-label="Search journal"
+            className="min-w-0 flex-1 rounded-l-full border bg-white px-5 py-3"
+            placeholder="Search the journal"
+          />
+          <button className="rounded-r-full bg-wine-700 px-6 text-white">
+            Search
+          </button>
+        </form>
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => {
             const data = post.data as {

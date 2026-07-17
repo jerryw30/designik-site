@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { eq, isNull } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
 import { heroContent } from "@/cms/defaults";
 import { db } from "@/db";
@@ -41,6 +41,17 @@ export default async function Builder({
     .from(mediaAssets)
     .where(isNull(mediaAssets.deletedAt))
     .orderBy(mediaAssets.title);
+  const forms = await db
+    .select({ id: adminResources.id, title: adminResources.title })
+    .from(adminResources)
+    .where(
+      and(
+        eq(adminResources.module, "forms"),
+        eq(adminResources.status, "PUBLISHED"),
+        isNull(adminResources.deletedAt),
+      ),
+    )
+    .orderBy(adminResources.title);
   const hero = list.find((item) => item.type === "hero");
   return (
     <main className="min-h-screen bg-[#111216] text-white">
@@ -90,6 +101,7 @@ export default async function Builder({
         templates={templates}
         pageTemplates={pageTemplates}
         media={media}
+        forms={forms}
       />
     </main>
   );

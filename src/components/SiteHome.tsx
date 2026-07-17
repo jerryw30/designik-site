@@ -12,7 +12,9 @@ import Interactive from "@/components/sections/Interactive";
 import Testimonials from "@/components/sections/Testimonials";
 import Footer from "@/components/sections/Footer";
 import AgencyMarquee from "@/components/ui/AgencyMarquee";
-import WidgetSection from "@/components/sections/WidgetSection";
+import WidgetSection, {
+  type WidgetForm,
+} from "@/components/sections/WidgetSection";
 import {
   sectionLayoutDefaults,
   type SectionLayout,
@@ -41,7 +43,6 @@ const componentMap: Record<string, (content: unknown) => React.ReactNode> = {
   interactive: (content) => <Interactive content={content} />,
   testimonials: (content) => <Testimonials content={content} />,
   footer: (content) => <Footer content={content} />,
-  widgets: (content) => <WidgetSection content={content} />,
 };
 
 export default function SiteHome({
@@ -49,11 +50,13 @@ export default function SiteHome({
   sections,
   builder = false,
   popup,
+  forms = [],
 }: {
   hero?: Partial<HeroContent>;
   sections?: SiteSection[];
   builder?: boolean;
   popup?: GlobalDesign | null;
+  forms?: WidgetForm[];
 }) {
   if (
     !sections?.length ||
@@ -92,7 +95,11 @@ export default function SiteHome({
                 animationDuration: `${layout.animationDuration}s`,
               }}
             >
-              {componentMap[section.type]?.(section.content)}
+              {section.type === "widgets" ? (
+                <WidgetSection content={section.content} forms={forms} />
+              ) : (
+                componentMap[section.type]?.(section.content)
+              )}
             </div>
           );
         })}

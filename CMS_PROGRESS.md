@@ -74,11 +74,13 @@ Updated: 2026-07-17
 - Assignable active authors in the post editor with live author attribution
 - Public category, tag, and author archives linked from published posts
 - Automated production author assignment and category/tag/author archive testing
+- Direct canvas selection and inline editing for Hero text and nested legacy-section strings and numeric values
+- Builder selection precedence preserving advanced controls for newly added widgets while exposing legacy leaf elements
+- Authenticated production browser testing for Hero, nested legacy content, widget controls, and desktop/tablet/mobile selection
 
 ## In progress
 
 - Expanding widget-specific controls and connecting interactive widgets to their real backend workflows
-- Expanding direct canvas selection from section-level to individual nested elements
 - Expanding specialized widget behaviors and inline editing across every legacy section element
 
 ## Needs testing
@@ -86,9 +88,8 @@ Updated: 2026-07-17
 - Admin session persistence across production deployments
 - Hero draft-to-preview-to-publish flow in production
 - Page duplicate/trash/restore/permanent-delete safeguards
-- Desktop, tablet, and mobile builder preview modes
+- Cross-browser validation beyond the production Chrome/Edge engine smoke test
 
 ## Not started
 
-- Complete specialized widget behaviors and inline editing for every legacy section element
 - Full editable-element audit and cross-browser/device acceptance testing

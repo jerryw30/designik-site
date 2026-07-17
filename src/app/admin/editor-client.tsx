@@ -44,6 +44,7 @@ export default function EditorClient({
   templates,
   pageTemplates,
   media,
+  forms,
 }: {
   page: { id: string; title: string; slug: string; status: string };
   sections: Section[];
@@ -52,6 +53,7 @@ export default function EditorClient({
   templates: { id: string; title: string }[];
   pageTemplates: { id: string; title: string }[];
   media: MediaAsset[];
+  forms: { id: string; title: string }[];
 }) {
   const hero = sections.find((item) => item.type === "hero");
   const [sectionList, setSectionList] = useState(sections);
@@ -417,6 +419,7 @@ export default function EditorClient({
               media={media}
               selectedElement={selectedElement}
               selectedTarget={selectedTarget}
+              forms={forms}
             />
           ) : (
             <p className="text-sm leading-6 text-white/45">
@@ -461,6 +464,7 @@ function SectionPanel({
   media,
   selectedElement,
   selectedTarget,
+  forms,
 }: {
   section: Section;
   refresh: () => void;
@@ -468,6 +472,7 @@ function SectionPanel({
   media: MediaAsset[];
   selectedElement: string | null;
   selectedTarget: SelectedTarget;
+  forms: { id: string; title: string }[];
 }) {
   const type = section.type as EditableSectionType;
   const [value, setValue] = useState<Record<string, unknown>>(
@@ -622,6 +627,7 @@ function SectionPanel({
                   onChange={(next) => change(key, next)}
                   media={media}
                   selectedElement={selectedElement}
+                  forms={forms}
                 />
               ) : Array.isArray(current) || typeof current === "object" ? (
                 <StructuredField
@@ -987,11 +993,13 @@ function WidgetList({
   onChange,
   media,
   selectedElement,
+  forms,
 }: {
   value: BuilderWidget[];
   onChange: (value: BuilderWidget[]) => void;
   media: MediaAsset[];
   selectedElement: string | null;
+  forms: { id: string; title: string }[];
 }) {
   const [widgetSearch, setWidgetSearch] = useState("");
   const add = (type: string) => {
@@ -1089,6 +1097,26 @@ function WidgetList({
                   </option>
                 ))}
             </select>
+          )}
+          {widget.type === "form" && (
+            <label className="mt-2 block text-[10px] uppercase text-white/45">
+              Published CMS form
+              <select
+                aria-label="Widget published form"
+                value={String(widget.settings.formId || "")}
+                onChange={(event) =>
+                  setting(index, "formId", event.target.value)
+                }
+                className="admin-input mt-1 text-xs"
+              >
+                <option value="">Select a published form...</option>
+                {forms.map((form) => (
+                  <option key={form.id} value={form.id}>
+                    {form.title}
+                  </option>
+                ))}
+              </select>
+            </label>
           )}
           <div className="mt-2 grid grid-cols-2 gap-2">
             <input

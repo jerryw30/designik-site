@@ -1,5 +1,13 @@
 import Image from "next/image";
 import { sectionContent } from "@/cms/section-defaults";
+import PublicForm from "@/components/forms/PublicForm";
+import type { FormDefinition } from "@/app/admin/forms/actions";
+
+export type WidgetForm = {
+  id: string;
+  title: string;
+  definition: FormDefinition;
+};
 
 type Widget = {
   readonly id: string;
@@ -7,7 +15,13 @@ type Widget = {
   readonly content: string;
   readonly settings: Readonly<Record<string, string | number | boolean>>;
 };
-export default function WidgetSection({ content }: { content?: unknown }) {
+export default function WidgetSection({
+  content,
+  forms = [],
+}: {
+  content?: unknown;
+  forms?: WidgetForm[];
+}) {
   const data = sectionContent("widgets", content);
   return (
     <section
@@ -60,7 +74,7 @@ export default function WidgetSection({ content }: { content?: unknown }) {
                 ),
               }}
             >
-              <WidgetView widget={widget} />
+              <WidgetView widget={widget} forms={forms} />
             </div>
           );
         })}
@@ -68,7 +82,13 @@ export default function WidgetSection({ content }: { content?: unknown }) {
     </section>
   );
 }
-function WidgetView({ widget }: { widget: Widget }) {
+function WidgetView({
+  widget,
+  forms,
+}: {
+  widget: Widget;
+  forms: WidgetForm[];
+}) {
   const style = {
     color: "inherit",
     fontSize: "inherit",
@@ -231,33 +251,51 @@ function WidgetView({ widget }: { widget: Widget }) {
         Open map
       </a>
     );
-  if (widget.type === "form" || widget.type === "login")
+  if (widget.type === "form") {
+    const selected = forms.find(
+      (form) => form.id === String(widget.settings.formId || ""),
+    );
+    return selected ? (
+      <div className="mx-auto max-w-xl rounded-2xl border p-6">
+        {widget.content && (
+          <h3 className="mb-4 font-display text-xl uppercase">
+            {widget.content}
+          </h3>
+        )}
+        <PublicForm formId={selected.id} definition={selected.definition} />
+      </div>
+    ) : (
+      <div className="rounded-xl border border-dashed p-6 text-center text-sm text-neutral-500">
+        Select a published form in the widget settings.
+      </div>
+    );
+  }
+  if (widget.type === "login")
     return (
-      <form className="mx-auto grid max-w-xl gap-3 rounded-2xl border p-6">
+      <form
+        action="/admin/login"
+        method="get"
+        className="mx-auto grid max-w-xl gap-3 rounded-2xl border p-6"
+      >
         <h3 className="font-display text-xl uppercase">{widget.content}</h3>
-        <input
-          className="rounded-lg border p-3"
-          placeholder="Email"
-          type="email"
-        />
-        <textarea className="rounded-lg border p-3" placeholder="Message" />
         <button
           className="rounded-full bg-wine-500 p-3 text-white"
-          type="button"
+          type="submit"
         >
-          Submit
+          Sign in securely
         </button>
       </form>
     );
   if (widget.type === "search")
     return (
-      <form className="mx-auto flex max-w-xl">
+      <form action="/blog" method="get" className="mx-auto flex max-w-xl">
         <input
+          name="q"
           className="min-w-0 flex-1 rounded-l-full border p-3"
           placeholder="Search"
         />
         <button
-          type="button"
+          type="submit"
           className="rounded-r-full bg-wine-500 px-6 text-white"
         >
           Search

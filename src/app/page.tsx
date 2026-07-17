@@ -32,6 +32,16 @@ export default async function Home() {
         isNull(adminResources.deletedAt),
       ),
     );
+  const formRows = await db
+    .select()
+    .from(adminResources)
+    .where(
+      and(
+        eq(adminResources.module, "forms"),
+        eq(adminResources.status, "PUBLISHED"),
+        isNull(adminResources.deletedAt),
+      ),
+    );
   const selected = (module: DesignModule) =>
     globalRows
       .filter((row) => row.module === module)
@@ -81,6 +91,12 @@ export default async function Home() {
       hero={heroContent(hero?.publishedContent)}
       sections={mapped}
       popup={popup}
+      forms={formRows.map((form) => ({
+        id: form.id,
+        title: form.title,
+        definition:
+          form.data as import("@/app/admin/forms/actions").FormDefinition,
+      }))}
     />
   );
 }
