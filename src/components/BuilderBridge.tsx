@@ -15,11 +15,11 @@ export default function BuilderBridge() {
           node instanceof HTMLVideoElement)
           ? node
           : null;
+      const widget = node.closest<HTMLElement>("[data-cms-element]");
       const candidate =
+        widget ||
         leaf ||
-        node.closest<HTMLElement>(
-          "[data-cms-element],h1,h2,h3,h4,h5,h6,p,a,button,img,video",
-        );
+        node.closest<HTMLElement>("h1,h2,h3,h4,h5,h6,p,a,button,img,video");
       return candidate && section.contains(candidate) ? candidate : section;
     };
     const over = (event: MouseEvent) => {
