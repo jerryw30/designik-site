@@ -379,9 +379,28 @@ function SectionPanel({
       >,
   );
   const [status, setStatus] = useState("");
+  const [past, setPast] = useState<Record<string, unknown>[]>([]);
+  const [future, setFuture] = useState<Record<string, unknown>[]>([]);
   const [pending, start] = useTransition();
-  const change = (key: string, next: unknown) =>
+  const change = (key: string, next: unknown) => {
+    setPast((items) => [...items, value]);
+    setFuture([]);
     setValue((old) => ({ ...old, [key]: next }));
+  };
+  const undo = () => {
+    const previous = past.at(-1);
+    if (!previous) return;
+    setFuture((items) => [value, ...items]);
+    setValue(previous);
+    setPast((items) => items.slice(0, -1));
+  };
+  const redo = () => {
+    const next = future[0];
+    if (!next) return;
+    setPast((items) => [...items, value]);
+    setValue(next);
+    setFuture((items) => items.slice(1));
+  };
   const save = () =>
     start(async () => {
       await saveSectionDraft(section.id, type, value);
@@ -458,6 +477,22 @@ function SectionPanel({
     ) : null;
   return (
     <div className="space-y-4">
+      <div className="flex justify-end gap-2">
+        <button
+          disabled={!past.length}
+          onClick={undo}
+          className="rounded border border-white/10 px-2 py-1 text-xs disabled:opacity-30"
+        >
+          ↶ Undo
+        </button>
+        <button
+          disabled={!future.length}
+          onClick={redo}
+          className="rounded border border-white/10 px-2 py-1 text-xs disabled:opacity-30"
+        >
+          Redo ↷
+        </button>
+      </div>
       {panel ||
         Object.entries(value)
           .filter(([key]) => key !== "_layout")
