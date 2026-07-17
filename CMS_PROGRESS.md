@@ -33,6 +33,9 @@ Updated: 2026-07-17
 - Section Copy/Paste and database-backed Save as Template/Insert Saved Section workflows
 - Automated isolated section draft/publish/reorder/template lifecycle test
 - Authenticated headless production UI test for three-column builder layout, nested controls, section tools, and responsive preview widths
+- Hierarchical Menu Builder with item add/edit/duplicate/remove, drag reorder, dropdown parenting, preview, publish, trash, restore, and delete
+- Menu publishing connected to the real homepage Header with revision history and desktop/mobile dropdown rendering
+- Automated isolated menu lifecycle and header-dropdown mapping test
 
 ## In progress
 
@@ -51,7 +54,7 @@ Updated: 2026-07-17
 
 - Author management and public category/tag archive filtering
 - Media library and Vercel Blob uploads
-- Specialized menus, global templates, header/footer, and popup builders
+- Specialized global templates, header/footer, and popup builders
 - Forms builder and submissions
 - SEO center, global styles/fonts, users/permissions UI, revisions UI, custom code, tools
 - Complete advanced widget controls, inline element editing, and import/export
