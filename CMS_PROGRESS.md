@@ -16,11 +16,16 @@ Updated: 2026-07-16
 - Every visible admin sidebar option opens a persistent database-backed management screen
 - Shared CRUD foundation for posts, media records, templates, saved sections, headers, footers, popups, forms, menus, styles, SEO, and settings
 - Database-backed Users activation controls and Revisions listing
+- Structured draft/published schemas for every existing homepage section: Header, Hero, Marquees, Stats, About, Services, Brand Heights, Experience, Portfolio, Team, Interactive, Testimonials, and Footer
+- Database-driven 17-section homepage ordering with five independently editable marquee instances
+- Persisted section drag/reorder, add, duplicate, delete, visibility, and lock controls
+- Add-section widget container with heading, text, button, image, video, divider, spacer, icon, and HTML widget controls
+- Authenticated production builder smoke test and Neon section-order audit scripts
 
 ## In progress
 
-- Hero production acceptance testing and control refinements
-- Converting the remaining live homepage sections to editable components
+- Improving non-Hero style/responsive controls beyond their structured content controls
+- Expanding the widget registry and direct canvas selection/editing
 - Expanding each CMS module from its working CRUD foundation into its specialized builder workflow
 
 ## Needs testing
@@ -32,11 +37,10 @@ Updated: 2026-07-16
 
 ## Not started
 
-- Remaining homepage section conversion
 - Posts, categories, tags, authors, and blog frontend
 - Media library and Vercel Blob uploads
 - Menus, templates, saved/global sections, header/footer/popup builders
 - Forms builder and submissions
 - SEO center, global styles/fonts, users/permissions UI, revisions UI, custom code, tools
-- Complete widget library, inline editing, drag/drop, undo/redo, import/export
+- Complete advanced widget library, inline canvas editing, undo/redo, import/export
 - Full editable-element audit and cross-browser/device acceptance testing
