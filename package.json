@@ -12,6 +12,7 @@
     "test:builder-ui": "node --env-file=.env.local scripts/smoke-builder-ui.mjs",
     "test:menus": "node --env-file=.env.local scripts/smoke-menus.mjs",
     "test:users": "node --env-file=.env.local scripts/smoke-users.mjs",
+    "test:forms": "node --env-file=.env.local scripts/smoke-forms.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
