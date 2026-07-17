@@ -17,6 +17,7 @@ import {
   sectionLayoutDefaults,
   type SectionLayout,
 } from "@/cms/section-defaults";
+import BuilderBridge from "@/components/BuilderBridge";
 
 export type SiteSection = {
   id: string;
@@ -44,9 +45,11 @@ const componentMap: Record<string, (content: unknown) => React.ReactNode> = {
 export default function SiteHome({
   hero,
   sections,
+  builder = false,
 }: {
   hero?: Partial<HeroContent>;
   sections?: SiteSection[];
+  builder?: boolean;
 }) {
   if (
     !sections?.length ||
@@ -55,6 +58,7 @@ export default function SiteHome({
     return <LegacyHome hero={hero} />;
   return (
     <main className="relative overflow-x-hidden">
+      {builder && <BuilderBridge />}
       {sections
         .filter((section) => section.visible)
         .map((section) => {

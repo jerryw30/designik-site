@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import type { HeroContent } from "@/cms/defaults";
 import {
   sectionContent,
@@ -54,6 +54,19 @@ export default function EditorClient({
   const [pending, startTransition] = useTransition();
   const frame = useRef<HTMLIFrameElement>(null);
   const selectedSection = sectionList.find((item) => item.id === selected);
+  useEffect(() => {
+    const receive = (event: MessageEvent) => {
+      if (
+        event.origin !== window.location.origin ||
+        event.data?.source !== "designik-builder"
+      )
+        return;
+      if (sectionList.some((section) => section.id === event.data.sectionId))
+        setSelected(event.data.sectionId);
+    };
+    window.addEventListener("message", receive);
+    return () => window.removeEventListener("message", receive);
+  }, [sectionList]);
   const update = <K extends keyof HeroContent>(
     key: K,
     value: HeroContent[K],
