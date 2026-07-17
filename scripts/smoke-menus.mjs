@@ -1,10 +1,11 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL);
 const suffix = Date.now().toString(36);
 let menuId;
 let pageId;
+let tokenHash;
 
 try {
   const rootId = randomUUID();
@@ -88,6 +89,36 @@ try {
   await sql.query("update admin_resources set status='PUBLISHED' where id=$1", [
     menuId,
   ]);
+  const [user] = await sql.query(
+    "select id from users where active=true order by created_at limit 1",
+    [],
+  );
+  const token = randomBytes(32).toString("base64url");
+  tokenHash = createHash("sha256").update(token).digest("hex");
+  await sql.query(
+    "insert into sessions(user_id,token_hash,expires_at) values($1,$2,now()+interval '5 minutes')",
+    [user.id, tokenHash],
+  );
+  const headers = { cookie: `designik_admin_session=${token}` };
+  const [listResponse, editResponse, previewResponse] = await Promise.all([
+    fetch("https://designik-site.vercel.app/admin/menus", { headers }),
+    fetch(`https://designik-site.vercel.app/admin/menus/${menuId}/edit`, {
+      headers,
+    }),
+    fetch(`https://designik-site.vercel.app/admin/menus/${menuId}/preview`, {
+      headers,
+    }),
+  ]);
+  const editHtml = await editResponse.text();
+  const previewHtml = await previewResponse.text();
+  if (
+    listResponse.status !== 200 ||
+    editResponse.status !== 200 ||
+    previewResponse.status !== 200 ||
+    !editHtml.includes("Add menu item") ||
+    !previewHtml.includes("Menu preview")
+  )
+    throw new Error("Production menu routes failed");
   await sql.query(
     "update admin_resources set status='TRASH',deleted_at=now() where id=$1",
     [menuId],
@@ -116,10 +147,13 @@ try {
       trash: true,
       restore: true,
       delete: true,
+      productionRoutes: true,
     }),
   );
 } finally {
   if (pageId) await sql.query("delete from pages where id=$1", [pageId]);
   if (menuId)
     await sql.query("delete from admin_resources where id=$1", [menuId]);
+  if (tokenHash)
+    await sql.query("delete from sessions where token_hash=$1", [tokenHash]);
 }
