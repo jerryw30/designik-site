@@ -66,12 +66,17 @@ Updated: 2026-07-17
 - Published Popup delivery with delay/scroll triggers and session/day/always frequency controls
 - Reusable page templates can be structured in Templates and inserted into the visual builder as editable draft sections
 - Automated production global-design lifecycle, live-assignment, management-route, and page-template insertion test
+- Direct widget-element selection from the live visual-builder iframe
+- Independent widget typography, backgrounds, dimensions, margins, padding, borders, shadows, hover states, links, alt text, animation, media selection, and responsive visibility controls
+- Production-tested direct element selection and advanced widget controls at desktop, tablet, and mobile widths
+- Secure Tools export for pages, draft/published sections, global designs, templates, settings, and Media Library assets while excluding passwords, sessions, and private submissions
+- Validated merge import with page-ID remapping, content/resource/settings/media upserts, live cache invalidation, and automated production persistence testing
 
 ## In progress
 
 - Expanding widget-specific controls and connecting interactive widgets to their real backend workflows
 - Expanding direct canvas selection from section-level to individual nested elements
-- Expanding direct element controls, widget behaviors, and editor import/export workflows
+- Expanding specialized widget behaviors and inline editing across every legacy section element
 
 ## Needs testing
 
@@ -83,6 +88,5 @@ Updated: 2026-07-17
 ## Not started
 
 - Author management and public category/tag archive filtering
-- Import/export and administrative tools
-- Complete advanced widget controls, inline element editing, and import/export
+- Complete specialized widget behaviors and inline editing for every legacy section element
 - Full editable-element audit and cross-browser/device acceptance testing
