@@ -60,12 +60,18 @@ Updated: 2026-07-17
 - Database-backed Media Library with multi-file uploads, image/video/audio/document previews, metadata, accessibility text, tags, search, and type filters
 - Media public delivery URLs, copy URL, trash, restore, permanent deletion, permission enforcement, and browser-tested upload lifecycle
 - Media Library selectors integrated into Hero and all structured image/video fields in the visual builder
+- Specialized Header, Footer, Popup, Template, and Saved Section management with create, edit, preview, publish, unpublish, duplicate, trash, restore, and permanent-delete lifecycles
+- Structured global-design editor with nested item ordering, Media Library selection, typography, colors, dimensions, spacing, borders, shadows, hover colors, animation, responsive visibility, and display conditions
+- Published Header and Footer assignment connected to the live homepage without changing the existing default design
+- Published Popup delivery with delay/scroll triggers and session/day/always frequency controls
+- Reusable page templates can be structured in Templates and inserted into the visual builder as editable draft sections
+- Automated production global-design lifecycle, live-assignment, management-route, and page-template insertion test
 
 ## In progress
 
 - Expanding widget-specific controls and connecting interactive widgets to their real backend workflows
 - Expanding direct canvas selection from section-level to individual nested elements
-- Expanding each CMS module from its working CRUD foundation into its specialized builder workflow
+- Expanding direct element controls, widget behaviors, and editor import/export workflows
 
 ## Needs testing
 
@@ -77,7 +83,6 @@ Updated: 2026-07-17
 ## Not started
 
 - Author management and public category/tag archive filtering
-- Specialized global templates, header/footer, and popup builders
 - Import/export and administrative tools
 - Complete advanced widget controls, inline element editing, and import/export
 - Full editable-element audit and cross-browser/device acceptance testing
