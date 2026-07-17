@@ -112,6 +112,7 @@ try {
     path: "/",
     httpOnly: true,
     secure: true,
+    sameSite: "Lax",
   });
   await page.goto("https://designik-site.vercel.app/admin/media", {
     waitUntil: "networkidle2",

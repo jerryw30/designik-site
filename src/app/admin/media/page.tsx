@@ -6,7 +6,7 @@ import { mediaAssets } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../admin-shell";
 import { deleteMediaPermanently, restoreMedia } from "./actions";
-import { CopyUrlButton, MediaPreview } from "./media-client";
+import { CopyUrlButton, MediaPreview, MediaUploadForm } from "./media-client";
 
 function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -76,32 +76,7 @@ export default async function MediaLibrary({
           {trash ? "Back to library" : "Trash"}
         </Link>
       </div>
-      {!trash && (
-        <form
-          action="/api/media/upload"
-          method="post"
-          encType="multipart/form-data"
-          className="mb-6 rounded-2xl border border-dashed border-pink-300 bg-white p-6"
-        >
-          <div className="grid items-end gap-4 md:grid-cols-[1fr_auto]">
-            <label className="text-sm font-medium">
-              Upload files{" "}
-              <span className="font-normal text-neutral-400">
-                (up to 4 MB each)
-              </span>
-              <input
-                name="files"
-                type="file"
-                multiple
-                required
-                accept="image/*,video/*,audio/*,application/pdf,font/*"
-                className="mt-2 block w-full rounded-xl border p-3 text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-pink-50 file:px-4 file:py-2 file:font-semibold file:text-pink-700"
-              />
-            </label>
-            <button className="admin-button min-w-36">Upload media</button>
-          </div>
-        </form>
-      )}
+      {!trash && <MediaUploadForm />}
       <form className="mb-5 grid gap-3 rounded-xl border bg-white p-3 md:grid-cols-[1fr_180px_auto]">
         {trash && <input type="hidden" name="trash" value="1" />}
         <input
