@@ -105,6 +105,8 @@ body {
 
 .hero-editable .hero-content { padding-top: var(--hero-top-mobile); }
 .builder-grid > aside:nth-child(2) { display: none; }
+.marquee-editable-text { font-size: var(--marquee-mobile); }
+@media (min-width: 1024px) { .marquee-editable-text { font-size: var(--marquee-desktop); } }
 .hero-editable .hero-heading { font-size: var(--hero-h1-mobile); }
 .hero-editable .hero-description { font-size: var(--hero-p-mobile); }
 .hero-editable .hero-primary:hover, .hero-editable .hero-secondary:hover { background: var(--hover-bg) !important; color: var(--hover-color) !important; transform: scale(var(--hover-scale)); }

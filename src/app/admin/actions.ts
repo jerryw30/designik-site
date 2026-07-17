@@ -8,6 +8,7 @@ import { db } from "@/db";
 import { pages, revisions, sections, users } from "@/db/schema";
 import { createSession, currentUser, destroySession } from "@/lib/auth";
 import { heroContent } from "@/cms/defaults";
+import { sectionContent, type EditableSectionType } from "@/cms/section-defaults";
 
 export async function setupAdmin(form: FormData) {
   const [{ total }] = await db.select({ total: count() }).from(users);
@@ -151,3 +152,6 @@ export async function duplicateSection(sectionId: string) {
 }
 
 export async function deleteSection(sectionId: string) { await requireUser(); const [source]=await db.select().from(sections).where(eq(sections.id,sectionId)).limit(1); if(!source||source.locked||["header","footer"].includes(source.type))return; await db.delete(sections).where(eq(sections.id,sectionId)); revalidatePath(`/admin/pages/${source.pageId}/builder`); }
+
+export async function saveSectionDraft(sectionId:string,type:EditableSectionType,value:unknown){ await requireUser(); const content=sectionContent(type,value); await db.update(sections).set({draftContent:content,updatedAt:new Date()}).where(and(eq(sections.id,sectionId),eq(sections.type,type))); return content; }
+export async function publishSection(sectionId:string,type:EditableSectionType){ const user=await requireUser(); const [section]=await db.select().from(sections).where(and(eq(sections.id,sectionId),eq(sections.type,type))).limit(1); if(!section)throw new Error("Section not found"); const content=sectionContent(type,section.draftContent); await db.insert(revisions).values({pageId:section.pageId,authorId:user.id,label:`Published ${section.name}`,snapshot:{sectionId,content:section.publishedContent}}); await db.update(sections).set({publishedContent:content,updatedAt:new Date()}).where(eq(sections.id,sectionId)); revalidatePath("/"); return content; }

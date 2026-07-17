@@ -2,13 +2,7 @@
 
 import Counter from "@/components/ui/Counter";
 import { Reveal } from "@/components/ui/Reveal";
-
-const STATS = [
-  { value: 20, suffix: "", label: "Proven Track Record", unit: "Years" },
-  { value: 98, suffix: "%", label: "Customer Satisfaction", unit: "" },
-  { value: 1500, suffix: "", label: "We Have Completed", unit: "Projects" },
-  { value: 3, suffix: "", label: "Average Answer Time", unit: "Mins" },
-];
+import { sectionContent } from "@/cms/section-defaults";
 
 function Stars() {
   return (
@@ -22,7 +16,8 @@ function Stars() {
   );
 }
 
-export default function StatsBar() {
+export default function StatsBar({ content }: { content?: unknown } = {}) {
+  const data = sectionContent("stats",content);
   return (
     <Reveal className="w-full bg-white">
       <div className="mx-auto flex max-w-[1280px] flex-col items-stretch gap-6 px-6 py-8 md:flex-row md:items-center md:gap-0 md:py-10">
@@ -30,19 +25,19 @@ export default function StatsBar() {
         <div className="flex items-center gap-3 md:pr-8">
           <div className="flex flex-col">
             <span className="font-display text-[11px] font-medium uppercase tracking-wide text-neutral-400">
-              Reviewed On
+              {data.reviewLabel}
             </span>
-            <span className="font-display text-2xl font-bold tracking-tight text-ink">Clutch</span>
+            <span className="font-display text-2xl font-bold tracking-tight text-ink">{data.reviewSite}</span>
           </div>
           <div className="flex flex-col gap-1 border-l border-neutral-200 pl-3">
             <Stars />
-            <span className="text-[11px] font-medium text-neutral-500">31 Reviews</span>
+            <span className="text-[11px] font-medium text-neutral-500">{data.reviews}</span>
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid flex-1 grid-cols-2 gap-y-6 md:flex md:justify-between">
-          {STATS.map((s, i) => (
+          {data.items.map((s, i) => (
             <div
               key={s.label}
               className="flex flex-col px-3 md:px-6 md:[&:not(:first-child)]:border-l md:[&:not(:first-child)]:border-neutral-200"
