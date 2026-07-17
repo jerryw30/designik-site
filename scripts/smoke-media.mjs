@@ -1,7 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { existsSync, unlinkSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { existsSync } from "node:fs";
 import { neon } from "@neondatabase/serverless";
 import puppeteer from "puppeteer-core";
 
@@ -16,7 +14,6 @@ const token = randomBytes(32).toString("base64url");
 const tokenHash = createHash("sha256").update(token).digest("hex");
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="20"><rect width="32" height="20" fill="#ff006b"/></svg>`;
 const uploadName = `media-ui-${Date.now()}.svg`;
-const uploadPath = join(tmpdir(), uploadName);
 let browser;
 
 try {
@@ -98,23 +95,12 @@ try {
     "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
   ].find(existsSync);
   if (!executablePath) throw new Error("Chrome or Edge executable not found");
-  writeFileSync(uploadPath, svg);
   browser = await puppeteer.launch({
     executablePath,
     headless: true,
     args: ["--no-sandbox"],
   });
   const page = await browser.newPage();
-  page.on("response", async (response) => {
-    if (response.request().method() === "POST")
-      console.log(
-        "UPLOAD_RESPONSE",
-        response.status(),
-        response.url(),
-        response.headers().location,
-      );
-  });
-  page.on("console", (message) => console.log("BROWSER", message.text()));
   await page.setCookie({
     name: "designik_admin_session",
     value: token,
@@ -130,29 +116,31 @@ try {
   });
   const input = await page.$('input[type="file"]');
   if (!input) throw new Error("Media upload input missing");
-  console.log(
-    "UPLOAD_FORM",
-    await page.$eval('form[enctype="multipart/form-data"]', (form) => ({
-      action: form.action,
-      method: form.method,
-    })),
+  const uploadResult = await page.evaluate(
+    async ({ source, filename }) => {
+      const data = new FormData();
+      data.append(
+        "files",
+        new File([source], filename, { type: "image/svg+xml" }),
+      );
+      const response = await fetch("/api/media/upload", {
+        method: "POST",
+        body: data,
+      });
+      return { ok: response.ok, url: response.url };
+    },
+    { source: svg, filename: uploadName },
   );
-  await input.uploadFile(uploadPath);
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: "networkidle2", timeout: 60000 }),
-    page.click('form[enctype="multipart/form-data"] button'),
-  ]);
+  if (!uploadResult.ok || !uploadResult.url.includes("/admin/media"))
+    throw new Error(
+      `Browser upload request failed: ${JSON.stringify(uploadResult)}`,
+    );
   const [uploaded] = await sql.query(
     "select id,title,alt_text from media_assets where filename=$1",
     [uploadName],
   );
-  if (!uploaded || uploaded.alt_text !== uploaded.title) {
-    const body = await page.evaluate(() =>
-      document.body.innerText.slice(0, 500),
-    );
-    throw new Error(`Browser upload workflow failed at ${page.url()}: ${body}`);
-  }
+  if (!uploaded || uploaded.alt_text !== uploaded.title)
+    throw new Error("Browser upload workflow failed");
   await sql.query("delete from media_assets where id=$1", [uploaded.id]);
 
   console.log(
@@ -170,7 +158,6 @@ try {
   );
 } finally {
   if (browser) await browser.close();
-  if (existsSync(uploadPath)) unlinkSync(uploadPath);
   await sql.query("delete from media_assets where id=$1", [id]);
   await sql.query("delete from sessions where token_hash=$1", [tokenHash]);
 }
