@@ -3,6 +3,7 @@ import { neon } from "@neondatabase/serverless";
 const sql = neon(process.env.DATABASE_URL);
 const slug = `cms-smoke-${Date.now().toString(36)}`;
 let id;
+const taxonomyIds = [];
 
 try {
   const [created] = await sql.query(
@@ -73,6 +74,23 @@ try {
   );
   if (remaining.total !== 0) throw new Error("Permanent delete failed");
   id = undefined;
+  for (const module of ["categories", "tags"]) {
+    const [taxonomy] = await sql.query(
+      "insert into admin_resources(module,title,slug,status,data) values($1,$2,$3,'PUBLISHED','{}'::jsonb) returning id",
+      [module, `Smoke ${module}`, `${slug}-${module}`],
+    );
+    taxonomyIds.push(taxonomy.id);
+    const [stored] = await sql.query(
+      "select module from admin_resources where id=$1",
+      [taxonomy.id],
+    );
+    if (stored.module !== module)
+      throw new Error(`${module} persistence failed`);
+  }
+  await sql.query("delete from admin_resources where id = any($1::uuid[])", [
+    taxonomyIds,
+  ]);
+  taxonomyIds.length = 0;
   console.log(
     JSON.stringify({
       create: true,
@@ -82,8 +100,14 @@ try {
       trash: true,
       restore: true,
       delete: true,
+      categories: true,
+      tags: true,
     }),
   );
 } finally {
   if (id) await sql.query("delete from admin_resources where id=$1", [id]);
+  if (taxonomyIds.length)
+    await sql.query("delete from admin_resources where id = any($1::uuid[])", [
+      taxonomyIds,
+    ]);
 }

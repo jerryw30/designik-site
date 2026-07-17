@@ -46,6 +46,20 @@ export default async function PostsPage() {
           >
             View public blog
           </Link>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <Link
+              href="/admin/posts/categories"
+              className="rounded-lg border p-2 text-center text-sm"
+            >
+              Categories
+            </Link>
+            <Link
+              href="/admin/posts/tags"
+              className="rounded-lg border p-2 text-center text-sm"
+            >
+              Tags
+            </Link>
+          </div>
         </section>
         <section>
           <h2 className="text-2xl font-semibold">All posts</h2>

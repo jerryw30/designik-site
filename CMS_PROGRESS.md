@@ -27,6 +27,7 @@ Updated: 2026-07-17
 - Functional Posts create/edit/duplicate/draft/publish/preview/trash/restore/delete lifecycle
 - Database-driven public blog index and published post routes
 - Automated Posts database lifecycle smoke test
+- Dedicated database-backed Categories and Tags management wired into the post editor
 
 ## In progress
 
@@ -43,7 +44,7 @@ Updated: 2026-07-17
 
 ## Not started
 
-- Dedicated category, tag, and author management screens and filtering
+- Author management and public category/tag archive filtering
 - Media library and Vercel Blob uploads
 - Menus, templates, saved/global sections, header/footer/popup builders
 - Forms builder and submissions

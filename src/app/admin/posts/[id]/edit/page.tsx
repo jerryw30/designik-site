@@ -30,6 +30,13 @@ export default async function EditPostPage({
     .limit(1);
   if (!post) notFound();
   const data = post.data as PostData;
+  const [categories, tags] = await Promise.all([
+    db
+      .select()
+      .from(adminResources)
+      .where(eq(adminResources.module, "categories")),
+    db.select().from(adminResources).where(eq(adminResources.module, "tags")),
+  ]);
   return (
     <AdminShell user={user} title={`Edit post · ${post.title}`}>
       <form action={savePost} className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -97,17 +104,29 @@ export default async function EditPostPage({
               Category
               <input
                 name="category"
+                list="category-options"
                 defaultValue={data.category}
                 className="mt-1 block w-full rounded-lg border p-2"
               />
+              <datalist id="category-options">
+                {categories.map((item) => (
+                  <option key={item.id} value={item.title} />
+                ))}
+              </datalist>
             </label>
             <label className="block text-sm">
               Tags (comma separated)
               <input
                 name="tags"
+                list="tag-options"
                 defaultValue={data.tags?.join(", ")}
                 className="mt-1 block w-full rounded-lg border p-2"
               />
+              <datalist id="tag-options">
+                {tags.map((item) => (
+                  <option key={item.id} value={item.title} />
+                ))}
+              </datalist>
             </label>
             <label className="block text-sm">
               Featured image URL

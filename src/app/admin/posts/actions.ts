@@ -152,3 +152,38 @@ export async function deletePostForever(id: string) {
     );
   revalidatePath("/admin/posts");
 }
+
+export async function createTaxonomy(
+  kind: "categories" | "tags",
+  form: FormData,
+) {
+  const user = await authorize();
+  const title = String(form.get("title") || "").trim();
+  if (!title) return;
+  const slug = slugify(title);
+  const existing = await db
+    .select({ id: adminResources.id })
+    .from(adminResources)
+    .where(and(eq(adminResources.module, kind), eq(adminResources.slug, slug)))
+    .limit(1);
+  if (!existing.length)
+    await db
+      .insert(adminResources)
+      .values({
+        module: kind,
+        title,
+        slug,
+        status: "PUBLISHED",
+        createdBy: user.id,
+        data: { description: String(form.get("description") || "") },
+      });
+  revalidatePath(`/admin/posts/${kind}`);
+}
+
+export async function deleteTaxonomy(kind: "categories" | "tags", id: string) {
+  await authorize();
+  await db
+    .delete(adminResources)
+    .where(and(eq(adminResources.id, id), eq(adminResources.module, kind)));
+  revalidatePath(`/admin/posts/${kind}`);
+}
