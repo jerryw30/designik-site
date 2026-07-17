@@ -24,6 +24,9 @@ Updated: 2026-07-17
 - Shared section style, spacing, alignment, animation, and desktop/tablet/mobile visibility controls
 - Section editor undo and redo history
 - Authenticated production builder smoke test and Neon section-order audit scripts
+- Functional Posts create/edit/duplicate/draft/publish/preview/trash/restore/delete lifecycle
+- Database-driven public blog index and published post routes
+- Automated Posts database lifecycle smoke test
 
 ## In progress
 
@@ -40,7 +43,7 @@ Updated: 2026-07-17
 
 ## Not started
 
-- Posts, categories, tags, authors, and blog frontend
+- Dedicated category, tag, and author management screens and filtering
 - Media library and Vercel Blob uploads
 - Menus, templates, saved/global sections, header/footer/popup builders
 - Forms builder and submissions
