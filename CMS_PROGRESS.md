@@ -71,6 +71,9 @@ Updated: 2026-07-17
 - Production-tested direct element selection and advanced widget controls at desktop, tablet, and mobile widths
 - Secure Tools export for pages, draft/published sections, global designs, templates, settings, and Media Library assets while excluding passwords, sessions, and private submissions
 - Validated merge import with page-ID remapping, content/resource/settings/media upserts, live cache invalidation, and automated production persistence testing
+- Assignable active authors in the post editor with live author attribution
+- Public category, tag, and author archives linked from published posts
+- Automated production author assignment and category/tag/author archive testing
 
 ## In progress
 
@@ -87,6 +90,5 @@ Updated: 2026-07-17
 
 ## Not started
 
-- Author management and public category/tag archive filtering
 - Complete specialized widget behaviors and inline editing for every legacy section element
 - Full editable-element audit and cross-browser/device acceptance testing
