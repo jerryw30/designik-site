@@ -43,6 +43,10 @@ Updated: 2026-07-17
 - Public form rendering with server validation, honeypot protection, hourly IP rate limiting, and Neon submission storage
 - Submissions inbox with read/unread state, deletion, and authenticated CSV export
 - Automated production form validation, submission, inbox, export, and lifecycle test
+- Global Styles editor with draft/published colors, typography, buttons, layout tokens, and live preview
+- Custom font-face management with validated font URLs, weights, and styles
+- Published global tokens injected into the live frontend and visual-builder preview without changing existing defaults
+- Automated global-style persistence/publication test plus post-change visual-builder regression test
 
 ## In progress
 
@@ -62,6 +66,6 @@ Updated: 2026-07-17
 - Author management and public category/tag archive filtering
 - Media library and Vercel Blob uploads
 - Specialized global templates, header/footer, and popup builders
-- SEO center, global styles/fonts, revision restore UI, custom code, and tools
+- SEO center, revision restore UI, custom code, and tools
 - Complete advanced widget controls, inline element editing, and import/export
 - Full editable-element audit and cross-browser/device acceptance testing
