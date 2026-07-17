@@ -2,6 +2,58 @@ import { and, eq, isNull } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { adminResources } from "@/db/schema";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const [post] = await db
+    .select()
+    .from(adminResources)
+    .where(
+      and(
+        eq(adminResources.module, "posts"),
+        eq(adminResources.slug, slug),
+        eq(adminResources.status, "PUBLISHED"),
+        isNull(adminResources.deletedAt),
+      ),
+    )
+    .limit(1);
+  if (!post) return {};
+  const data = post.data as {
+    excerpt?: string;
+    featuredImage?: string;
+    seoTitle?: string;
+    seoDescription?: string;
+    seoCanonical?: string;
+    seoOgImage?: string;
+    seoNoindex?: boolean;
+  };
+  const title = data.seoTitle || post.title,
+    description = data.seoDescription || data.excerpt || "",
+    image = data.seoOgImage || data.featuredImage;
+  return {
+    title,
+    description,
+    alternates: { canonical: data.seoCanonical || `/blog/${post.slug}` },
+    robots: data.seoNoindex ? { index: false, follow: true } : undefined,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      images: image ? [image] : undefined,
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
+}
 
 export const revalidate = 60;
 export default async function BlogPost({
@@ -42,10 +94,10 @@ export default async function BlogPost({
         <p className="mt-5 text-xl leading-8 text-neutral-600">
           {data.excerpt}
         </p>
-      {data.featuredImage && (
-        // Arbitrary administrator-provided URLs cannot be statically allowlisted.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        {data.featuredImage && (
+          // Arbitrary administrator-provided URLs cannot be statically allowlisted.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             src={data.featuredImage}
             alt=""
             className="mt-10 w-full rounded-3xl"

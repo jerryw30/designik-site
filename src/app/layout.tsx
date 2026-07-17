@@ -4,12 +4,13 @@ import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { siteSettings } from "@/db/schema";
+import { pages, siteSettings } from "@/db/schema";
 import {
   customFontCss,
   globalStyles,
   globalStyleVariables,
 } from "@/cms/global-styles";
+import { safeBase, seoSettings } from "@/cms/seo";
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -32,18 +33,55 @@ const akshar = Akshar({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://designik.agency"),
-  title: "Designik — Creative Agency",
-  description:
-    "Designik drives brand engagement with innovative digital solutions. We drive your brand to new heights.",
-  openGraph: {
-    title: "Designik — Creative Agency",
-    description:
-      "Designik drives brand engagement with innovative digital solutions.",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const [[setting], [home]] = await Promise.all([
+    db
+      .select()
+      .from(siteSettings)
+      .where(eq(siteSettings.key, "seo_settings"))
+      .limit(1),
+    db.select().from(pages).where(eq(pages.slug, "home")).limit(1),
+  ]);
+  const stored = setting?.value as { published?: unknown } | undefined;
+  const global = seoSettings(stored?.published);
+  const pageSeo = (home?.seo || {}) as {
+    title?: string;
+    description?: string;
+    canonical?: string;
+    ogImage?: string;
+    noindex?: boolean;
+  };
+  const title = pageSeo.title || global.siteTitle;
+  const description = pageSeo.description || global.description;
+  const image = pageSeo.ogImage || global.ogImage;
+  return {
+    metadataBase: safeBase(global.canonicalBase),
+    title: { default: title, template: global.titleTemplate || "%s" },
+    description,
+    alternates: { canonical: pageSeo.canonical || "/" },
+    robots: {
+      index: pageSeo.noindex ? false : global.index,
+      follow: global.follow,
+    },
+    verification: global.googleVerification
+      ? { google: global.googleVerification }
+      : undefined,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: pageSeo.canonical || "/",
+      images: image ? [image] : undefined,
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: image ? [image] : undefined,
+      creator: global.twitterHandle || undefined,
+    },
+  };
+}
 
 export const revalidate = 60;
 export default async function RootLayout({

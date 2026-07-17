@@ -2,6 +2,12 @@ import Link from "next/link";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { adminResources } from "@/db/schema";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Designik Journal",
+  description: "Ideas, insights, and studio updates from Designik.",
+};
 
 export const revalidate = 60;
 export default async function BlogPage() {
