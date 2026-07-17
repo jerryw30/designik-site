@@ -171,3 +171,26 @@ export const formSubmissions = pgTable(
   },
   (t) => [index("form_submissions_form_created_idx").on(t.formId, t.createdAt)],
 );
+
+export const mediaAssets = pgTable(
+  "media_assets",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    filename: text("filename").notNull(),
+    mimeType: text("mime_type").notNull(),
+    byteSize: integer("byte_size").notNull(),
+    contentBase64: text("content_base64").notNull(),
+    title: text("title").notNull(),
+    altText: text("alt_text").default("").notNull(),
+    caption: text("caption").default("").notNull(),
+    description: text("description").default("").notNull(),
+    tags: jsonb("tags").default([]).notNull(),
+    uploadedBy: uuid("uploaded_by").references(() => users.id),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    ...audit,
+  },
+  (t) => [
+    index("media_assets_created_idx").on(t.createdAt),
+    index("media_assets_type_idx").on(t.mimeType),
+  ],
+);
