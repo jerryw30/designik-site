@@ -18,6 +18,8 @@ import {
   type SectionLayout,
 } from "@/cms/section-defaults";
 import BuilderBridge from "@/components/BuilderBridge";
+import GlobalPopup from "@/components/GlobalPopup";
+import type { GlobalDesign } from "@/cms/design-resources";
 
 export type SiteSection = {
   id: string;
@@ -46,10 +48,12 @@ export default function SiteHome({
   hero,
   sections,
   builder = false,
+  popup,
 }: {
   hero?: Partial<HeroContent>;
   sections?: SiteSection[];
   builder?: boolean;
+  popup?: GlobalDesign | null;
 }) {
   if (
     !sections?.length ||
@@ -59,6 +63,7 @@ export default function SiteHome({
   return (
     <main className="relative overflow-x-hidden">
       {builder && <BuilderBridge />}
+      {!builder && <GlobalPopup design={popup} />}
       {sections
         .filter((section) => section.visible)
         .map((section) => {

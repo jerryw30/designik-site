@@ -13,6 +13,9 @@ import { sectionContent } from "@/cms/section-defaults";
 
 export default function Nav({ content }: { content?: unknown } = {}) {
   const data = sectionContent("header", content);
+  const globalStyle = (
+    content as { _globalStyle?: Record<string, unknown> } | undefined
+  )?._globalStyle;
   type HeaderLink = {
     label: string;
     href: string;
@@ -41,6 +44,22 @@ export default function Nav({ content }: { content?: unknown } = {}) {
       className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 md:top-6"
     >
       <nav
+        style={
+          globalStyle
+            ? {
+                backgroundColor:
+                  globalStyle.backgroundColor === "transparent"
+                    ? undefined
+                    : String(globalStyle.backgroundColor),
+                color: String(globalStyle.textColor || "#ffffff"),
+                fontFamily: String(globalStyle.fontFamily || "inherit"),
+                borderWidth: Number(globalStyle.borderWidth || 0),
+                borderColor: String(globalStyle.borderColor || "transparent"),
+                borderRadius: Number(globalStyle.borderRadius || 999),
+                boxShadow: String(globalStyle.shadow || "none"),
+              }
+            : undefined
+        }
         className={cn(
           "flex h-[60px] w-full max-w-[720px] items-center justify-between rounded-full pl-5 pr-2 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-inset transition-colors duration-300 md:h-[70px] md:pl-7",
           scrolled
