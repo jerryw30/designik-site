@@ -28,6 +28,10 @@ Updated: 2026-07-17
 - Database-driven public blog index and published post routes
 - Automated Posts database lifecycle smoke test
 - Dedicated database-backed Categories and Tags management wired into the post editor
+- Visual nested-item editors for navigation links, stats, service cards, portfolio cards, team members, experience pills, testimonial images, and footer columns
+- Nested item add, duplicate, remove, and reorder controls without raw JSON editing
+- Section Copy/Paste and database-backed Save as Template/Insert Saved Section workflows
+- Automated isolated section draft/publish/reorder/template lifecycle test
 
 ## In progress
 
@@ -46,8 +50,8 @@ Updated: 2026-07-17
 
 - Author management and public category/tag archive filtering
 - Media library and Vercel Blob uploads
-- Menus, templates, saved/global sections, header/footer/popup builders
+- Specialized menus, global templates, header/footer, and popup builders
 - Forms builder and submissions
 - SEO center, global styles/fonts, users/permissions UI, revisions UI, custom code, tools
-- Complete advanced widget controls, inline element editing, copy/paste, and import/export
+- Complete advanced widget controls, inline element editing, and import/export
 - Full editable-element audit and cross-browser/device acceptance testing

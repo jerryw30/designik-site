@@ -10,6 +10,8 @@ import {
 } from "@/cms/section-defaults";
 import {
   addSection,
+  addSavedSectionToPage,
+  copySectionToPage,
   deleteSection,
   duplicateSection,
   publishHero,
@@ -17,6 +19,7 @@ import {
   reorderSections,
   saveHeroDraft,
   saveSectionDraft,
+  saveSectionAsTemplate,
   setSectionState,
 } from "./actions";
 
@@ -35,15 +38,18 @@ export default function EditorClient({
   sections,
   initialHero,
   previewUrl,
+  templates,
 }: {
   page: { id: string; title: string; slug: string; status: string };
   sections: Section[];
   initialHero: HeroContent;
   previewUrl: string;
+  templates: { id: string; title: string }[];
 }) {
   const hero = sections.find((item) => item.type === "hero");
   const [sectionList, setSectionList] = useState(sections);
   const [dragged, setDragged] = useState<string | null>(null);
+  const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [selected, setSelected] = useState(hero?.id ?? sections[0]?.id);
   const [content, setContent] = useState(initialHero);
   const [tab, setTab] = useState<Tab>("content");
@@ -125,6 +131,22 @@ export default function EditorClient({
   const remove = (id: string) =>
     startTransition(async () => {
       await deleteSection(id);
+      window.location.reload();
+    });
+  const paste = () =>
+    copiedSection &&
+    startTransition(async () => {
+      await copySectionToPage(copiedSection, page.id);
+      window.location.reload();
+    });
+  const saveTemplate = (id: string) =>
+    startTransition(async () => {
+      await saveSectionAsTemplate(id);
+      setMessage("Section saved as template");
+    });
+  const addTemplate = (id: string) =>
+    startTransition(async () => {
+      await addSavedSectionToPage(id, page.id);
       window.location.reload();
     });
   const toggleState = (id: string, field: "visible" | "locked") => {
@@ -230,33 +252,51 @@ export default function EditorClient({
             </option>
           ))}
         </select>
-      </aside>
-      <aside className="overflow-y-auto border-r border-white/10 bg-[#17181d] p-4">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-white/40">
-          Navigator
-        </h2>
-        <div className="mb-3 rounded-lg bg-pink-500/15 px-3 py-2 text-sm font-medium">
-          Page · {page.title}
+        <div className="mt-2 grid grid-cols-3 gap-1">
+          <button
+            type="button"
+            disabled={!selectedSection}
+            onClick={() =>
+              selectedSection && setCopiedSection(selectedSection.id)
+            }
+            className="rounded border border-white/10 p-2 text-xs text-white/60 disabled:opacity-30"
+          >
+            Copy
+          </button>
+          <button
+            type="button"
+            disabled={!copiedSection || pending}
+            onClick={paste}
+            className="rounded border border-white/10 p-2 text-xs text-white/60 disabled:opacity-30"
+          >
+            Paste
+          </button>
+          <button
+            type="button"
+            disabled={!selectedSection || pending}
+            onClick={() => selectedSection && saveTemplate(selectedSection.id)}
+            className="rounded border border-white/10 p-2 text-xs text-white/60 disabled:opacity-30"
+          >
+            Template
+          </button>
         </div>
-        <div className="space-y-1">
-          {sections.map((section) => (
-            <button
-              key={section.id}
-              onClick={() => setSelected(section.id)}
-              className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${selected === section.id ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5"}`}
-            >
-              <span className="text-white/30">⠿</span>
-              {section.name}
-              <span className="ml-auto text-white/20">•••</span>
-            </button>
-          ))}
-        </div>
-        <button
-          type="button"
-          className="mt-4 w-full rounded-lg border border-dashed border-white/20 p-3 text-sm text-white/50"
+        <select
+          aria-label="Insert saved section"
+          defaultValue=""
+          onChange={(event) =>
+            event.target.value && addTemplate(event.target.value)
+          }
+          className="mt-2 w-full rounded-lg border border-white/10 bg-[#17181d] p-2 text-xs text-white/60"
         >
-          + Add section
-        </button>
+          <option value="" disabled>
+            Insert saved section
+          </option>
+          {templates.map((template) => (
+            <option key={template.id} value={template.id}>
+              {template.title}
+            </option>
+          ))}
+        </select>
       </aside>
       <section className="overflow-hidden bg-[#25262c] p-5">
         <div className="mb-4 flex items-center justify-between">
@@ -498,25 +538,18 @@ function SectionPanel({
         Object.entries(value)
           .filter(([key]) => key !== "_layout")
           .map(([key, current]) => (
-            <label key={key} className="block text-xs capitalize text-white/55">
-              {key.replace(/([A-Z])/g, " $1")}
+            <div key={key} className="block text-xs capitalize text-white/55">
+              <span>{key.replace(/([A-Z])/g, " $1")}</span>
               {key === "widgets" && Array.isArray(current) ? (
                 <WidgetList
                   value={current as BuilderWidget[]}
                   onChange={(next) => change(key, next)}
                 />
               ) : Array.isArray(current) || typeof current === "object" ? (
-                <textarea
-                  className="admin-input mt-2 min-h-28 font-mono text-xs"
-                  value={JSON.stringify(current, null, 2)}
-                  onChange={(e) => {
-                    try {
-                      change(key, JSON.parse(e.target.value));
-                      setStatus("");
-                    } catch {
-                      setStatus("Invalid JSON");
-                    }
-                  }}
+                <StructuredField
+                  name={key}
+                  value={current}
+                  onChange={(next) => change(key, next)}
                 />
               ) : typeof current === "boolean" ? (
                 <input
@@ -540,7 +573,7 @@ function SectionPanel({
                   }
                 />
               )}
-            </label>
+            </div>
           ))}
       <div className="grid grid-cols-2 gap-2">
         <button
@@ -556,6 +589,191 @@ function SectionPanel({
       </div>
       <p className="text-center text-xs text-emerald-300">{status}</p>
     </div>
+  );
+}
+
+function cloneValue<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function StructuredField({
+  name,
+  value,
+  onChange,
+  depth = 0,
+}: {
+  name: string;
+  value: unknown;
+  onChange: (value: unknown) => void;
+  depth?: number;
+}) {
+  if (Array.isArray(value)) {
+    const move = (index: number, delta: number) => {
+      const target = index + delta;
+      if (target < 0 || target >= value.length) return;
+      const next = [...value];
+      [next[index], next[target]] = [next[target], next[index]];
+      onChange(next);
+    };
+    return (
+      <div className="mt-2 space-y-2 rounded-lg border border-white/10 p-2">
+        {value.map((item, index) => (
+          <div key={index} className="rounded-lg bg-white/[.035] p-2">
+            <div className="mb-2 flex items-center gap-2 text-[10px] uppercase text-white/40">
+              <span className="mr-auto">
+                {name.replace(/([A-Z])/g, " $1")} {index + 1}
+              </span>
+              <button
+                type="button"
+                aria-label="Move up"
+                disabled={!index}
+                onClick={() => move(index, -1)}
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                aria-label="Move down"
+                disabled={index === value.length - 1}
+                onClick={() => move(index, 1)}
+              >
+                ↓
+              </button>
+              <button
+                type="button"
+                aria-label="Duplicate"
+                onClick={() =>
+                  onChange([
+                    ...value.slice(0, index + 1),
+                    cloneValue(item),
+                    ...value.slice(index + 1),
+                  ])
+                }
+              >
+                ⧉
+              </button>
+              <button
+                type="button"
+                aria-label="Remove"
+                className="text-red-400"
+                onClick={() =>
+                  onChange(value.filter((_, itemIndex) => itemIndex !== index))
+                }
+              >
+                ×
+              </button>
+            </div>
+            <StructuredField
+              name={`${name}-${index}`}
+              value={item}
+              onChange={(nextItem) =>
+                onChange(
+                  value.map((entry, itemIndex) =>
+                    itemIndex === index ? nextItem : entry,
+                  ),
+                )
+              }
+              depth={depth + 1}
+            />
+          </div>
+        ))}
+        <button
+          type="button"
+          className="w-full rounded-lg border border-dashed border-white/15 px-3 py-2 text-xs text-white/60"
+          onClick={() =>
+            onChange([
+              ...value,
+              value.length ? cloneValue(value.at(-1)) : "New item",
+            ])
+          }
+        >
+          + Add item
+        </button>
+      </div>
+    );
+  }
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return (
+      <div
+        className={`mt-2 space-y-2 rounded-lg border border-white/10 ${depth ? "p-2" : "p-3"}`}
+      >
+        {Object.entries(record).map(([key, child]) => (
+          <div key={key}>
+            <span className="text-[10px] capitalize text-white/45">
+              {key.replace(/([A-Z])/g, " $1")}
+            </span>
+            <StructuredField
+              name={key}
+              value={child}
+              onChange={(nextChild) =>
+                onChange({ ...record, [key]: nextChild })
+              }
+              depth={depth + 1}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (typeof value === "boolean") {
+    return (
+      <label className="mt-2 flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={value}
+          onChange={(event) => onChange(event.target.checked)}
+        />
+        <span>{value ? "Enabled" : "Disabled"}</span>
+      </label>
+    );
+  }
+  if (typeof value === "number") {
+    return (
+      <input
+        className="admin-input mt-1"
+        type="number"
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+      />
+    );
+  }
+  const stringValue = String(value ?? "");
+  const colorField =
+    /color|background$/i.test(name) &&
+    /^#|rgb|hsl|transparent/i.test(stringValue);
+  const multiline = stringValue.includes("\n") || stringValue.length > 90;
+  if (colorField)
+    return (
+      <div className="mt-1 flex gap-2">
+        <input
+          type="color"
+          value={stringValue.startsWith("#") ? stringValue : "#000000"}
+          onChange={(event) => onChange(event.target.value)}
+          className="h-10 w-11 rounded border border-white/10 bg-transparent"
+        />
+        <input
+          className="admin-input"
+          value={stringValue}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      </div>
+    );
+  if (multiline)
+    return (
+      <textarea
+        className="admin-input mt-1 min-h-20"
+        value={stringValue}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    );
+  return (
+    <input
+      className="admin-input mt-1"
+      type={/link|href/i.test(name) ? "url" : "text"}
+      value={stringValue}
+      onChange={(event) => onChange(event.target.value)}
+    />
   );
 }
 

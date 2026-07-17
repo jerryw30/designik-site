@@ -74,18 +74,18 @@ try {
   );
   if (remaining.total !== 0) throw new Error("Permanent delete failed");
   id = undefined;
-  for (const module of ["categories", "tags"]) {
+  for (const taxonomyModule of ["categories", "tags"]) {
     const [taxonomy] = await sql.query(
       "insert into admin_resources(module,title,slug,status,data) values($1,$2,$3,'PUBLISHED','{}'::jsonb) returning id",
-      [module, `Smoke ${module}`, `${slug}-${module}`],
+      [taxonomyModule, `Smoke ${taxonomyModule}`, `${slug}-${taxonomyModule}`],
     );
     taxonomyIds.push(taxonomy.id);
     const [stored] = await sql.query(
       "select module from admin_resources where id=$1",
       [taxonomy.id],
     );
-    if (stored.module !== module)
-      throw new Error(`${module} persistence failed`);
+    if (stored.module !== taxonomyModule)
+      throw new Error(`${taxonomyModule} persistence failed`);
   }
   await sql.query("delete from admin_resources where id = any($1::uuid[])", [
     taxonomyIds,
