@@ -84,6 +84,8 @@ Updated: 2026-07-17
 - Production page-route tests proving published output and metadata while isolating drafts and trashed pages
 - Persistent independent styling for clicked legacy elements: typography, color, background, dimensions, spacing, alignment, borders, shadows, hover states, and per-device visibility
 - Secure scoped element-style runtime plus authenticated production persistence/rendering tests
+- SVG icons and non-text visual containers are directly selectable with independent animation and desktop/tablet/mobile font-size and width overrides
+- Authenticated browser-driven Hero draft, preview, publish, live-page, duplicate-with-sections, trash, restore, and permanent-delete lifecycle testing
 
 ## In progress
 
@@ -92,8 +94,6 @@ Updated: 2026-07-17
 ## Needs testing
 
 - Admin session persistence across production deployments
-- Hero draft-to-preview-to-publish mutation flow in production
-- Page duplicate/trash/restore/permanent-delete action safeguards
 - Cross-browser validation beyond the production Chrome/Edge engine smoke test
 
 ## Not started

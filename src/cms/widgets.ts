@@ -44,11 +44,17 @@ export function newWidget(type: WidgetType, id: string) {
     progress: "75",
     counter: "100",
     ["star-rating"]: "5",
-    ["social-icons"]: "Instagram\nLinkedIn\nFacebook",
-    accordion: "Question\nAnswer",
-    tabs: "Tab one\nTab content",
+    ["social-icons"]:
+      "Instagram|https://instagram.com\nLinkedIn|https://linkedin.com\nFacebook|https://facebook.com",
+    accordion: "Question one|Answer one\nQuestion two|Answer two",
+    toggle: "Read more|Toggle content",
+    tabs: "Tab one|Tab content\nTab two|Second tab content",
     form: "Contact form",
     countdown: "2030-01-01T00:00:00Z",
+    testimonial: "A wonderful experience.|Client name",
+    blockquote: "A memorable quotation.|Source",
+    ["icon-box"]: "★|Icon box title|Supporting description",
+    ["image-box"]: "/figma/image213.png|Image box title|Supporting description",
   };
   return {
     id,

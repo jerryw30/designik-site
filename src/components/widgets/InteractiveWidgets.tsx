@@ -87,3 +87,74 @@ export function CountdownWidget({ target }: { target: string }) {
     </div>
   );
 }
+
+export function TabsWidget({ content }: { content: string }) {
+  const items = content
+    .split("\n")
+    .map((line) => line.split("|"))
+    .filter(([label, body]) => label?.trim() && body?.trim())
+    .map(([label, ...body]) => ({
+      label: label.trim(),
+      body: body.join("|").trim(),
+    }));
+  const [active, setActive] = useState(0);
+  if (!items.length) return null;
+  const safeActive = Math.min(active, items.length - 1);
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2" role="tablist">
+        {items.map((item, index) => (
+          <button
+            key={`${item.label}-${index}`}
+            type="button"
+            role="tab"
+            aria-selected={safeActive === index}
+            onClick={() => setActive(index)}
+            className={`rounded-t-xl px-5 py-3 font-semibold ${safeActive === index ? "bg-wine-500 text-white" : "bg-neutral-100"}`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      <div role="tabpanel" className="rounded-b-xl rounded-tr-xl border p-5">
+        {items[safeActive].body}
+      </div>
+    </div>
+  );
+}
+
+export function AccordionWidget({
+  content,
+  single = false,
+}: {
+  content: string;
+  single?: boolean;
+}) {
+  const items = content
+    .split("\n")
+    .map((line) => line.split("|"))
+    .filter(([label, body]) => label?.trim() && body?.trim())
+    .map(([label, ...body]) => ({
+      label: label.trim(),
+      body: body.join("|").trim(),
+    }));
+  const [open, setOpen] = useState<number | null>(single ? null : 0);
+  return (
+    <div className="space-y-2">
+      {items.map((item, index) => (
+        <div key={`${item.label}-${index}`} className="rounded-xl border">
+          <button
+            type="button"
+            aria-expanded={open === index}
+            onClick={() => setOpen(open === index ? null : index)}
+            className="flex w-full items-center justify-between p-4 text-left font-semibold"
+          >
+            {item.label}
+            <span aria-hidden>{open === index ? "−" : "+"}</span>
+          </button>
+          {open === index && <div className="border-t p-4">{item.body}</div>}
+        </div>
+      ))}
+    </div>
+  );
+}

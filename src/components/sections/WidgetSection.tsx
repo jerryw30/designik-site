@@ -3,9 +3,12 @@ import { sectionContent } from "@/cms/section-defaults";
 import PublicForm from "@/components/forms/PublicForm";
 import type { FormDefinition } from "@/app/admin/forms/actions";
 import {
+  AccordionWidget,
   CarouselWidget,
   CountdownWidget,
+  TabsWidget,
 } from "@/components/widgets/InteractiveWidgets";
+import { login } from "@/app/admin/actions";
 
 export type WidgetForm = {
   id: string;
@@ -148,15 +151,30 @@ function WidgetView({
         {widget.content}
       </div>
     );
-  if (widget.type === "icon-box" || widget.type === "image-box")
+  if (widget.type === "icon-box" || widget.type === "image-box") {
+    const [visual, title, ...description] = widget.content.split("|");
     return (
       <article className="rounded-2xl border border-neutral-200 p-6 text-center">
-        <div className="mb-3 text-4xl">
-          {widget.type === "icon-box" ? "★" : "▧"}
-        </div>
-        <h3 style={style}>{widget.content}</h3>
+        {widget.type === "image-box" ? (
+          // Administrator-selected Media Library or remote URL.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={visual}
+            alt={String(widget.settings.alt || "")}
+            className="mb-4 h-48 w-full rounded-xl object-cover"
+          />
+        ) : (
+          <div className="mb-3 text-4xl">{visual || "★"}</div>
+        )}
+        <h3 className="font-display text-xl font-semibold" style={style}>
+          {title || visual}
+        </h3>
+        {description.length > 0 && (
+          <p className="mt-2">{description.join("|")}</p>
+        )}
       </article>
     );
+  }
   if (widget.type === "star-rating")
     return (
       <div
@@ -166,7 +184,22 @@ function WidgetView({
         {"★".repeat(Math.max(0, Math.min(5, Number(widget.content) || 5)))}
       </div>
     );
-  if (widget.type === "icon-list" || widget.type === "social-icons")
+  if (widget.type === "social-icons")
+    return (
+      <ul className="flex flex-wrap justify-center gap-4">
+        {widget.content.split("\n").map((item, index) => {
+          const [label, href = "#"] = item.split("|");
+          return (
+            <li key={`${label}-${index}`}>
+              <a href={href} rel="noreferrer" target="_blank">
+                {label}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  if (widget.type === "icon-list")
     return (
       <ul className="flex flex-wrap justify-center gap-4">
         {widget.content.split("\n").map((item) => (
@@ -194,15 +227,20 @@ function WidgetView({
         </div>
       </div>
     );
-  if (widget.type === "testimonial" || widget.type === "blockquote")
+  if (widget.type === "testimonial" || widget.type === "blockquote") {
+    const [quote, author] = widget.content.split("|");
     return (
       <blockquote
         className="rounded-2xl bg-blush-100 p-6 text-center"
         style={style}
       >
-        “{widget.content}”
+        “{quote}”
+        {author && (
+          <footer className="mt-3 text-sm font-semibold">— {author}</footer>
+        )}
       </blockquote>
     );
+  }
   if (widget.type === "alert")
     return (
       <div className="rounded-xl border border-orange-300 bg-orange-50 p-4 text-orange-900">
@@ -243,15 +281,11 @@ function WidgetView({
     );
   if (widget.type === "audio")
     return <audio src={widget.content} controls className="w-full" />;
-  if (["tabs", "accordion", "toggle"].includes(widget.type)) {
-    const [title, ...body] = widget.content.split("\n");
-    return (
-      <details className="rounded-xl border border-neutral-200 p-4">
-        <summary className="cursor-pointer font-semibold">{title}</summary>
-        <p className="mt-3">{body.join("\n")}</p>
-      </details>
-    );
-  }
+  if (widget.type === "tabs") return <TabsWidget content={widget.content} />;
+  if (widget.type === "accordion")
+    return <AccordionWidget content={widget.content} />;
+  if (widget.type === "toggle")
+    return <AccordionWidget content={widget.content} single />;
   if (widget.type === "map")
     return (
       <a
@@ -285,11 +319,26 @@ function WidgetView({
   if (widget.type === "login")
     return (
       <form
-        action="/admin/login"
-        method="get"
+        action={login}
         className="mx-auto grid max-w-xl gap-3 rounded-2xl border p-6"
       >
         <h3 className="font-display text-xl uppercase">{widget.content}</h3>
+        <input
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          className="rounded-lg border p-3"
+          placeholder="Email address"
+        />
+        <input
+          name="password"
+          type="password"
+          required
+          autoComplete="current-password"
+          className="rounded-lg border p-3"
+          placeholder="Password"
+        />
         <button
           className="rounded-full bg-wine-500 p-3 text-white"
           type="submit"

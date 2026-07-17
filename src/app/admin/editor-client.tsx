@@ -1202,9 +1202,35 @@ function WidgetList({
             value={widget.content}
             onChange={(e) => update(index, { content: e.target.value })}
           />
-          {["image", "video", "audio", "gallery", "carousel"].includes(
-            widget.type,
-          ) && (
+          {["tabs", "accordion", "toggle"].includes(widget.type) && (
+            <p className="mt-1 text-[10px] text-white/40">
+              One item per line: Title|Content
+            </p>
+          )}
+          {widget.type === "social-icons" && (
+            <p className="mt-1 text-[10px] text-white/40">
+              One link per line: Label|https://destination
+            </p>
+          )}
+          {["testimonial", "blockquote"].includes(widget.type) && (
+            <p className="mt-1 text-[10px] text-white/40">
+              Quote|Author or source
+            </p>
+          )}
+          {["icon-box", "image-box"].includes(widget.type) && (
+            <p className="mt-1 text-[10px] text-white/40">
+              {widget.type === "icon-box" ? "Icon" : "Image URL"}
+              |Title|Description
+            </p>
+          )}
+          {[
+            "image",
+            "image-box",
+            "video",
+            "audio",
+            "gallery",
+            "carousel",
+          ].includes(widget.type) && (
             <select
               value=""
               onChange={(e) =>
@@ -1214,7 +1240,12 @@ function WidgetList({
                     ? [widget.content, e.target.value]
                         .filter(Boolean)
                         .join("\n")
-                    : e.target.value,
+                    : widget.type === "image-box"
+                      ? [
+                          e.target.value,
+                          ...widget.content.split("|").slice(1),
+                        ].join("|")
+                      : e.target.value,
                 })
               }
               className="admin-input mt-2 text-xs"
@@ -1222,7 +1253,7 @@ function WidgetList({
               <option value="">Choose from Media Library…</option>
               {media
                 .filter((asset) =>
-                  ["gallery", "carousel"].includes(widget.type)
+                  ["gallery", "carousel", "image-box"].includes(widget.type)
                     ? asset.mimeType.startsWith("image/")
                     : asset.mimeType.startsWith(`${widget.type}/`),
                 )

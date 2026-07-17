@@ -88,6 +88,48 @@ await sql.query(
             columns: 2,
           },
         },
+        {
+          id: `tabs-${widgetId}`,
+          type: "tabs",
+          content: "Tab one|First content\nTab two|Second content",
+          settings: { width: 100 },
+        },
+        {
+          id: `accordion-${widgetId}`,
+          type: "accordion",
+          content: "First question|First answer\nSecond question|Second answer",
+          settings: { width: 100 },
+        },
+        {
+          id: `social-${widgetId}`,
+          type: "social-icons",
+          content: "Designik|https://designik.agency",
+          settings: { width: 100 },
+        },
+        {
+          id: `testimonial-${widgetId}`,
+          type: "testimonial",
+          content: "Structured quote|Smoke author",
+          settings: { width: 100 },
+        },
+        {
+          id: `carousel-${widgetId}`,
+          type: "carousel",
+          content: "/figma/image213.png\n/figma/image214.png",
+          settings: { width: 100, height: 240, alt: "Carousel smoke" },
+        },
+        {
+          id: `countdown-${widgetId}`,
+          type: "countdown",
+          content: "2030-01-01T00:00:00Z",
+          settings: { width: 100 },
+        },
+        {
+          id: `login-${widgetId}`,
+          type: "login",
+          content: "Member login",
+          settings: { width: 100 },
+        },
       ],
     }),
   ],
@@ -222,6 +264,40 @@ try {
   await previewFrame.waitForSelector(`[data-cms-element="${widgetId}"]`, {
     timeout: 10000,
   });
+  const specializedWidgets = await previewFrame.evaluate(() => {
+    const tabs = [...document.querySelectorAll('[role="tab"]')];
+    const secondTab = tabs.find(
+      (item) => item.textContent?.trim() === "Tab two",
+    );
+    if (secondTab instanceof HTMLButtonElement) secondTab.click();
+    const secondQuestion = [...document.querySelectorAll("button")].find(
+      (item) => item.textContent?.includes("Second question"),
+    );
+    if (secondQuestion instanceof HTMLButtonElement) secondQuestion.click();
+    return {
+      tabs: Boolean(secondTab),
+      accordion: Boolean(secondQuestion),
+      socialLink: Boolean(
+        document.querySelector('a[href="https://designik.agency"]'),
+      ),
+      testimonial: document.body.innerText.includes("Smoke author"),
+      carousel: Boolean(document.querySelector('[aria-label="Next image"]')),
+      countdown: Boolean(document.querySelector('[aria-live="polite"]')),
+      login:
+        Boolean(document.querySelector('input[name="email"]')) &&
+        Boolean(document.querySelector('input[name="password"]')),
+    };
+  });
+  await previewFrame.waitForFunction(
+    () =>
+      document.body.innerText.includes("Second content") &&
+      document.body.innerText.includes("Second answer"),
+    { timeout: 10000 },
+  );
+  if (Object.values(specializedWidgets).some((value) => !value))
+    throw new Error(
+      `Specialized widgets failed: ${JSON.stringify(specializedWidgets)}`,
+    );
   await previewFrame.click(`[data-cms-element="${widgetId}"]`);
   await page.waitForFunction(
     () =>
@@ -401,6 +477,12 @@ try {
       mobileWidth,
       ...controls,
       ...advanced,
+      ...Object.fromEntries(
+        Object.entries(specializedWidgets).map(([key, value]) => [
+          `widget${key[0].toUpperCase()}${key.slice(1)}`,
+          value,
+        ]),
+      ),
       directHero,
       directLinkAndLabel,
       directLegacyNested,
