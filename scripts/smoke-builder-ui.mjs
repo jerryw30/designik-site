@@ -257,6 +257,23 @@ try {
   const directHero = Boolean(
     await page.$('[aria-label="Inline hero heading"]'),
   );
+  const heroButton = await previewFrame.evaluateHandle(() => {
+    const hero = document.querySelector("h1")?.closest("[data-cms-section]");
+    return [...(hero?.querySelectorAll("a") || [])].find((anchor) =>
+      anchor.textContent?.includes("GET STARTED"),
+    );
+  });
+  if (!heroButton.asElement()) throw new Error("Hero button was not rendered");
+  await heroButton.asElement().click();
+  await page.waitForFunction(
+    () =>
+      Boolean(
+        document.querySelector('[aria-label="Inline hero primaryLabel"]'),
+      ) &&
+      Boolean(document.querySelector('[aria-label="Inline hero primaryLink"]')),
+    { timeout: 10000 },
+  );
+  const directLinkAndLabel = true;
   const statsLeaf = await previewFrame.evaluateHandle(() => {
     const stats = [...document.querySelectorAll("[data-cms-section]")].find(
       (section) => section.textContent?.includes("Clutch"),
@@ -286,6 +303,7 @@ try {
       ...controls,
       ...advanced,
       directHero,
+      directLinkAndLabel,
       directLegacyNested,
     }),
   );

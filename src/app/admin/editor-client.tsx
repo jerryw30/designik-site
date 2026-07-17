@@ -689,12 +689,14 @@ function editableMatches(
   if (!target) return [];
   if (typeof value === "string") {
     const normalize = (input: string) => input.replace(/\s+/g, " ").trim();
-    const needle = normalize(target.source || target.text);
+    const needles = [target.source, target.text].map(normalize).filter(Boolean);
     const current = normalize(value);
-    return needle &&
-      (current === needle ||
+    return needles.some(
+      (needle) =>
+        current === needle ||
         current.endsWith(needle) ||
-        needle.endsWith(current))
+        needle.endsWith(current),
+    )
       ? [{ path, value }]
       : [];
   }
@@ -1307,14 +1309,16 @@ function HeroInlineSelection({
   update: <K extends keyof HeroContent>(key: K, value: HeroContent[K]) => void;
 }) {
   const normalize = (input: string) => input.replace(/\s+/g, " ").trim();
-  const needle = normalize(target.source || target.text);
+  const needles = [target.source, target.text].map(normalize).filter(Boolean);
   const matches = Object.entries(value).filter(
     ([, current]) =>
       typeof current === "string" &&
-      needle &&
-      (normalize(current) === needle ||
-        normalize(current).endsWith(needle) ||
-        needle.endsWith(normalize(current))),
+      needles.some(
+        (needle) =>
+          normalize(current) === needle ||
+          normalize(current).endsWith(needle) ||
+          needle.endsWith(normalize(current)),
+      ),
   ) as [keyof HeroContent, string][];
   return (
     <div className="rounded-lg border border-pink-400/30 bg-pink-500/10 p-3">

@@ -7,10 +7,10 @@ const created = [];
 
 try {
   const create = async (status, deleted = false) => {
-    const slug = `page-live-smoke-${status.toLowerCase()}-${suffix}`;
+    const slug = `page-live-smoke-${deleted ? "trash" : status.toLowerCase()}-${suffix}`;
     const [page] = await sql.query(
       `insert into pages(title,slug,status,seo,deleted_at,published_at)
-       values($1,$2,$3,$4::jsonb,$5,case when $3='PUBLISHED' then now() else null end)
+       values($1,$2,$3::page_status,$4::jsonb,$5,case when $3::page_status='PUBLISHED' then now() else null end)
        returning id,slug`,
       [
         `Page ${status}`,

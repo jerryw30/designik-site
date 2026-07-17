@@ -77,17 +77,21 @@ Updated: 2026-07-17
 - Direct canvas selection and inline editing for Hero text and nested legacy-section strings and numeric values
 - Builder selection precedence preserving advanced controls for newly added widgets while exposing legacy leaf elements
 - Authenticated production browser testing for Hero, nested legacy content, widget controls, and desktop/tablet/mobile selection
+- Form widgets select real published CMS forms, render validated fields, store submissions, and appear in the submissions inbox
+- Search widgets submit to the database-backed public post search route
+- Interactive carousel navigation, live countdown timers, gallery Media Library insertion, and secure login routing
+- Every published CMS page is rendered at its real `/{slug}` URL with its published sections, page SEO, global designs, forms, and popup
+- Production page-route tests proving published output and metadata while isolating drafts and trashed pages
 
 ## In progress
 
-- Expanding widget-specific controls and connecting interactive widgets to their real backend workflows
 - Expanding specialized widget behaviors and inline editing across every legacy section element
 
 ## Needs testing
 
 - Admin session persistence across production deployments
-- Hero draft-to-preview-to-publish flow in production
-- Page duplicate/trash/restore/permanent-delete safeguards
+- Hero draft-to-preview-to-publish mutation flow in production
+- Page duplicate/trash/restore/permanent-delete action safeguards
 - Cross-browser validation beyond the production Chrome/Edge engine smoke test
 
 ## Not started
