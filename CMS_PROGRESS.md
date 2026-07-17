@@ -32,6 +32,7 @@ Updated: 2026-07-17
 - Nested item add, duplicate, remove, and reorder controls without raw JSON editing
 - Section Copy/Paste and database-backed Save as Template/Insert Saved Section workflows
 - Automated isolated section draft/publish/reorder/template lifecycle test
+- Authenticated headless production UI test for three-column builder layout, nested controls, section tools, and responsive preview widths
 
 ## In progress
 
