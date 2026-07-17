@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { HeroContent } from "@/cms/defaults";
+import { newWidget, widgetRegistry, type WidgetType } from "@/cms/widgets";
 import {
   sectionContent,
   sectionDefaults,
@@ -564,17 +565,6 @@ type BuilderWidget = {
   content: string;
   settings: Record<string, string | number>;
 };
-const widgetTypes = [
-  "heading",
-  "text",
-  "button",
-  "image",
-  "video",
-  "divider",
-  "spacer",
-  "icon",
-  "html",
-];
 function WidgetList({
   value,
   onChange,
@@ -582,26 +572,10 @@ function WidgetList({
   value: BuilderWidget[];
   onChange: (value: BuilderWidget[]) => void;
 }) {
+  const [widgetSearch, setWidgetSearch] = useState("");
   const add = (type: string) => {
     if (!type) return;
-    onChange([
-      ...value,
-      {
-        id: crypto.randomUUID(),
-        type,
-        content:
-          type === "image"
-            ? "/figma/vector1.svg"
-            : type === "video"
-              ? "/video/portfolio.mp4"
-              : `New ${type}`,
-        settings: {
-          color: "#202126",
-          fontSize: type === "heading" ? 48 : 16,
-          align: "center",
-        },
-      },
-    ]);
+    onChange([...value, newWidget(type as WidgetType, crypto.randomUUID())]);
   };
   const update = (index: number, patch: Partial<BuilderWidget>) =>
     onChange(
@@ -616,21 +590,32 @@ function WidgetList({
   };
   return (
     <div className="mt-2 space-y-3">
-      <select
-        defaultValue=""
-        onChange={(e) => {
-          add(e.target.value);
-          e.target.value = "";
-        }}
+      <input
         className="admin-input"
-      >
-        <option value="" disabled>
-          + Add widget
-        </option>
-        {widgetTypes.map((type) => (
-          <option key={type}>{type}</option>
-        ))}
-      </select>
+        placeholder="Search widgets…"
+        value={widgetSearch}
+        onChange={(e) => setWidgetSearch(e.target.value)}
+      />
+      <div className="grid max-h-52 grid-cols-2 gap-2 overflow-y-auto">
+        {widgetRegistry
+          .filter(([type, label, category]) =>
+            `${type} ${label} ${category}`
+              .toLowerCase()
+              .includes(widgetSearch.toLowerCase()),
+          )
+          .map(([type, label, category]) => (
+            <button
+              key={type}
+              onClick={() => add(type)}
+              className="rounded-lg border border-white/10 bg-white/[.03] p-2 text-left hover:border-pink-400/50"
+            >
+              <span className="block text-xs text-white/80">{label}</span>
+              <span className="text-[9px] uppercase text-white/35">
+                {category}
+              </span>
+            </button>
+          ))}
+      </div>
       {value.map((widget, index) => (
         <div
           key={widget.id}

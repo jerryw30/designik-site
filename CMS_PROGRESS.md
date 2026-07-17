@@ -1,6 +1,6 @@
 # Designik CMS Progress
 
-Updated: 2026-07-16
+Updated: 2026-07-17
 
 ## Completed
 
@@ -19,13 +19,16 @@ Updated: 2026-07-16
 - Structured draft/published schemas for every existing homepage section: Header, Hero, Marquees, Stats, About, Services, Brand Heights, Experience, Portfolio, Team, Interactive, Testimonials, and Footer
 - Database-driven 17-section homepage ordering with five independently editable marquee instances
 - Persisted section drag/reorder, add, duplicate, delete, visibility, and lock controls
-- Add-section widget container with heading, text, button, image, video, divider, spacer, icon, and HTML widget controls
+- Searchable, categorized add-widget library with independently persisted widget content and ordering
+- Direct section selection from the live builder canvas
+- Shared section style, spacing, alignment, animation, and desktop/tablet/mobile visibility controls
+- Section editor undo and redo history
 - Authenticated production builder smoke test and Neon section-order audit scripts
 
 ## In progress
 
-- Improving non-Hero style/responsive controls beyond their structured content controls
-- Expanding the widget registry and direct canvas selection/editing
+- Expanding widget-specific controls and connecting interactive widgets to their real backend workflows
+- Expanding direct canvas selection from section-level to individual nested elements
 - Expanding each CMS module from its working CRUD foundation into its specialized builder workflow
 
 ## Needs testing
@@ -42,5 +45,5 @@ Updated: 2026-07-16
 - Menus, templates, saved/global sections, header/footer/popup builders
 - Forms builder and submissions
 - SEO center, global styles/fonts, users/permissions UI, revisions UI, custom code, tools
-- Complete advanced widget library, inline canvas editing, undo/redo, import/export
+- Complete advanced widget controls, inline element editing, copy/paste, and import/export
 - Full editable-element audit and cross-browser/device acceptance testing
