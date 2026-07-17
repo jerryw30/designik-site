@@ -47,6 +47,10 @@ Updated: 2026-07-17
 - Custom font-face management with validated font URLs, weights, and styles
 - Published global tokens injected into the live frontend and visual-builder preview without changing existing defaults
 - Automated global-style persistence/publication test plus post-change visual-builder regression test
+- SEO Center with draft/published global metadata, page overrides, and post overrides
+- Live canonical, description, robots, Google verification, Open Graph, Twitter Card, and title-template metadata
+- Database-driven XML sitemap and robots.txt with noindex filtering
+- Automated production SEO persistence, metadata, sitemap, robots, and editor-route test
 
 ## In progress
 
@@ -66,6 +70,6 @@ Updated: 2026-07-17
 - Author management and public category/tag archive filtering
 - Media library and Vercel Blob uploads
 - Specialized global templates, header/footer, and popup builders
-- SEO center, revision restore UI, custom code, and tools
+- Revision restore UI, custom code, and tools
 - Complete advanced widget controls, inline element editing, and import/export
 - Full editable-element audit and cross-browser/device acceptance testing
