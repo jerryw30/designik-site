@@ -2,13 +2,15 @@
 
 import { useRef, useState, useTransition } from "react";
 import type { HeroContent } from "@/cms/defaults";
-import { publishHero, saveHeroDraft } from "./actions";
+import { addSection, deleteSection, duplicateSection, publishHero, reorderSections, saveHeroDraft } from "./actions";
 
 type Section = { id: string; name: string; type: string };
 type Tab = "content" | "style" | "advanced" | "responsive";
 
 export default function EditorClient({ page, sections, initialHero, previewUrl }: { page: { id: string; title: string; slug: string; status: string }; sections: Section[]; initialHero: HeroContent; previewUrl: string }) {
   const hero = sections.find((item) => item.type === "hero");
+  const [sectionList, setSectionList] = useState(sections);
+  const [dragged, setDragged] = useState<string | null>(null);
   const [selected, setSelected] = useState(hero?.id ?? sections[0]?.id);
   const [content, setContent] = useState(initialHero);
   const [tab, setTab] = useState<Tab>("content");
@@ -17,13 +19,18 @@ export default function EditorClient({ page, sections, initialHero, previewUrl }
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [pending, startTransition] = useTransition();
   const frame = useRef<HTMLIFrameElement>(null);
-  const selectedSection = sections.find((item) => item.id === selected);
+  const selectedSection = sectionList.find((item) => item.id === selected);
   const update = <K extends keyof HeroContent>(key: K, value: HeroContent[K]) => { setContent((old) => ({ ...old, [key]: value })); setDirty(true); setMessage(""); };
-  const refresh = () => { if (frame.current) frame.current.src = `${previewUrl}?t=${Date.now()}`; };
+  const refresh = () => frame.current?.contentWindow?.location.reload();
   const save = () => hero && startTransition(async () => { await saveHeroDraft(hero.id, content); setDirty(false); setMessage("Draft saved"); refresh(); });
   const publish = () => hero && startTransition(async () => { await saveHeroDraft(hero.id, content); await publishHero(hero.id); setDirty(false); setMessage("Published live"); refresh(); });
+  const dropOn = (target: string) => { if (!dragged || dragged === target) return; const next=[...sectionList]; const from=next.findIndex((s)=>s.id===dragged), to=next.findIndex((s)=>s.id===target); const [moved]=next.splice(from,1); next.splice(to,0,moved); setSectionList(next); setDragged(null); startTransition(async()=>{ await reorderSections(page.id,next.map((s)=>s.id)); setMessage("Section order saved"); refresh(); }); };
+  const add = (type:string) => startTransition(async()=>{ await addSection(page.id,type); window.location.reload(); });
+  const duplicate = (id:string) => startTransition(async()=>{ await duplicateSection(id); window.location.reload(); });
+  const remove = (id:string) => startTransition(async()=>{ await deleteSection(id); window.location.reload(); });
 
-  return <div className="grid min-h-[calc(100vh-4rem)] grid-cols-[260px_minmax(500px,1fr)_350px]">
+  return <div className="builder-grid grid min-h-[calc(100vh-4rem)] grid-cols-[260px_minmax(500px,1fr)_350px]">
+    <aside className="overflow-y-auto border-r border-white/10 bg-[#17181d] p-4"><h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-white/40">Navigator</h2><div className="mb-3 rounded-lg bg-pink-500/15 px-3 py-2 text-sm font-medium">Page · {page.title}</div><div className="space-y-1">{sectionList.map((section) => <div key={section.id} draggable onDragStart={()=>setDragged(section.id)} onDragOver={(e)=>e.preventDefault()} onDrop={()=>dropOn(section.id)} className={`group flex items-center rounded-lg ${selected === section.id ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5"}`}><button onClick={() => setSelected(section.id)} className="flex min-w-0 flex-1 items-center gap-2 px-3 py-2 text-left text-sm"><span className="cursor-grab text-white/30">⠿</span><span className="truncate">{section.name}</span></button><button title="Duplicate" onClick={()=>duplicate(section.id)} className="hidden px-1 text-white/40 group-hover:block">⧉</button>{!["header","footer"].includes(section.type)&&<button title="Delete" onClick={()=>remove(section.id)} className="hidden px-2 text-red-400 group-hover:block">×</button>}</div>)}</div><select aria-label="Add section" defaultValue="" onChange={(e)=>{if(e.target.value)add(e.target.value)}} className="mt-4 w-full rounded-lg border border-dashed border-white/20 bg-[#17181d] p-3 text-sm text-white/60"><option value="" disabled>+ Add section</option>{["about","services","stats","brand-heights","experience","portfolio","team","interactive","testimonials","agency-marquee"].map((type)=><option key={type} value={type}>{type.replaceAll("-"," ")}</option>)}</select></aside>
     <aside className="overflow-y-auto border-r border-white/10 bg-[#17181d] p-4"><h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-white/40">Navigator</h2><div className="mb-3 rounded-lg bg-pink-500/15 px-3 py-2 text-sm font-medium">Page · {page.title}</div><div className="space-y-1">{sections.map((section) => <button key={section.id} onClick={() => setSelected(section.id)} className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${selected === section.id ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5"}`}><span className="text-white/30">⠿</span>{section.name}<span className="ml-auto text-white/20">•••</span></button>)}</div><button type="button" className="mt-4 w-full rounded-lg border border-dashed border-white/20 p-3 text-sm text-white/50">+ Add section</button></aside>
     <section className="overflow-hidden bg-[#25262c] p-5"><div className="mb-4 flex items-center justify-between"><div className="flex gap-2 rounded-lg bg-black/30 p-1 text-xs">{(["desktop","tablet","mobile"] as const).map((item) => <button key={item} onClick={() => setDevice(item)} className={`rounded px-3 py-1.5 capitalize ${device === item ? "bg-white/10 text-white" : "text-white/55"}`}>{item}</button>)}</div><span className="text-xs text-white/40">Real page · draft preview · {device}</span></div><div className="flex h-[calc(100vh-9rem)] justify-center overflow-auto"><div className="h-full overflow-hidden rounded-xl bg-white shadow-2xl transition-[width] duration-300" style={{ width: device === "desktop" ? "100%" : device === "tablet" ? 768 : 390 }}><iframe ref={frame} title="Draft website preview" src={previewUrl} className="h-full w-full border-0" /></div></div></section>
     <aside className="flex max-h-[calc(100vh-4rem)] flex-col border-l border-white/10 bg-[#17181d]"><div className="p-5 pb-0"><h2 className="text-lg font-semibold">{selectedSection?.name ?? "Settings"}</h2><div className="mt-5 flex gap-3 overflow-x-auto border-b border-white/10 text-[11px] text-white/50">{(["content","style","advanced","responsive"] as Tab[]).map((item) => <button key={item} onClick={() => setTab(item)} className={`whitespace-nowrap border-b-2 pb-3 capitalize ${tab === item ? "border-pink-400 text-white" : "border-transparent"}`}>{item}</button>)}</div></div>

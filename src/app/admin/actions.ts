@@ -34,9 +34,22 @@ export async function logout() { await destroySession(); redirect("/admin/login"
 
 export async function ensureHomepage() {
   const [existing] = await db.select({ id: pages.id }).from(pages).where(eq(pages.slug, "home")).limit(1);
-  if (existing) return existing.id;
+  if (existing) {
+    const current = await db.select().from(sections).where(eq(sections.pageId, existing.id)).orderBy(asc(sections.position));
+    const marqueeCount = current.filter((item) => item.type === "agency-marquee").length;
+    if (marqueeCount < 5) {
+      const desired = ["header","hero","agency-marquee","stats","about","agency-marquee","services","brand-heights","experience","agency-marquee","portfolio","team","interactive","agency-marquee","testimonials","agency-marquee","footer"];
+      const buckets = new Map<string, typeof current>(); current.forEach((item) => buckets.set(item.type,[...(buckets.get(item.type)||[]),item]));
+      for (const [position,type] of desired.entries()) {
+        const item = buckets.get(type)?.shift();
+        if (item) await db.update(sections).set({ position }).where(eq(sections.id,item.id));
+        else await db.insert(sections).values({ pageId: existing.id, type, name: type === "agency-marquee" ? `Agency Marquee ${position}` : type.replaceAll("-"," ").replace(/\b\w/g,(c)=>c.toUpperCase()), position });
+      }
+    }
+    return existing.id;
+  }
   const [page] = await db.insert(pages).values({ title: "Home", slug: "home", status: "PUBLISHED", publishedAt: new Date(), seo: { title: "Designik — Creative Agency" } }).returning({ id: pages.id });
-  const names = ["Header", "Hero", "Agency Marquee", "Stats", "About", "Services", "Brand Heights", "Experience", "Portfolio", "Team", "Interactive", "Testimonials", "Footer"];
+  const names = ["Header", "Hero", "Agency Marquee", "Stats", "About", "Agency Marquee", "Services", "Brand Heights", "Experience", "Agency Marquee", "Portfolio", "Team", "Interactive", "Agency Marquee", "Testimonials", "Agency Marquee", "Footer"];
   await db.insert(sections).values(names.map((name, position) => ({ pageId: page.id, name, type: name.toLowerCase().replaceAll(" ", "-"), position })));
   return page.id;
 }
@@ -112,3 +125,29 @@ export async function publishHero(sectionId: string) {
   revalidatePath("/");
   return content;
 }
+
+export async function reorderSections(pageId: string, orderedIds: string[]) {
+  await requireUser();
+  const owned = await db.select({ id: sections.id }).from(sections).where(eq(sections.pageId,pageId));
+  const allowed = new Set(owned.map((item) => item.id));
+  if (orderedIds.length !== owned.length || orderedIds.some((id) => !allowed.has(id))) throw new Error("Invalid section order");
+  await Promise.all(orderedIds.map((id,position) => db.update(sections).set({ position, updatedAt:new Date() }).where(and(eq(sections.id,id),eq(sections.pageId,pageId)))));
+  revalidatePath("/");
+}
+
+export async function addSection(pageId: string, type: string) {
+  await requireUser(); const allowed = new Set(["agency-marquee","stats","about","services","brand-heights","experience","portfolio","team","interactive","testimonials"]);
+  if (!allowed.has(type)) throw new Error("Unknown section type");
+  const current = await db.select({ id:sections.id }).from(sections).where(eq(sections.pageId,pageId));
+  const name = type.replaceAll("-"," ").replace(/\b\w/g,(c)=>c.toUpperCase());
+  await db.insert(sections).values({ pageId, type, name, position:current.length }); revalidatePath(`/admin/pages/${pageId}/builder`);
+}
+
+export async function duplicateSection(sectionId: string) {
+  await requireUser(); const [source]=await db.select().from(sections).where(eq(sections.id,sectionId)).limit(1); if(!source)return;
+  const current=await db.select({id:sections.id}).from(sections).where(eq(sections.pageId,source.pageId));
+  await db.insert(sections).values({ pageId:source.pageId,type:source.type,name:`${source.name} Copy`,position:current.length,content:source.content,draftContent:source.draftContent,publishedContent:source.publishedContent,styles:source.styles,responsive:source.responsive,animation:source.animation,visible:source.visible,locked:false });
+  revalidatePath(`/admin/pages/${source.pageId}/builder`);
+}
+
+export async function deleteSection(sectionId: string) { await requireUser(); const [source]=await db.select().from(sections).where(eq(sections.id,sectionId)).limit(1); if(!source||source.locked||["header","footer"].includes(source.type))return; await db.delete(sections).where(eq(sections.id,sectionId)); revalidatePath(`/admin/pages/${source.pageId}/builder`); }
