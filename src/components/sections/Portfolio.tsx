@@ -6,27 +6,22 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { assets } from "@/lib/assets";
 import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/utils";
+import { sectionContent } from "@/cms/section-defaults";
 
 type Banner = {
-  bg: string;
+  background: string;
   device: string;
   deviceSide: "left" | "right";
   light?: boolean; // white heading text
 };
 
-const BANNERS: Banner[] = [
-  { bg: assets.portfolioOrange, device: assets.portfolioPhone, deviceSide: "left" },
-  { bg: assets.portfolioDark, device: assets.cubes, deviceSide: "right", light: true },
-  { bg: assets.portfolioPurple, device: assets.portfolioPhone2, deviceSide: "left" },
-];
-
-function ReadMore({ light }: { light?: boolean }) {
+function ReadMore({ label, href }: { label:string; href:string }) {
   return (
     <a
-      href="#contact"
+      href={href}
       className="group mt-5 inline-flex items-center gap-2 rounded-full bg-white py-2 pl-5 pr-2 font-display text-[12px] font-semibold uppercase tracking-wide text-wine-500 shadow-md"
     >
-      Read More
+      {label}
       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-wine-500 text-white transition-transform group-hover:rotate-45">
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
           <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -36,7 +31,7 @@ function ReadMore({ light }: { light?: boolean }) {
   );
 }
 
-function StackCard({ banner, index, total }: { banner: Banner; index: number; total: number }) {
+function StackCard({ banner, index, total, data }: { banner: Banner; index: number; total: number; data:{projectAccent:string;projectHeading:string;description:string;buttonLabel:string;buttonLink:string} }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -59,7 +54,7 @@ function StackCard({ banner, index, total }: { banner: Banner; index: number; to
         className="relative mb-8 h-[62vh] min-h-[440px] w-full overflow-hidden rounded-[28px] shadow-[0_30px_60px_-20px_rgba(83,8,35,0.45)]"
       >
         <motion.div style={{ filter: isLast ? undefined : brightnessFilter }} className="absolute inset-0">
-          <Image src={banner.bg} alt="" fill className="object-cover" sizes="100vw" priority={index === 0} />
+          <Image src={banner.background} alt="" fill className="object-cover" sizes="100vw" priority={index === 0} />
         </motion.div>
 
         {/* device */}
@@ -80,22 +75,22 @@ function StackCard({ banner, index, total }: { banner: Banner; index: number; to
           )}
         >
           <h3 className="font-display text-[clamp(34px,4.6vw,60px)] font-semibold uppercase leading-[0.9]">
-            <span className={banner.light ? "text-white" : "text-wine-700"}>Designik</span>
+            <span className={banner.light ? "text-white" : "text-wine-700"}>{data.projectAccent}</span>
             <br />
-            <span className={banner.light ? "text-white/95" : "text-ink"}>Creative Agency</span>
+            <span className={banner.light ? "text-white/95" : "text-ink"}>{data.projectHeading}</span>
           </h3>
           <p className={cn("mt-3 hidden max-w-[34ch] text-[13px] font-light leading-relaxed sm:block", banner.light ? "text-white/80" : "text-ink/70")}>
-            Designik exists to revolutionize the way brands connect and engage with their audiences in the
-            digital era by leveraging innovative strategies and cutting-edge technology.
+            {data.description}
           </p>
-          <ReadMore light={banner.light} />
+          <ReadMore label={data.buttonLabel} href={data.buttonLink} />
         </div>
       </motion.article>
     </div>
   );
 }
 
-export default function Portfolio() {
+export default function Portfolio({ content }: { content?: unknown } = {}) {
+  const data=sectionContent("portfolio",content);
   return (
     <section id="portfolio" className="relative bg-white px-5 pt-16 pb-24 md:pt-24">
       {/* hanging discover tag */}
@@ -111,14 +106,14 @@ export default function Portfolio() {
 
       <Reveal className="mx-auto mb-12 max-w-[760px] text-center">
         <h2 className="font-display text-[clamp(34px,5.5vw,58px)] font-medium uppercase leading-[0.95]">
-          <span className="text-wine-500">Designik Design</span>{" "}
-          <span className="text-ink">Portfolio</span>
+          <span className="text-wine-500">{data.headingAccent}</span>{" "}
+          <span className="text-ink">{data.heading}</span>
         </h2>
       </Reveal>
 
       <div className="mx-auto max-w-[1280px]">
-        {BANNERS.map((b, i) => (
-          <StackCard key={i} banner={b} index={i} total={BANNERS.length} />
+        {data.cards.map((b, i) => (
+          <StackCard key={i} banner={b as Banner} index={i} total={data.cards.length} data={data} />
         ))}
       </div>
     </section>

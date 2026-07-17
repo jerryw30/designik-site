@@ -2,23 +2,14 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import { PillButton } from "@/components/ui/Buttons";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { cn } from "@/lib/utils";
+import { sectionContent } from "@/cms/section-defaults";
 
-const LOREM =
-  "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard.";
-
-const ROWS = [
-  { title: "Discovery &\nStrategy" },
-  { title: "Strategic\nAction" },
-  { title: "Performance\nBoost" },
-  { title: "Insight\nAnalysis" },
-];
-
-export default function BrandHeights() {
+export default function BrandHeights({ content }: { content?: unknown } = {}) {
+  const data=sectionContent("brand-heights",content);
   const [active, setActive] = useState(1);
 
   return (
@@ -26,14 +17,14 @@ export default function BrandHeights() {
       <div className="mx-auto max-w-[1200px]">
         <Reveal className="text-center">
           <h2 className="font-display text-[clamp(34px,5.5vw,56px)] font-medium uppercase leading-[0.95]">
-            <span className="text-wine-500">We Drive Your</span>
+            <span className="text-wine-500">{data.headingAccent}</span>
             <br />
-            <span className="text-ink">Brand to New Height</span>
+            <span className="text-ink">{data.heading}</span>
           </h2>
         </Reveal>
 
         <RevealGroup className="mt-12 flex flex-col gap-4" stagger={0.08}>
-          {ROWS.map((row, i) => {
+          {data.rows.map((title, i) => {
             const isActive = active === i;
             return (
               <RevealItem key={i}>
@@ -53,7 +44,7 @@ export default function BrandHeights() {
                     )}
                   >
                     <Image
-                      src={assets.logo}
+                      src={data.logo || assets.logo}
                       alt=""
                       width={26}
                       height={26}
@@ -62,7 +53,7 @@ export default function BrandHeights() {
                   </span>
 
                   <h3 className="w-[170px] shrink-0 whitespace-pre-line font-display text-[22px] font-semibold uppercase leading-[1.05] md:w-[210px] md:text-[26px]">
-                    {row.title}
+                    {title}
                   </h3>
 
                   <p
@@ -71,7 +62,7 @@ export default function BrandHeights() {
                       isActive ? "text-white/85" : "text-neutral-500"
                     )}
                   >
-                    {LOREM}
+                    {data.description}
                   </p>
 
                   <span
@@ -91,20 +82,20 @@ export default function BrandHeights() {
         </RevealGroup>
 
         <Reveal className="mt-12 flex justify-center">
-          <PillButton href="#services" variant="wine">
-            View All Services
+          <PillButton href={data.buttonLink} variant="wine">
+            {data.buttonLabel}
           </PillButton>
         </Reveal>
       </div>
 
       {/* logo strip */}
       <div className="mt-14 w-screen overflow-hidden">
-        <div className="flex w-max animate-marquee" style={{ ["--marquee-duration" as string]: "32s" }}>
+        <div className="flex w-max animate-marquee" style={{ ["--marquee-duration" as string]: `${data.marqueeDuration}s` }}>
           {Array.from({ length: 2 }).map((_, u) => (
             <div key={u} className="flex items-center">
               {Array.from({ length: 12 }).map((_, i) => (
                 <div key={i} className="flex h-12 w-12 items-center justify-center px-10">
-                  <Image src={assets.logo} alt="" width={32} height={32} className="h-8 w-8 opacity-90" />
+                  <Image src={data.logo || assets.logo} alt="" width={32} height={32} className="h-8 w-8 opacity-90" />
                 </div>
               ))}
             </div>
