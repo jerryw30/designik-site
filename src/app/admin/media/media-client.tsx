@@ -7,6 +7,8 @@ export function MediaUploadForm() {
   const [error, setError] = useState("");
   return (
     <form
+      action="/api/media/upload"
+      method="post"
       encType="multipart/form-data"
       className="mb-6 rounded-2xl border border-dashed border-pink-300 bg-white p-6"
       onSubmit={async (event) => {

@@ -105,6 +105,16 @@ try {
     args: ["--no-sandbox"],
   });
   const page = await browser.newPage();
+  page.on("response", async (response) => {
+    if (response.request().method() === "POST")
+      console.log(
+        "UPLOAD_RESPONSE",
+        response.status(),
+        response.url(),
+        response.headers().location,
+      );
+  });
+  page.on("console", (message) => console.log("BROWSER", message.text()));
   await page.setCookie({
     name: "designik_admin_session",
     value: token,
@@ -120,7 +130,15 @@ try {
   });
   const input = await page.$('input[type="file"]');
   if (!input) throw new Error("Media upload input missing");
+  console.log(
+    "UPLOAD_FORM",
+    await page.$eval('form[enctype="multipart/form-data"]', (form) => ({
+      action: form.action,
+      method: form.method,
+    })),
+  );
   await input.uploadFile(uploadPath);
+  await new Promise((resolve) => setTimeout(resolve, 1500));
   await Promise.all([
     page.waitForNavigation({ waitUntil: "networkidle2", timeout: 60000 }),
     page.click('form[enctype="multipart/form-data"] button'),
