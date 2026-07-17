@@ -54,6 +54,12 @@ Updated: 2026-07-17
 - Revision history and detail comparison screens for page and section snapshots
 - Safe page/section restoration with automatic pre-restore recovery snapshots
 - Revision deletion and authenticated production rollback/recovery testing
+- Website Settings with separate draft/published identity, contact, social, regional, maintenance, and custom-code configuration
+- Published favicon, document language, custom CSS/head/footer code, maintenance gate, and contact recipient connected to the live website
+- Automated Website Settings draft-isolation, publication, live-layout, maintenance, custom-code, and restoration test
+- Database-backed Media Library with multi-file uploads, image/video/audio/document previews, metadata, accessibility text, tags, search, and type filters
+- Media public delivery URLs, copy URL, trash, restore, permanent deletion, permission enforcement, and browser-tested upload lifecycle
+- Media Library selectors integrated into Hero and all structured image/video fields in the visual builder
 
 ## In progress
 
@@ -71,8 +77,7 @@ Updated: 2026-07-17
 ## Not started
 
 - Author management and public category/tag archive filtering
-- Media library and Vercel Blob uploads
 - Specialized global templates, header/footer, and popup builders
-- Custom code and tools
+- Import/export and administrative tools
 - Complete advanced widget controls, inline element editing, and import/export
 - Full editable-element audit and cross-browser/device acceptance testing

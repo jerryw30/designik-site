@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
 import { heroContent } from "@/cms/defaults";
 import { db } from "@/db";
-import { adminResources, pages, sections } from "@/db/schema";
+import { adminResources, mediaAssets, pages, sections } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { logout } from "@/app/admin/actions";
 import EditorClient from "@/app/admin/editor-client";
@@ -28,6 +28,15 @@ export default async function Builder({
     .select({ id: adminResources.id, title: adminResources.title })
     .from(adminResources)
     .where(eq(adminResources.module, "saved-sections"));
+  const media = await db
+    .select({
+      id: mediaAssets.id,
+      title: mediaAssets.title,
+      mimeType: mediaAssets.mimeType,
+    })
+    .from(mediaAssets)
+    .where(isNull(mediaAssets.deletedAt))
+    .orderBy(mediaAssets.title);
   const hero = list.find((item) => item.type === "hero");
   return (
     <main className="min-h-screen bg-[#111216] text-white">
@@ -75,6 +84,7 @@ export default async function Builder({
         initialHero={heroContent(hero?.draftContent)}
         previewUrl={`/admin/pages/${page.id}/preview`}
         templates={templates}
+        media={media}
       />
     </main>
   );

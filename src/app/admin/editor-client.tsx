@@ -32,6 +32,7 @@ type Section = {
   locked: boolean;
 };
 type Tab = "content" | "style" | "advanced" | "responsive";
+type MediaAsset = { id: string; title: string; mimeType: string };
 
 export default function EditorClient({
   page,
@@ -39,12 +40,14 @@ export default function EditorClient({
   initialHero,
   previewUrl,
   templates,
+  media,
 }: {
   page: { id: string; title: string; slug: string; status: string };
   sections: Section[];
   initialHero: HeroContent;
   previewUrl: string;
   templates: { id: string; title: string }[];
+  media: MediaAsset[];
 }) {
   const hero = sections.find((item) => item.type === "hero");
   const [sectionList, setSectionList] = useState(sections);
@@ -358,13 +361,19 @@ export default function EditorClient({
               it.
             </p>
           ) : selectedSection?.type === "hero" ? (
-            <HeroPanel tab={tab} value={content} update={update} />
+            <HeroPanel
+              tab={tab}
+              value={content}
+              update={update}
+              media={media}
+            />
           ) : selectedSection && selectedSection.type in sectionDefaults ? (
             <SectionPanel
               key={selectedSection.id}
               section={selectedSection}
               refresh={refresh}
               tab={tab}
+              media={media}
             />
           ) : (
             <p className="text-sm leading-6 text-white/45">
@@ -406,10 +415,12 @@ function SectionPanel({
   section,
   refresh,
   tab,
+  media,
 }: {
   section: Section;
   refresh: () => void;
   tab: Tab;
+  media: MediaAsset[];
 }) {
   const type = section.type as EditableSectionType;
   const [value, setValue] = useState<Record<string, unknown>>(
@@ -550,6 +561,7 @@ function SectionPanel({
                   name={key}
                   value={current}
                   onChange={(next) => change(key, next)}
+                  media={media}
                 />
               ) : typeof current === "boolean" ? (
                 <input
@@ -601,11 +613,13 @@ function StructuredField({
   value,
   onChange,
   depth = 0,
+  media,
 }: {
   name: string;
   value: unknown;
   onChange: (value: unknown) => void;
   depth?: number;
+  media: MediaAsset[];
 }) {
   if (Array.isArray(value)) {
     const move = (index: number, delta: number) => {
@@ -674,6 +688,7 @@ function StructuredField({
                 )
               }
               depth={depth + 1}
+              media={media}
             />
           </div>
         ))}
@@ -710,6 +725,7 @@ function StructuredField({
                 onChange({ ...record, [key]: nextChild })
               }
               depth={depth + 1}
+              media={media}
             />
           </div>
         ))}
@@ -743,6 +759,17 @@ function StructuredField({
     /color|background$/i.test(name) &&
     /^#|rgb|hsl|transparent/i.test(stringValue);
   const multiline = stringValue.includes("\n") || stringValue.length > 90;
+  const mediaField = /image|video|photo|avatar|logo|background/i.test(name);
+  if (mediaField)
+    return (
+      <MediaPicker
+        label=""
+        value={stringValue}
+        media={media}
+        accept={/video/i.test(name) ? "video" : "image"}
+        onChange={onChange}
+      />
+    );
   if (colorField)
     return (
       <div className="mt-1 flex gap-2">
@@ -900,10 +927,12 @@ function HeroPanel({
   tab,
   value,
   update,
+  media,
 }: {
   tab: Tab;
   value: HeroContent;
   update: <K extends keyof HeroContent>(key: K, value: HeroContent[K]) => void;
+  media: MediaAsset[];
 }) {
   if (tab === "content")
     return (
@@ -961,14 +990,18 @@ function HeroPanel({
           />
         </Group>
         <Group title="Media">
-          <Text
+          <MediaPicker
             label="Background image URL"
             value={value.backgroundImage}
+            media={media}
+            accept="image"
             onChange={(v) => update("backgroundImage", v)}
           />
-          <Text
+          <MediaPicker
             label="TV video URL"
             value={value.video}
+            media={media}
+            accept="video"
             onChange={(v) => update("video", v)}
           />
           <Select
@@ -1350,6 +1383,58 @@ function Text({
         onChange={(e) => onChange(e.target.value)}
       />
     </label>
+  );
+}
+function MediaPicker({
+  label,
+  value,
+  media,
+  accept,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  media: MediaAsset[];
+  accept: "image" | "video";
+  onChange: (v: string) => void;
+}) {
+  const compatible = media.filter((asset) =>
+    asset.mimeType.startsWith(`${accept}/`),
+  );
+  return (
+    <div className={labelClass}>
+      {label && <span>{label}</span>}
+      <input
+        className="admin-input mt-1.5"
+        value={value}
+        aria-label={label || `${accept} URL`}
+        onChange={(event) => onChange(event.target.value)}
+      />
+      <div className="mt-2 flex gap-2">
+        <select
+          aria-label={`Choose ${accept} from Media Library`}
+          value=""
+          onChange={(event) =>
+            event.target.value && onChange(event.target.value)
+          }
+          className="min-w-0 flex-1 rounded-md border border-white/10 bg-[#222329] px-2 py-2 text-xs text-white/70"
+        >
+          <option value="">Choose from Media Library…</option>
+          {compatible.map((asset) => (
+            <option key={asset.id} value={`/api/media/${asset.id}`}>
+              {asset.title}
+            </option>
+          ))}
+        </select>
+        <a
+          href="/admin/media"
+          target="_blank"
+          className="rounded-md border border-white/10 px-2 py-2 text-xs text-white/60"
+        >
+          Library
+        </a>
+      </div>
+    </div>
   );
 }
 function Area({
