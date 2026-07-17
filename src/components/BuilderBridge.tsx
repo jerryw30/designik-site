@@ -2,36 +2,55 @@
 import { useEffect } from "react";
 export default function BuilderBridge() {
   useEffect(() => {
-    const nodes = [
-      ...document.querySelectorAll<HTMLElement>("[data-cms-section]"),
-    ];
-    const cleanups = nodes.map((node) => {
-      const enter = () => {
-        node.style.outline = "2px solid #ff2f88";
-        node.style.outlineOffset = "-2px";
-      };
-      const leave = () => {
-        node.style.outline = "";
-        node.style.outlineOffset = "";
-      };
-      const click = (event: MouseEvent) => {
-        event.preventDefault();
-        event.stopPropagation();
-        window.parent.postMessage(
-          { source: "designik-builder", sectionId: node.dataset.cmsSection },
-          window.location.origin,
-        );
-      };
-      node.addEventListener("mouseenter", enter);
-      node.addEventListener("mouseleave", leave);
-      node.addEventListener("click", click, true);
-      return () => {
-        node.removeEventListener("mouseenter", enter);
-        node.removeEventListener("mouseleave", leave);
-        node.removeEventListener("click", click, true);
-      };
-    });
-    return () => cleanups.forEach((cleanup) => cleanup());
+    let outlined: HTMLElement | null = null;
+    const target = (event: Event) => {
+      const node = event.target as HTMLElement | null;
+      return (
+        node?.closest<HTMLElement>("[data-cms-element],[data-cms-section]") ||
+        null
+      );
+    };
+    const over = (event: MouseEvent) => {
+      const node = target(event);
+      if (!node || node === outlined) return;
+      if (outlined) {
+        outlined.style.outline = "";
+        outlined.style.outlineOffset = "";
+      }
+      outlined = node;
+      node.style.outline = "2px solid #ff2f88";
+      node.style.outlineOffset = "-2px";
+    };
+    const out = (event: MouseEvent) => {
+      if (target(event) !== outlined || !outlined) return;
+      outlined.style.outline = "";
+      outlined.style.outlineOffset = "";
+      outlined = null;
+    };
+    const click = (event: MouseEvent) => {
+      const node = target(event);
+      if (!node) return;
+      const section = node.closest<HTMLElement>("[data-cms-section]");
+      if (!section) return;
+      event.preventDefault();
+      event.stopPropagation();
+      window.parent.postMessage(
+        {
+          source: "designik-builder",
+          sectionId: section.dataset.cmsSection,
+          elementId: node.dataset.cmsElement || null,
+        },
+        window.location.origin,
+      );
+    };
+    document.addEventListener("mouseover", over, true);
+    document.addEventListener("mouseout", out, true);
+    document.addEventListener("click", click, true);
+    return () => {
+      document.removeEventListener("mouseover", over, true);
+      document.removeEventListener("mouseout", out, true);
+      document.removeEventListener("click", click, true);
+    };
   }, []);
   return null;
 }

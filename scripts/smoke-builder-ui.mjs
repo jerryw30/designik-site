@@ -14,6 +14,8 @@ const [pageRecord] = await sql.query(
   "select id from pages where slug='home' limit 1",
   [],
 );
+const widgetSectionId = crypto.randomUUID();
+const widgetId = `widget-smoke-${Date.now()}`;
 const candidates = [
   "C:/Program Files/Google/Chrome/Application/chrome.exe",
   "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
@@ -25,6 +27,53 @@ if (!executablePath) throw new Error("Chrome or Edge executable not found");
 await sql.query(
   "insert into sessions(user_id,token_hash,expires_at) values($1,$2,now()+interval '5 minutes')",
   [user.id, tokenHash],
+);
+await sql.query(
+  `insert into sections(id,page_id,type,name,position,content,draft_content,published_content,styles,responsive,animation,visible,locked)
+   values($1,$2,'widgets','Widget smoke',(select coalesce(max(position),0)+1 from sections where page_id=$2),$3::jsonb,$3::jsonb,'{"_cmsPublished":false}'::jsonb,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb,true,false)`,
+  [
+    widgetSectionId,
+    pageRecord.id,
+    JSON.stringify({
+      backgroundColor: "#ffffff",
+      paddingTop: 32,
+      paddingBottom: 32,
+      maxWidth: 1280,
+      widgets: [
+        {
+          id: widgetId,
+          type: "image",
+          content: "/figma/vector1.svg",
+          settings: {
+            color: "#202126",
+            backgroundColor: "transparent",
+            fontSize: 16,
+            fontWeight: 400,
+            align: "center",
+            width: 100,
+            height: 240,
+            marginTop: 0,
+            marginBottom: 0,
+            padding: 0,
+            borderWidth: 0,
+            borderColor: "transparent",
+            borderRadius: 0,
+            shadow: "none",
+            hoverColor: "#ff006b",
+            hoverBackgroundColor: "transparent",
+            animation: "none",
+            desktopVisible: true,
+            tabletVisible: true,
+            mobileVisible: true,
+            href: "#",
+            alt: "Direct element smoke",
+            gap: 16,
+            columns: 2,
+          },
+        },
+      ],
+    }),
+  ],
 );
 let browser;
 try {
@@ -106,6 +155,69 @@ try {
     throw new Error(
       `Responsive preview widths failed: ${tabletWidth}, ${mobileWidth}`,
     );
+  const widgetButton = await page
+    .$$("aside:first-child button")
+    .then(async (buttons) => {
+      for (const button of buttons)
+        if (
+          (await button.evaluate((node) => node.textContent))?.includes(
+            "Widget smoke",
+          )
+        )
+          return button;
+    });
+  if (!widgetButton)
+    throw new Error("Widget section navigator control not found");
+  await widgetButton.click();
+  await page.waitForFunction(
+    () => document.body.innerText.includes("Advanced widget controls"),
+    { timeout: 10000 },
+  );
+  await clickDevice("desktop");
+  const previewFrame = await (
+    await page.$('iframe[title="Draft website preview"]')
+  ).contentFrame();
+  await previewFrame.waitForSelector(`[data-cms-element="${widgetId}"]`, {
+    timeout: 10000,
+  });
+  await previewFrame.click(`[data-cms-element="${widgetId}"]`);
+  await page.waitForFunction(
+    () =>
+      [...document.querySelectorAll("details")].some(
+        (item) =>
+          item.textContent?.includes("Advanced widget controls") && item.open,
+      ),
+    { timeout: 10000 },
+  );
+  const advanced = await page.evaluate(() => ({
+    directElement: [...document.querySelectorAll("details")].some(
+      (item) =>
+        item.textContent?.includes("Advanced widget controls") && item.open,
+    ),
+    background: Boolean(
+      document.querySelector('[aria-label="Widget background color"]'),
+    ),
+    dimensions: Boolean(
+      document.querySelector('[aria-label="Widget Width %"]'),
+    ),
+    spacing: Boolean(document.querySelector('[aria-label="Widget Padding"]')),
+    borders: Boolean(
+      document.querySelector('[aria-label="Widget Border width"]'),
+    ),
+    shadow: Boolean(document.querySelector('[aria-label="Widget shadow"]')),
+    hover: Boolean(document.querySelector('[aria-label="Widget hover color"]')),
+    animation: Boolean(
+      document.querySelector('[aria-label="Widget animation"]'),
+    ),
+    responsive: Boolean(document.body.innerText.includes("Mobile visible")),
+    mediaLibrary: Boolean(
+      document.body.innerText.includes("Choose from Media Library"),
+    ),
+  }));
+  if (Object.values(advanced).some((value) => !value))
+    throw new Error(
+      `Advanced widget controls failed: ${JSON.stringify(advanced)}`,
+    );
   console.log(
     JSON.stringify({
       status: "ok",
@@ -113,9 +225,11 @@ try {
       tabletWidth,
       mobileWidth,
       ...controls,
+      ...advanced,
     }),
   );
 } finally {
   if (browser) await browser.close();
   await sql.query("delete from sessions where token_hash=$1", [tokenHash]);
+  await sql.query("delete from sections where id=$1", [widgetSectionId]);
 }

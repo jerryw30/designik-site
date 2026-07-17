@@ -57,6 +57,7 @@ export default function EditorClient({
   const [dragged, setDragged] = useState<string | null>(null);
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [selected, setSelected] = useState(hero?.id ?? sections[0]?.id);
+  const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const [content, setContent] = useState(initialHero);
   const [tab, setTab] = useState<Tab>("content");
   const [message, setMessage] = useState("");
@@ -74,8 +75,10 @@ export default function EditorClient({
         event.data?.source !== "designik-builder"
       )
         return;
-      if (sectionList.some((section) => section.id === event.data.sectionId))
+      if (sectionList.some((section) => section.id === event.data.sectionId)) {
         setSelected(event.data.sectionId);
+        setSelectedElement(event.data.elementId || null);
+      }
     };
     window.addEventListener("message", receive);
     return () => window.removeEventListener("message", receive);
@@ -399,6 +402,7 @@ export default function EditorClient({
               refresh={refresh}
               tab={tab}
               media={media}
+              selectedElement={selectedElement}
             />
           ) : (
             <p className="text-sm leading-6 text-white/45">
@@ -441,11 +445,13 @@ function SectionPanel({
   refresh,
   tab,
   media,
+  selectedElement,
 }: {
   section: Section;
   refresh: () => void;
   tab: Tab;
   media: MediaAsset[];
+  selectedElement: string | null;
 }) {
   const type = section.type as EditableSectionType;
   const [value, setValue] = useState<Record<string, unknown>>(
@@ -580,6 +586,8 @@ function SectionPanel({
                 <WidgetList
                   value={current as BuilderWidget[]}
                   onChange={(next) => change(key, next)}
+                  media={media}
+                  selectedElement={selectedElement}
                 />
               ) : Array.isArray(current) || typeof current === "object" ? (
                 <StructuredField
@@ -833,14 +841,18 @@ type BuilderWidget = {
   id: string;
   type: string;
   content: string;
-  settings: Record<string, string | number>;
+  settings: Record<string, string | number | boolean>;
 };
 function WidgetList({
   value,
   onChange,
+  media,
+  selectedElement,
 }: {
   value: BuilderWidget[];
   onChange: (value: BuilderWidget[]) => void;
+  media: MediaAsset[];
+  selectedElement: string | null;
 }) {
   const [widgetSearch, setWidgetSearch] = useState("");
   const add = (type: string) => {
@@ -851,6 +863,11 @@ function WidgetList({
     onChange(
       value.map((item, i) => (i === index ? { ...item, ...patch } : item)),
     );
+  const setting = (
+    index: number,
+    key: string,
+    next: string | number | boolean,
+  ) => update(index, { settings: { ...value[index].settings, [key]: next } });
   const move = (index: number, delta: number) => {
     const target = index + delta;
     if (target < 0 || target >= value.length) return;
@@ -889,7 +906,7 @@ function WidgetList({
       {value.map((widget, index) => (
         <div
           key={widget.id}
-          className="rounded-lg border border-white/10 bg-white/[.03] p-3"
+          className={`rounded-lg border bg-white/[.03] p-3 ${selectedElement === widget.id ? "border-pink-400 ring-1 ring-pink-400/30" : "border-white/10"}`}
         >
           <div className="mb-2 flex items-center gap-2">
             <b className="mr-auto text-xs uppercase text-white/70">
@@ -916,6 +933,24 @@ function WidgetList({
             value={widget.content}
             onChange={(e) => update(index, { content: e.target.value })}
           />
+          {["image", "video", "audio"].includes(widget.type) && (
+            <select
+              value=""
+              onChange={(e) =>
+                e.target.value && update(index, { content: e.target.value })
+              }
+              className="admin-input mt-2 text-xs"
+            >
+              <option value="">Choose from Media Library…</option>
+              {media
+                .filter((asset) => asset.mimeType.startsWith(`${widget.type}/`))
+                .map((asset) => (
+                  <option key={asset.id} value={`/api/media/${asset.id}`}>
+                    {asset.title}
+                  </option>
+                ))}
+            </select>
+          )}
           <div className="mt-2 grid grid-cols-2 gap-2">
             <input
               className="admin-input"
@@ -942,6 +977,134 @@ function WidgetList({
               }
             />
           </div>
+          <details
+            open={selectedElement === widget.id}
+            className="mt-2 rounded border border-white/10 p-2"
+          >
+            <summary className="cursor-pointer text-[10px] font-semibold uppercase text-white/50">
+              Advanced widget controls
+            </summary>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <input
+                aria-label="Widget background color"
+                className="admin-input"
+                value={String(widget.settings.backgroundColor || "transparent")}
+                onChange={(e) =>
+                  setting(index, "backgroundColor", e.target.value)
+                }
+              />
+              <input
+                aria-label="Widget font weight"
+                type="number"
+                className="admin-input"
+                value={Number(widget.settings.fontWeight || 400)}
+                onChange={(e) =>
+                  setting(index, "fontWeight", Number(e.target.value))
+                }
+              />
+              {[
+                ["width", "Width %"],
+                ["height", "Height"],
+                ["marginTop", "Margin top"],
+                ["marginBottom", "Margin bottom"],
+                ["padding", "Padding"],
+                ["borderWidth", "Border width"],
+                ["borderRadius", "Border radius"],
+                ["gap", "Gap"],
+                ["columns", "Columns"],
+              ].map(([key, label]) => (
+                <input
+                  key={key}
+                  aria-label={`Widget ${label}`}
+                  title={label}
+                  type="number"
+                  className="admin-input"
+                  value={Number(widget.settings[key] || 0)}
+                  onChange={(e) => setting(index, key, Number(e.target.value))}
+                />
+              ))}
+              <input
+                aria-label="Widget border color"
+                className="admin-input"
+                value={String(widget.settings.borderColor || "transparent")}
+                onChange={(e) => setting(index, "borderColor", e.target.value)}
+              />
+              <input
+                aria-label="Widget shadow"
+                className="admin-input"
+                value={String(widget.settings.shadow || "none")}
+                onChange={(e) => setting(index, "shadow", e.target.value)}
+              />
+              <input
+                aria-label="Widget hover color"
+                className="admin-input"
+                value={String(widget.settings.hoverColor || "")}
+                onChange={(e) => setting(index, "hoverColor", e.target.value)}
+              />
+              <input
+                aria-label="Widget hover background"
+                className="admin-input"
+                value={String(
+                  widget.settings.hoverBackgroundColor || "transparent",
+                )}
+                onChange={(e) =>
+                  setting(index, "hoverBackgroundColor", e.target.value)
+                }
+              />
+              <input
+                aria-label="Widget link"
+                className="admin-input"
+                value={String(widget.settings.href || "#")}
+                onChange={(e) => setting(index, "href", e.target.value)}
+              />
+              <input
+                aria-label="Widget alternative text"
+                className="admin-input"
+                value={String(widget.settings.alt || "")}
+                onChange={(e) => setting(index, "alt", e.target.value)}
+              />
+              <select
+                aria-label="Widget alignment"
+                className="admin-input"
+                value={String(widget.settings.align || "center")}
+                onChange={(e) => setting(index, "align", e.target.value)}
+              >
+                <option>left</option>
+                <option>center</option>
+                <option>right</option>
+              </select>
+              <select
+                aria-label="Widget animation"
+                className="admin-input"
+                value={String(widget.settings.animation || "none")}
+                onChange={(e) => setting(index, "animation", e.target.value)}
+              >
+                <option>none</option>
+                <option>fade</option>
+                <option>slide-up</option>
+                <option>zoom</option>
+              </select>
+            </div>
+            <div className="mt-3 space-y-2">
+              {[
+                ["desktopVisible", "Desktop visible"],
+                ["tabletVisible", "Tablet visible"],
+                ["mobileVisible", "Mobile visible"],
+              ].map(([key, label]) => (
+                <label
+                  key={key}
+                  className="flex items-center justify-between text-xs text-white/55"
+                >
+                  {label}
+                  <input
+                    type="checkbox"
+                    checked={widget.settings[key] !== false}
+                    onChange={(e) => setting(index, key, e.target.checked)}
+                  />
+                </label>
+              ))}
+            </div>
+          </details>
         </div>
       ))}
     </div>

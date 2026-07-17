@@ -130,6 +130,11 @@ body {
   }
 }
 
+.cms-widget:hover {
+  color: var(--widget-hover-color) !important;
+  background-color: var(--widget-hover-background) !important;
+}
+
 .hero-editable .hero-content {
   padding-top: var(--hero-top-mobile);
 }
@@ -171,17 +176,20 @@ body {
   }
 }
 @media (max-width: 639px) {
-  .cms-section[data-mobile-visible="false"] {
+  .cms-section[data-mobile-visible="false"],
+  .cms-widget[data-mobile-visible="false"] {
     display: none;
   }
 }
 @media (min-width: 640px) and (max-width: 1023px) {
-  .cms-section[data-tablet-visible="false"] {
+  .cms-section[data-tablet-visible="false"],
+  .cms-widget[data-tablet-visible="false"] {
     display: none;
   }
 }
 @media (min-width: 1024px) {
-  .cms-section[data-desktop-visible="false"] {
+  .cms-section[data-desktop-visible="false"],
+  .cms-widget[data-desktop-visible="false"] {
     display: none;
   }
 }
