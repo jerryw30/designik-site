@@ -137,11 +137,11 @@ export async function reorderSections(pageId: string, orderedIds: string[]) {
 }
 
 export async function addSection(pageId: string, type: string) {
-  await requireUser(); const allowed = new Set(["agency-marquee","stats","about","services","brand-heights","experience","portfolio","team","interactive","testimonials"]);
+  await requireUser(); const allowed = new Set(["agency-marquee","stats","about","services","brand-heights","experience","portfolio","team","interactive","testimonials","widgets"]);
   if (!allowed.has(type)) throw new Error("Unknown section type");
   const current = await db.select({ id:sections.id }).from(sections).where(eq(sections.pageId,pageId));
   const name = type.replaceAll("-"," ").replace(/\b\w/g,(c)=>c.toUpperCase());
-  await db.insert(sections).values({ pageId, type, name, position:current.length }); revalidatePath(`/admin/pages/${pageId}/builder`);
+  const draftContent=sectionContent(type as EditableSectionType,{}); await db.insert(sections).values({ pageId, type, name, position:current.length, draftContent, publishedContent:{_cmsPublished:false} }); revalidatePath(`/admin/pages/${pageId}/builder`);
 }
 
 export async function duplicateSection(sectionId: string) {
@@ -152,6 +152,7 @@ export async function duplicateSection(sectionId: string) {
 }
 
 export async function deleteSection(sectionId: string) { await requireUser(); const [source]=await db.select().from(sections).where(eq(sections.id,sectionId)).limit(1); if(!source||source.locked||["header","footer"].includes(source.type))return; await db.delete(sections).where(eq(sections.id,sectionId)); revalidatePath(`/admin/pages/${source.pageId}/builder`); }
+export async function setSectionState(sectionId:string,field:"visible"|"locked",value:boolean){await requireUser();await db.update(sections).set(field==="visible"?{visible:value,updatedAt:new Date()}:{locked:value,updatedAt:new Date()}).where(eq(sections.id,sectionId));}
 
 export async function saveSectionDraft(sectionId:string,type:EditableSectionType,value:unknown){ await requireUser(); const content=sectionContent(type,value); await db.update(sections).set({draftContent:content,updatedAt:new Date()}).where(and(eq(sections.id,sectionId),eq(sections.type,type))); return content; }
 export async function publishSection(sectionId:string,type:EditableSectionType){ const user=await requireUser(); const [section]=await db.select().from(sections).where(and(eq(sections.id,sectionId),eq(sections.type,type))).limit(1); if(!section)throw new Error("Section not found"); const content=sectionContent(type,section.draftContent); await db.insert(revisions).values({pageId:section.pageId,authorId:user.id,label:`Published ${section.name}`,snapshot:{sectionId,content:section.publishedContent}}); await db.update(sections).set({publishedContent:content,updatedAt:new Date()}).where(eq(sections.id,sectionId)); revalidatePath("/"); return content; }
