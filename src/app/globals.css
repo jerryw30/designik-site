@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
 @layer components {
-  .admin-input { @apply block w-full rounded-xl border border-white/15 bg-black/25 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-pink-400; }
-  .admin-button { @apply inline-flex items-center justify-center rounded-lg bg-pink-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-pink-500; }
+  .admin-input {
+    @apply block w-full rounded-xl border border-white/15 bg-black/25 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-pink-400;
+  }
+  .admin-button {
+    @apply inline-flex items-center justify-center rounded-lg bg-pink-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-pink-500;
+  }
 }
 
 @theme {
@@ -42,16 +46,25 @@
 
   /* ---- Motion ---- */
   --animate-marquee: marquee var(--marquee-duration, 30s) linear infinite;
-  --animate-marquee-rev: marquee-rev var(--marquee-duration, 30s) linear infinite;
+  --animate-marquee-rev: marquee-rev var(--marquee-duration, 30s) linear
+    infinite;
 }
 
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 @keyframes marquee-rev {
-  from { transform: translateX(-50%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 :root {
@@ -89,8 +102,13 @@ body {
 }
 
 /* Hide scrollbar utility for marquees */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -103,20 +121,92 @@ body {
   }
 }
 
-.hero-editable .hero-content { padding-top: var(--hero-top-mobile); }
-.builder-grid > aside:nth-child(2) { display: none; }
-.marquee-editable-text { font-size: var(--marquee-mobile); }
-@media (min-width: 1024px) { .marquee-editable-text { font-size: var(--marquee-desktop); } }
-.hero-editable .hero-heading { font-size: var(--hero-h1-mobile); }
-.hero-editable .hero-description { font-size: var(--hero-p-mobile); }
-.hero-editable .hero-primary:hover, .hero-editable .hero-secondary:hover { background: var(--hover-bg) !important; color: var(--hover-color) !important; transform: scale(var(--hover-scale)); }
-@media (min-width: 640px) {
-  .hero-editable .hero-content { padding-top: var(--hero-top-tablet); }
-  .hero-editable .hero-heading { font-size: var(--hero-h1-tablet); }
-  .hero-editable .hero-description { font-size: var(--hero-p-tablet); }
+.hero-editable .hero-content {
+  padding-top: var(--hero-top-mobile);
+}
+.builder-grid > aside:nth-child(2) {
+  display: none;
+}
+.marquee-editable-text {
+  font-size: var(--marquee-mobile);
 }
 @media (min-width: 1024px) {
-  .hero-editable .hero-content { padding-top: var(--hero-top-desktop); }
-  .hero-editable .hero-heading { font-size: var(--hero-h1-desktop); }
-  .hero-editable .hero-description { font-size: var(--hero-p-desktop); }
+  .marquee-editable-text {
+    font-size: var(--marquee-desktop);
+  }
+}
+.cms-animation-fade {
+  animation: cmsFade both;
+}
+.cms-animation-slide-up {
+  animation: cmsSlideUp both;
+}
+.cms-animation-zoom {
+  animation: cmsZoom both;
+}
+@keyframes cmsFade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes cmsSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+}
+@keyframes cmsZoom {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@media (max-width: 639px) {
+  .cms-section[data-mobile-visible="false"] {
+    display: none;
+  }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  .cms-section[data-tablet-visible="false"] {
+    display: none;
+  }
+}
+@media (min-width: 1024px) {
+  .cms-section[data-desktop-visible="false"] {
+    display: none;
+  }
+}
+.hero-editable .hero-heading {
+  font-size: var(--hero-h1-mobile);
+}
+.hero-editable .hero-description {
+  font-size: var(--hero-p-mobile);
+}
+.hero-editable .hero-primary:hover,
+.hero-editable .hero-secondary:hover {
+  background: var(--hover-bg) !important;
+  color: var(--hover-color) !important;
+  transform: scale(var(--hover-scale));
+}
+@media (min-width: 640px) {
+  .hero-editable .hero-content {
+    padding-top: var(--hero-top-tablet);
+  }
+  .hero-editable .hero-heading {
+    font-size: var(--hero-h1-tablet);
+  }
+  .hero-editable .hero-description {
+    font-size: var(--hero-p-tablet);
+  }
+}
+@media (min-width: 1024px) {
+  .hero-editable .hero-content {
+    padding-top: var(--hero-top-desktop);
+  }
+  .hero-editable .hero-heading {
+    font-size: var(--hero-h1-desktop);
+  }
+  .hero-editable .hero-description {
+    font-size: var(--hero-p-desktop);
+  }
 }

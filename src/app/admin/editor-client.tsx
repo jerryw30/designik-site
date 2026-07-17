@@ -310,6 +310,7 @@ export default function EditorClient({
               key={selectedSection.id}
               section={selectedSection}
               refresh={refresh}
+              tab={tab}
             />
           ) : (
             <p className="text-sm leading-6 text-white/45">
@@ -350,9 +351,11 @@ export default function EditorClient({
 function SectionPanel({
   section,
   refresh,
+  tab,
 }: {
   section: Section;
   refresh: () => void;
+  tab: Tab;
 }) {
   const type = section.type as EditableSectionType;
   const [value, setValue] = useState<Record<string, unknown>>(
@@ -379,53 +382,117 @@ function SectionPanel({
       setStatus("Published live");
       refresh();
     });
+  const layout = (value._layout || {}) as Record<string, unknown>;
+  const changeLayout = (key: string, next: unknown) =>
+    change("_layout", { ...layout, [key]: next });
+  const layoutNumber = (key: string, label: string) => (
+    <NumberField
+      label={label}
+      value={Number(layout[key] || 0)}
+      onChange={(next) => changeLayout(key, next)}
+    />
+  );
+  const layoutToggle = (key: string, label: string) => (
+    <Toggle
+      label={label}
+      checked={layout[key] !== false}
+      onChange={(next) => changeLayout(key, next)}
+    />
+  );
+  const panel =
+    tab === "style" ? (
+      <div className="space-y-4">
+        <Color
+          label="Section background"
+          value={String(layout.backgroundColor || "transparent")}
+          onChange={(next) => changeLayout("backgroundColor", next)}
+        />
+        {layoutNumber("paddingTop", "Padding top")}
+        {layoutNumber("paddingBottom", "Padding bottom")}
+        {layoutNumber("marginTop", "Margin top")}
+        {layoutNumber("marginBottom", "Margin bottom")}
+        {layoutNumber("maxWidth", "Maximum width (0 = full)")}
+        <Select
+          label="Alignment"
+          value={String(layout.alignment || "left")}
+          options={["left", "center", "right"]}
+          onChange={(next) => changeLayout("alignment", next)}
+        />
+      </div>
+    ) : tab === "responsive" ? (
+      <div className="space-y-4">
+        {layoutToggle("desktopVisible", "Show on desktop")}
+        {layoutToggle("tabletVisible", "Show on tablet")}
+        {layoutToggle("mobileVisible", "Show on mobile")}
+      </div>
+    ) : tab === "advanced" ? (
+      <div className="space-y-4">
+        <Select
+          label="Entrance animation"
+          value={String(layout.animation || "none")}
+          options={["none", "fade", "slide-up", "zoom"]}
+          onChange={(next) => changeLayout("animation", next)}
+        />
+        <NumberField
+          label="Animation duration"
+          value={Number(layout.animationDuration || 0.6)}
+          min={0}
+          max={5}
+          step={0.1}
+          onChange={(next) => changeLayout("animationDuration", next)}
+        />
+      </div>
+    ) : null;
   return (
     <div className="space-y-4">
-      {Object.entries(value).map(([key, current]) => (
-        <label key={key} className="block text-xs capitalize text-white/55">
-          {key.replace(/([A-Z])/g, " $1")}
-          {key === "widgets" && Array.isArray(current) ? (
-            <WidgetList
-              value={current as BuilderWidget[]}
-              onChange={(next) => change(key, next)}
-            />
-          ) : Array.isArray(current) || typeof current === "object" ? (
-            <textarea
-              className="admin-input mt-2 min-h-28 font-mono text-xs"
-              value={JSON.stringify(current, null, 2)}
-              onChange={(e) => {
-                try {
-                  change(key, JSON.parse(e.target.value));
-                  setStatus("");
-                } catch {
-                  setStatus("Invalid JSON");
-                }
-              }}
-            />
-          ) : typeof current === "boolean" ? (
-            <input
-              className="ml-3"
-              type="checkbox"
-              checked={current}
-              onChange={(e) => change(key, e.target.checked)}
-            />
-          ) : (
-            <input
-              className="admin-input mt-2"
-              type={typeof current === "number" ? "number" : "text"}
-              value={String(current ?? "")}
-              onChange={(e) =>
-                change(
-                  key,
-                  typeof current === "number"
-                    ? Number(e.target.value)
-                    : e.target.value,
-                )
-              }
-            />
-          )}
-        </label>
-      ))}
+      {panel ||
+        Object.entries(value)
+          .filter(([key]) => key !== "_layout")
+          .map(([key, current]) => (
+            <label key={key} className="block text-xs capitalize text-white/55">
+              {key.replace(/([A-Z])/g, " $1")}
+              {key === "widgets" && Array.isArray(current) ? (
+                <WidgetList
+                  value={current as BuilderWidget[]}
+                  onChange={(next) => change(key, next)}
+                />
+              ) : Array.isArray(current) || typeof current === "object" ? (
+                <textarea
+                  className="admin-input mt-2 min-h-28 font-mono text-xs"
+                  value={JSON.stringify(current, null, 2)}
+                  onChange={(e) => {
+                    try {
+                      change(key, JSON.parse(e.target.value));
+                      setStatus("");
+                    } catch {
+                      setStatus("Invalid JSON");
+                    }
+                  }}
+                />
+              ) : typeof current === "boolean" ? (
+                <input
+                  className="ml-3"
+                  type="checkbox"
+                  checked={current}
+                  onChange={(e) => change(key, e.target.checked)}
+                />
+              ) : (
+                <input
+                  className="admin-input mt-2"
+                  type={typeof current === "number" ? "number" : "text"}
+                  value={String(current ?? "")}
+                  onChange={(e) =>
+                    change(
+                      key,
+                      typeof current === "number"
+                        ? Number(e.target.value)
+                        : e.target.value,
+                    )
+                  }
+                />
+              )}
+            </label>
+          ))}
       <div className="grid grid-cols-2 gap-2">
         <button
           disabled={pending}
