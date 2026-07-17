@@ -16,7 +16,7 @@ import AgencyMarquee from "@/components/ui/AgencyMarquee";
 export type SiteSection = { id: string; type: string; visible: boolean; content: unknown };
 const componentMap: Record<string, (content: unknown) => React.ReactNode> = {
   header: () => <Nav />, hero: (content) => <Hero content={content as Partial<HeroContent>} />, "agency-marquee": (content) => <AgencyMarquee content={content} />, stats: (content) => <StatsBar content={content} />, about: (content) => <AboutIntro content={content} />,
-  services: () => <Services />, "brand-heights": () => <BrandHeights />, experience: () => <Experience />, portfolio: () => <Portfolio />, team: () => <Team />, interactive: (content) => <Interactive content={content} />, testimonials: () => <Testimonials />, footer: () => <Footer />,
+  services: () => <Services />, "brand-heights": () => <BrandHeights />, experience: () => <Experience />, portfolio: () => <Portfolio />, team: (content) => <Team content={content} />, interactive: (content) => <Interactive content={content} />, testimonials: (content) => <Testimonials content={content} />, footer: (content) => <Footer content={content} />,
 };
 
 export default function SiteHome({ hero, sections }: { hero?: Partial<HeroContent>; sections?: SiteSection[] }) {

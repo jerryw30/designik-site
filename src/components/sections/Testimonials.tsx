@@ -5,9 +5,7 @@ import { motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import { RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { cn } from "@/lib/utils";
-
-const QUOTE =
-  "Designik exists to revolutionize the way brands connect and engage with their audiences in the digital era by leveraging innovative strategies and cutting-edge technology.";
+import { sectionContent } from "@/cms/section-defaults";
 
 function Stars() {
   return (
@@ -21,7 +19,7 @@ function Stars() {
   );
 }
 
-function Quote({ tone }: { tone: "cream" | "magenta" | "orange" | "blush" }) {
+function Quote({ tone, quote, author, role, rating }: { tone: "cream" | "magenta" | "orange" | "blush"; quote:string; author:string; role:string; rating:string }) {
   const styles = {
     cream: "bg-cream-100 text-ink",
     magenta: "bg-gradient-to-br from-wine-600 to-pink-brand text-white",
@@ -32,17 +30,17 @@ function Quote({ tone }: { tone: "cream" | "magenta" | "orange" | "blush" }) {
   return (
     <article className={cn("flex h-full flex-col justify-between gap-6 rounded-[20px] p-6", styles)}>
       <p className={cn("text-[13.5px] font-light leading-relaxed", dark ? "text-white/90" : "text-neutral-600")}>
-        {QUOTE}
+        {quote}
       </p>
       <div className="flex items-end justify-between">
         <div>
-          <h4 className="font-display text-[15px] font-bold uppercase">Milla Ass</h4>
-          <p className={cn("text-[11px]", dark ? "text-white/70" : "text-neutral-500")}>Marketer</p>
+          <h4 className="font-display text-[15px] font-bold uppercase">{author}</h4>
+          <p className={cn("text-[11px]", dark ? "text-white/70" : "text-neutral-500")}>{role}</p>
         </div>
         <div className="flex flex-col items-end gap-1">
           <Stars />
           <span className={cn("text-[11px] font-medium", dark ? "text-white/80" : "text-neutral-500")}>
-            4.9 out of 5.0
+            {rating}
           </span>
         </div>
       </div>
@@ -64,29 +62,29 @@ function ImageCard({ src, light }: { src: string; light?: boolean }) {
   );
 }
 
-export default function Testimonials() {
+export default function Testimonials({ content }: { content?: unknown } = {}) {
+  const data=sectionContent("testimonials",content); const quoteProps={quote:data.quote,author:data.author,role:data.role,rating:data.rating};
   return (
     <section className="relative bg-white px-5 py-12 md:py-16">
       <div className="mx-auto max-w-[1280px]">
         <div className="mb-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <h2 className="font-display text-[clamp(34px,5.5vw,58px)] font-medium uppercase leading-[0.95]">
-            <span className="text-wine-500">Meet</span> <span className="text-ink">Our Team</span>
+            <span className="text-wine-500">{data.headingAccent}</span> <span className="text-ink">{data.heading}</span>
           </h2>
           <p className="max-w-[40ch] text-[14px] font-light leading-relaxed text-neutral-600">
-            Designik exists to revolutionize the way brands connect and engage with their audiences in the
-            digital era by leveraging innovative strategies and cutting-edge technology.
+            {data.description}
           </p>
         </div>
         <RevealGroup
           className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:auto-rows-[minmax(230px,1fr)] md:gap-5"
           stagger={0.07}
         >
-          <RevealItem className="h-full"><Quote tone="cream" /></RevealItem>
-          <RevealItem className="h-full"><Quote tone="magenta" /></RevealItem>
-          <RevealItem className="h-full"><ImageCard src={assets.testimonialPhone} /></RevealItem>
-          <RevealItem className="h-full"><Quote tone="orange" /></RevealItem>
-          <RevealItem className="h-full"><ImageCard src={assets.trafficLight} light /></RevealItem>
-          <RevealItem className="h-full"><Quote tone="blush" /></RevealItem>
+          <RevealItem className="h-full"><Quote tone="cream" {...quoteProps} /></RevealItem>
+          <RevealItem className="h-full"><Quote tone="magenta" {...quoteProps} /></RevealItem>
+          <RevealItem className="h-full"><ImageCard src={data.images[0]} /></RevealItem>
+          <RevealItem className="h-full"><Quote tone="orange" {...quoteProps} /></RevealItem>
+          <RevealItem className="h-full"><ImageCard src={data.images[1]} light /></RevealItem>
+          <RevealItem className="h-full"><Quote tone="blush" {...quoteProps} /></RevealItem>
         </RevealGroup>
       </div>
 

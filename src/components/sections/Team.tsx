@@ -2,37 +2,31 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { assets } from "@/lib/assets";
 import { PillButton } from "@/components/ui/Buttons";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/Reveal";
+import { sectionContent } from "@/cms/section-defaults";
 
-const MEMBERS = [
-  { name: "Michel Brown", role: "Social Media Manager", photo: assets.teamA, bg: "bg-wine-700" },
-  { name: "Michel Brown", role: "Social Media Manager", photo: assets.teamB, bg: "bg-[#b89cf0]" },
-  { name: "Michel Brown", role: "Social Media Manager", photo: assets.teamA, bg: "bg-orange-brand" },
-  { name: "Michel Brown", role: "Social Media Manager", photo: assets.teamB, bg: "bg-redorange" },
-];
-
-export default function Team() {
+export default function Team({ content }: { content?: unknown } = {}) {
+  const data=sectionContent("team",content);
   return (
     <section className="bg-white px-5 py-16 md:py-24">
       <div className="mx-auto max-w-[1280px]">
         <Reveal className="mb-12 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <h2 className="font-display text-[clamp(34px,5.5vw,58px)] font-medium uppercase leading-[0.95]">
-            <span className="text-wine-500">Meet</span> <span className="text-ink">Our Team</span>
+            <span className="text-wine-500">{data.headingAccent}</span> <span className="text-ink">{data.heading}</span>
           </h2>
           <p className="max-w-[36ch] text-[14px] font-light leading-relaxed text-neutral-600">
-            Designik exists to revolutionize the way brands connect and engage with their audiences in the
-            digital era by leveraging innovative strategies and cutting-edge technology.
+            {data.description}
           </p>
         </Reveal>
 
         <RevealGroup className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5" stagger={0.1}>
-          {MEMBERS.map((m, i) => (
+          {data.members.map((m, i) => (
             <RevealItem key={i}>
               <motion.article
                 whileHover={{ y: -6 }}
-                className={`group relative aspect-[3/4] overflow-hidden rounded-[20px] ${m.bg}`}
+                className="group relative aspect-[3/4] overflow-hidden rounded-[20px]"
+                style={{backgroundColor:m.background}}
               >
                 <Image
                   src={m.photo}
@@ -60,8 +54,8 @@ export default function Team() {
         </RevealGroup>
 
         <Reveal className="mt-12 flex justify-center">
-          <PillButton href="#contact" variant="wine">
-            View All
+          <PillButton href={data.buttonLink} variant="wine">
+            {data.buttonLabel}
           </PillButton>
         </Reveal>
       </div>
