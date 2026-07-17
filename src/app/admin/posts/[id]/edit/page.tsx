@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/db";
-import { adminResources } from "@/db/schema";
+import { adminResources, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../../../admin-shell";
 import { savePost, savePostWithStatus } from "../../actions";
@@ -37,6 +37,16 @@ export default async function EditPostPage({
       .where(eq(adminResources.module, "categories")),
     db.select().from(adminResources).where(eq(adminResources.module, "tags")),
   ]);
+  const authors = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      role: users.role,
+    })
+    .from(users)
+    .where(eq(users.active, true))
+    .orderBy(users.name);
   return (
     <AdminShell user={user} title={`Edit post · ${post.title}`}>
       <form action={savePost} className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -92,6 +102,20 @@ export default async function EditPostPage({
           </section>
           <section className="space-y-3 rounded-2xl border bg-white p-5">
             <h2 className="font-semibold">Post settings</h2>
+            <label className="block text-sm">
+              Author
+              <select
+                name="authorId"
+                defaultValue={post.createdBy || user.id}
+                className="mt-1 block w-full rounded-lg border p-2"
+              >
+                {authors.map((author) => (
+                  <option key={author.id} value={author.id}>
+                    {author.name} · {author.role.replaceAll("_", " ")}
+                  </option>
+                ))}
+              </select>
+            </label>
             <label className="block text-sm">
               Slug
               <input

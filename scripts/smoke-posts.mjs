@@ -1,9 +1,12 @@
+import { createHash, randomBytes } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL);
 const slug = `cms-smoke-${Date.now().toString(36)}`;
 let id;
 const taxonomyIds = [];
+const terms = [];
+let archivePostId, tokenHash;
 
 try {
   const [created] = await sql.query(
@@ -80,6 +83,11 @@ try {
       [taxonomyModule, `Smoke ${taxonomyModule}`, `${slug}-${taxonomyModule}`],
     );
     taxonomyIds.push(taxonomy.id);
+    terms.push({
+      module: taxonomyModule,
+      title: `Smoke ${taxonomyModule}`,
+      slug: `${slug}-${taxonomyModule}`,
+    });
     const [stored] = await sql.query(
       "select module from admin_resources where id=$1",
       [taxonomy.id],
@@ -87,6 +95,57 @@ try {
     if (stored.module !== taxonomyModule)
       throw new Error(`${taxonomyModule} persistence failed`);
   }
+  const [author] = await sql.query(
+    "select id from users where active=true order by created_at limit 1",
+    [],
+  );
+  const [archivePost] = await sql.query(
+    "insert into admin_resources(module,title,slug,status,data,created_by) values('posts',$1,$2,'PUBLISHED',$3::jsonb,$4) returning id",
+    [
+      "CMS archive smoke",
+      `${slug}-archive`,
+      JSON.stringify({
+        excerpt: "Archive excerpt",
+        content: "Archive body",
+        category: terms[0].title,
+        tags: [terms[1].title],
+      }),
+      author.id,
+    ],
+  );
+  archivePostId = archivePost.id;
+  const token = randomBytes(32).toString("base64url");
+  tokenHash = createHash("sha256").update(token).digest("hex");
+  await sql.query(
+    "insert into sessions(user_id,token_hash,expires_at) values($1,$2,now()+interval '5 minutes')",
+    [author.id, tokenHash],
+  );
+  const requests = [
+    fetch(`https://designik-site.vercel.app/blog/category/${terms[0].slug}`),
+    fetch(`https://designik-site.vercel.app/blog/tag/${terms[1].slug}`),
+    fetch(`https://designik-site.vercel.app/blog/author/${author.id}`),
+    fetch(`https://designik-site.vercel.app/blog/${slug}-archive`),
+    fetch(
+      `https://designik-site.vercel.app/admin/posts/${archivePostId}/edit`,
+      { headers: { cookie: `designik_admin_session=${token}` } },
+    ),
+  ];
+  const responses = await Promise.all(requests);
+  const bodies = await Promise.all(
+    responses.map((response) => response.text()),
+  );
+  if (
+    responses.some((response) => response.status !== 200) ||
+    bodies.slice(0, 4).some((body) => !body.includes("CMS archive smoke")) ||
+    !bodies[4].includes("Author")
+  )
+    throw new Error(
+      `Public archives or author editor failed: ${responses.map((response) => response.status)}`,
+    );
+  await sql.query("delete from admin_resources where id=$1", [archivePostId]);
+  archivePostId = undefined;
+  await sql.query("delete from sessions where token_hash=$1", [tokenHash]);
+  tokenHash = undefined;
   await sql.query("delete from admin_resources where id = any($1::uuid[])", [
     taxonomyIds,
   ]);
@@ -102,10 +161,18 @@ try {
       delete: true,
       categories: true,
       tags: true,
+      authorAssignment: true,
+      categoryArchive: true,
+      tagArchive: true,
+      authorArchive: true,
     }),
   );
 } finally {
   if (id) await sql.query("delete from admin_resources where id=$1", [id]);
+  if (archivePostId)
+    await sql.query("delete from admin_resources where id=$1", [archivePostId]);
+  if (tokenHash)
+    await sql.query("delete from sessions where token_hash=$1", [tokenHash]);
   if (taxonomyIds.length)
     await sql.query("delete from admin_resources where id = any($1::uuid[])", [
       taxonomyIds,

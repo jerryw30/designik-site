@@ -1,7 +1,8 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
-import { adminResources } from "@/db/schema";
+import { adminResources, users } from "@/db/schema";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -82,18 +83,42 @@ export default async function BlogPost({
     tags?: string[];
     featuredImage?: string;
   };
+  const [author] = post.createdBy
+    ? await db
+        .select({ id: users.id, name: users.name })
+        .from(users)
+        .where(eq(users.id, post.createdBy))
+        .limit(1)
+    : [];
+  const termSlug = (value: string) =>
+    value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
   return (
     <main className="min-h-screen bg-cream-50 px-6 py-20">
       <article className="mx-auto max-w-3xl">
-        <span className="text-sm font-semibold uppercase text-pink-brand">
+        <Link
+          href={`/blog/category/${termSlug(data.category || "Uncategorized")}`}
+          className="text-sm font-semibold uppercase text-pink-brand"
+        >
           {data.category || "Uncategorized"}
-        </span>
+        </Link>
         <h1 className="mt-3 font-display text-6xl uppercase text-wine-800">
           {post.title}
         </h1>
         <p className="mt-5 text-xl leading-8 text-neutral-600">
           {data.excerpt}
         </p>
+        {author && (
+          <Link
+            href={`/blog/author/${author.id}`}
+            className="mt-4 inline-block text-sm font-medium text-neutral-500"
+          >
+            By {author.name}
+          </Link>
+        )}
         {data.featuredImage && (
           // Arbitrary administrator-provided URLs cannot be statically allowlisted.
           // eslint-disable-next-line @next/next/no-img-element
@@ -109,12 +134,13 @@ export default async function BlogPost({
         {data.tags?.length ? (
           <div className="mt-10 flex gap-2">
             {data.tags.map((tag) => (
-              <span
+              <Link
+                href={`/blog/tag/${termSlug(tag)}`}
                 key={tag}
                 className="rounded-full bg-blush-200 px-3 py-1 text-sm"
               >
                 {tag}
-              </span>
+              </Link>
             ))}
           </div>
         ) : null}

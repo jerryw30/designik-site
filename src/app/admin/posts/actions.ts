@@ -65,6 +65,7 @@ export async function savePost(form: FormData) {
     .set({
       title,
       slug: requestedSlug,
+      createdBy: String(form.get("authorId") || "") || undefined,
       data: postData(form),
       updatedAt: new Date(),
     })
@@ -90,6 +91,7 @@ export async function savePostWithStatus(
       title,
       slug,
       status,
+      createdBy: String(form.get("authorId") || "") || undefined,
       deletedAt: null,
       data: postData(form),
       updatedAt: new Date(),
