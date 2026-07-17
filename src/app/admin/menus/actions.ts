@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources, pages, revisions, sections } from "@/db/schema";
-import { currentUser } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 
 export type MenuItem = {
   id: string;
@@ -15,9 +15,7 @@ export type MenuItem = {
   target: "_self" | "_blank";
 };
 async function authorize() {
-  const user = await currentUser();
-  if (!user) redirect("/admin/login");
-  return user;
+  return requirePermission("manage_menus");
 }
 function slugify(value: string) {
   return (
@@ -46,16 +44,13 @@ export async function createMenu(form: FormData) {
 }
 export async function saveMenu(id: string, title: string, items: MenuItem[]) {
   await authorize();
-  const clean = items
-    .slice(0, 100)
-    .map((item) => ({
-      id: String(item.id),
-      label: String(item.label).slice(0, 100),
-      url: String(item.url).slice(0, 500),
-      parentId: item.parentId ? String(item.parentId) : null,
-      target:
-        item.target === "_blank" ? ("_blank" as const) : ("_self" as const),
-    }));
+  const clean = items.slice(0, 100).map((item) => ({
+    id: String(item.id),
+    label: String(item.label).slice(0, 100),
+    url: String(item.url).slice(0, 500),
+    parentId: item.parentId ? String(item.parentId) : null,
+    target: item.target === "_blank" ? ("_blank" as const) : ("_self" as const),
+  }));
   const ids = new Set(clean.map((item) => item.id));
   clean.forEach((item) => {
     if (item.parentId && !ids.has(item.parentId)) item.parentId = null;
@@ -109,17 +104,15 @@ export async function setMenuStatus(
             })),
         }));
         const draft = { ...(header.draftContent as object), links };
-        await db
-          .insert(revisions)
-          .values({
-            pageId: home.id,
-            authorId: user.id,
-            label: `Published menu: ${menu.title}`,
-            snapshot: {
-              sectionId: header.id,
-              content: header.publishedContent,
-            },
-          });
+        await db.insert(revisions).values({
+          pageId: home.id,
+          authorId: user.id,
+          label: `Published menu: ${menu.title}`,
+          snapshot: {
+            sectionId: header.id,
+            content: header.publishedContent,
+          },
+        });
         await db
           .update(sections)
           .set({
@@ -150,16 +143,14 @@ export async function duplicateMenu(id: string) {
     .where(and(eq(adminResources.id, id), eq(adminResources.module, "menus")))
     .limit(1);
   if (!menu) return;
-  await db
-    .insert(adminResources)
-    .values({
-      module: "menus",
-      title: `${menu.title} Copy`,
-      slug: `${menu.slug}-copy-${Date.now().toString(36)}`,
-      status: "DRAFT",
-      data: menu.data,
-      createdBy: user.id,
-    });
+  await db.insert(adminResources).values({
+    module: "menus",
+    title: `${menu.title} Copy`,
+    slug: `${menu.slug}-copy-${Date.now().toString(36)}`,
+    status: "DRAFT",
+    data: menu.data,
+    createdBy: user.id,
+  });
   revalidatePath("/admin/menus");
 }
 export async function deleteMenuForever(id: string) {

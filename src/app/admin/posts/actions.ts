@@ -5,12 +5,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources } from "@/db/schema";
-import { currentUser } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 
 async function authorize() {
-  const user = await currentUser();
-  if (!user) redirect("/admin/login");
-  return user;
+  return requirePermission("edit_posts");
 }
 
 function slugify(value: string) {
@@ -167,16 +165,14 @@ export async function createTaxonomy(
     .where(and(eq(adminResources.module, kind), eq(adminResources.slug, slug)))
     .limit(1);
   if (!existing.length)
-    await db
-      .insert(adminResources)
-      .values({
-        module: kind,
-        title,
-        slug,
-        status: "PUBLISHED",
-        createdBy: user.id,
-        data: { description: String(form.get("description") || "") },
-      });
+    await db.insert(adminResources).values({
+      module: kind,
+      title,
+      slug,
+      status: "PUBLISHED",
+      createdBy: user.id,
+      data: { description: String(form.get("description") || "") },
+    });
   revalidatePath(`/admin/posts/${kind}`);
 }
 

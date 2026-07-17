@@ -6,7 +6,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { adminResources, pages, revisions, sections, users } from "@/db/schema";
-import { createSession, currentUser, destroySession } from "@/lib/auth";
+import { createSession, destroySession } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 import { heroContent } from "@/cms/defaults";
 import {
   sectionContent,
@@ -104,19 +105,17 @@ export async function ensureHomepage() {
             .set({ position })
             .where(eq(sections.id, item.id));
         else
-          await db
-            .insert(sections)
-            .values({
-              pageId: existing.id,
-              type,
-              name:
-                type === "agency-marquee"
-                  ? `Agency Marquee ${position}`
-                  : type
-                      .replaceAll("-", " ")
-                      .replace(/\b\w/g, (c) => c.toUpperCase()),
-              position,
-            });
+          await db.insert(sections).values({
+            pageId: existing.id,
+            type,
+            name:
+              type === "agency-marquee"
+                ? `Agency Marquee ${position}`
+                : type
+                    .replaceAll("-", " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase()),
+            position,
+          });
       }
     }
     return existing.id;
@@ -150,16 +149,14 @@ export async function ensureHomepage() {
     "Agency Marquee",
     "Footer",
   ];
-  await db
-    .insert(sections)
-    .values(
-      names.map((name, position) => ({
-        pageId: page.id,
-        name,
-        type: name.toLowerCase().replaceAll(" ", "-"),
-        position,
-      })),
-    );
+  await db.insert(sections).values(
+    names.map((name, position) => ({
+      pageId: page.id,
+      name,
+      type: name.toLowerCase().replaceAll(" ", "-"),
+      position,
+    })),
+  );
   return page.id;
 }
 
@@ -180,9 +177,7 @@ export async function updatePage(form: FormData) {
 }
 
 async function requireUser() {
-  const user = await currentUser();
-  if (!user) redirect("/admin/login");
-  return user;
+  return requirePermission("edit_pages");
 }
 
 export async function createPage(form: FormData) {
@@ -250,15 +245,12 @@ export async function setPageStatus(id: string, status: "DRAFT" | "PUBLISHED") {
   const user = await requireUser();
   const [page] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
   if (!page) return;
-  await db
-    .insert(revisions)
-    .values({
-      pageId: id,
-      authorId: user.id,
-      label:
-        status === "PUBLISHED" ? "Page published" : "Page changed to draft",
-      snapshot: page,
-    });
+  await db.insert(revisions).values({
+    pageId: id,
+    authorId: user.id,
+    label: status === "PUBLISHED" ? "Page published" : "Page changed to draft",
+    snapshot: page,
+  });
   await db
     .update(pages)
     .set({
@@ -304,8 +296,7 @@ export async function getHomepageSections(pageId: string) {
 }
 
 export async function saveHeroDraft(sectionId: string, value: unknown) {
-  const user = await currentUser();
-  if (!user) throw new Error("Unauthorized");
+  await requirePermission("edit_pages");
   const content = heroContent(value);
   await db
     .update(sections)
@@ -315,8 +306,7 @@ export async function saveHeroDraft(sectionId: string, value: unknown) {
 }
 
 export async function publishHero(sectionId: string) {
-  const user = await currentUser();
-  if (!user) throw new Error("Unauthorized");
+  const user = await requirePermission("edit_pages");
   const [section] = await db
     .select()
     .from(sections)
@@ -326,14 +316,12 @@ export async function publishHero(sectionId: string) {
   const content = heroContent(section.draftContent);
   // The Neon HTTP driver used by Vercel does not support SQL transactions.
   // Preserve the old published value first, then publish the validated draft.
-  await db
-    .insert(revisions)
-    .values({
-      pageId: section.pageId,
-      authorId: user.id,
-      label: "Published Hero",
-      snapshot: { sectionId, content: section.publishedContent },
-    });
+  await db.insert(revisions).values({
+    pageId: section.pageId,
+    authorId: user.id,
+    label: "Published Hero",
+    snapshot: { sectionId, content: section.publishedContent },
+  });
   await db
     .update(sections)
     .set({ publishedContent: content, updatedAt: new Date() })
@@ -389,16 +377,14 @@ export async function addSection(pageId: string, type: string) {
     .replaceAll("-", " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
   const draftContent = sectionContent(type as EditableSectionType, {});
-  await db
-    .insert(sections)
-    .values({
-      pageId,
-      type,
-      name,
-      position: current.length,
-      draftContent,
-      publishedContent: { _cmsPublished: false },
-    });
+  await db.insert(sections).values({
+    pageId,
+    type,
+    name,
+    position: current.length,
+    draftContent,
+    publishedContent: { _cmsPublished: false },
+  });
   revalidatePath(`/admin/pages/${pageId}/builder`);
 }
 
@@ -414,22 +400,20 @@ export async function duplicateSection(sectionId: string) {
     .select({ id: sections.id })
     .from(sections)
     .where(eq(sections.pageId, source.pageId));
-  await db
-    .insert(sections)
-    .values({
-      pageId: source.pageId,
-      type: source.type,
-      name: `${source.name} Copy`,
-      position: current.length,
-      content: source.content,
-      draftContent: source.draftContent,
-      publishedContent: source.publishedContent,
-      styles: source.styles,
-      responsive: source.responsive,
-      animation: source.animation,
-      visible: source.visible,
-      locked: false,
-    });
+  await db.insert(sections).values({
+    pageId: source.pageId,
+    type: source.type,
+    name: `${source.name} Copy`,
+    position: current.length,
+    content: source.content,
+    draftContent: source.draftContent,
+    publishedContent: source.publishedContent,
+    styles: source.styles,
+    responsive: source.responsive,
+    animation: source.animation,
+    visible: source.visible,
+    locked: false,
+  });
   revalidatePath(`/admin/pages/${source.pageId}/builder`);
 }
 
@@ -486,14 +470,12 @@ export async function publishSection(
     .limit(1);
   if (!section) throw new Error("Section not found");
   const content = sectionContent(type, section.draftContent);
-  await db
-    .insert(revisions)
-    .values({
-      pageId: section.pageId,
-      authorId: user.id,
-      label: `Published ${section.name}`,
-      snapshot: { sectionId, content: section.publishedContent },
-    });
+  await db.insert(revisions).values({
+    pageId: section.pageId,
+    authorId: user.id,
+    label: `Published ${section.name}`,
+    snapshot: { sectionId, content: section.publishedContent },
+  });
   await db
     .update(sections)
     .set({ publishedContent: content, updatedAt: new Date() })
@@ -517,22 +499,20 @@ export async function copySectionToPage(
     .select({ id: sections.id })
     .from(sections)
     .where(eq(sections.pageId, pageId));
-  await db
-    .insert(sections)
-    .values({
-      pageId,
-      type: source.type,
-      name: `${source.name} Copy`,
-      position: current.length,
-      content: source.content,
-      draftContent: source.draftContent,
-      publishedContent: { _cmsPublished: false },
-      styles: source.styles,
-      responsive: source.responsive,
-      animation: source.animation,
-      visible: source.visible,
-      locked: false,
-    });
+  await db.insert(sections).values({
+    pageId,
+    type: source.type,
+    name: `${source.name} Copy`,
+    position: current.length,
+    content: source.content,
+    draftContent: source.draftContent,
+    publishedContent: { _cmsPublished: false },
+    styles: source.styles,
+    responsive: source.responsive,
+    animation: source.animation,
+    visible: source.visible,
+    locked: false,
+  });
   revalidatePath(`/admin/pages/${pageId}/builder`);
 }
 
@@ -544,26 +524,24 @@ export async function saveSectionAsTemplate(sectionId: string) {
     .where(eq(sections.id, sectionId))
     .limit(1);
   if (!source) return;
-  await db
-    .insert(adminResources)
-    .values({
-      module: "saved-sections",
-      title: source.name,
-      slug: `${source.type}-${Date.now().toString(36)}`,
-      status: "PUBLISHED",
-      createdBy: user.id,
-      data: {
-        type: source.type,
-        name: source.name,
-        content: source.content,
-        draftContent: source.draftContent,
-        publishedContent: source.publishedContent,
-        styles: source.styles,
-        responsive: source.responsive,
-        animation: source.animation,
-        visible: source.visible,
-      },
-    });
+  await db.insert(adminResources).values({
+    module: "saved-sections",
+    title: source.name,
+    slug: `${source.type}-${Date.now().toString(36)}`,
+    status: "PUBLISHED",
+    createdBy: user.id,
+    data: {
+      type: source.type,
+      name: source.name,
+      content: source.content,
+      draftContent: source.draftContent,
+      publishedContent: source.publishedContent,
+      styles: source.styles,
+      responsive: source.responsive,
+      animation: source.animation,
+      visible: source.visible,
+    },
+  });
   revalidatePath("/admin/saved-sections");
 }
 
@@ -588,24 +566,22 @@ export async function addSavedSectionToPage(
     .select({ id: sections.id })
     .from(sections)
     .where(eq(sections.pageId, pageId));
-  await db
-    .insert(sections)
-    .values({
-      pageId,
-      type: String(data.type || "widgets"),
-      name: String(data.name || template.title),
-      position: current.length,
-      content: (data.content || {}) as Record<string, unknown>,
-      draftContent: (data.draftContent || data.content || {}) as Record<
-        string,
-        unknown
-      >,
-      publishedContent: { _cmsPublished: false },
-      styles: (data.styles || {}) as Record<string, unknown>,
-      responsive: (data.responsive || {}) as Record<string, unknown>,
-      animation: (data.animation || {}) as Record<string, unknown>,
-      visible: data.visible !== false,
-      locked: false,
-    });
+  await db.insert(sections).values({
+    pageId,
+    type: String(data.type || "widgets"),
+    name: String(data.name || template.title),
+    position: current.length,
+    content: (data.content || {}) as Record<string, unknown>,
+    draftContent: (data.draftContent || data.content || {}) as Record<
+      string,
+      unknown
+    >,
+    publishedContent: { _cmsPublished: false },
+    styles: (data.styles || {}) as Record<string, unknown>,
+    responsive: (data.responsive || {}) as Record<string, unknown>,
+    animation: (data.animation || {}) as Record<string, unknown>,
+    visible: data.visible !== false,
+    locked: false,
+  });
   revalidatePath(`/admin/pages/${pageId}/builder`);
 }
