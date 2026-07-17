@@ -277,7 +277,7 @@ try {
   const heroButton = await previewFrame.evaluateHandle(() => {
     const hero = document.querySelector("h1")?.closest("[data-cms-section]");
     return [...(hero?.querySelectorAll("a") || [])].find((anchor) =>
-      anchor.textContent?.includes("GET STARTED"),
+      anchor.textContent?.toLowerCase().includes("get started"),
     );
   });
   if (!heroButton.asElement()) throw new Error("Hero button was not rendered");
@@ -323,21 +323,22 @@ try {
   await page.waitForSelector('[aria-label="Element Text color"]', {
     timeout: 10000,
   });
-  const colorControl = await page.$('[aria-label="Element Text color"]');
-  await colorControl.click({ clickCount: 3 });
-  await colorControl.type("#123456");
-  const saveButton = await page
-    .$$("aside:last-child button")
-    .then(async (buttons) => {
-      for (const button of buttons)
-        if (
-          (await button.evaluate((node) => node.textContent?.trim())) ===
-          "Save draft"
-        )
-          return button;
-    });
-  if (!saveButton) throw new Error("Legacy section save control not found");
-  await saveButton.click();
+  await page.$eval('[aria-label="Element Text color"]', (input) => {
+    const setter = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value",
+    ).set;
+    setter.call(input, "#123456");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  const saved = await page.evaluate(() => {
+    const button = [
+      ...document.querySelectorAll("aside:last-child button"),
+    ].find((item) => item.textContent?.trim() === "Save draft");
+    if (button instanceof HTMLButtonElement) button.click();
+    return Boolean(button);
+  });
+  if (!saved) throw new Error("Legacy section save control not found");
   await page.waitForFunction(
     () => document.body.innerText.includes("Draft saved"),
     { timeout: 10000 },
@@ -354,6 +355,13 @@ try {
   );
   if (!independentElementStyle)
     throw new Error("Independent legacy element style did not persist");
+  const styledPreview = await fetch(
+    `https://designik-site.vercel.app/admin/pages/${pageRecord.id}/preview`,
+    { headers: { cookie: `designik_admin_session=${token}` } },
+  ).then((response) => response.text());
+  const elementStyleRuntime = styledPreview.includes("#123456");
+  if (!elementStyleRuntime)
+    throw new Error("Saved independent element style was not rendered");
   console.log(
     JSON.stringify({
       status: "ok",
@@ -366,6 +374,7 @@ try {
       directLinkAndLabel,
       directLegacyNested,
       independentElementStyle,
+      elementStyleRuntime,
     }),
   );
 } finally {

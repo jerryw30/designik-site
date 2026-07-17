@@ -82,6 +82,8 @@ Updated: 2026-07-17
 - Interactive carousel navigation, live countdown timers, gallery Media Library insertion, and secure login routing
 - Every published CMS page is rendered at its real `/{slug}` URL with its published sections, page SEO, global designs, forms, and popup
 - Production page-route tests proving published output and metadata while isolating drafts and trashed pages
+- Persistent independent styling for clicked legacy elements: typography, color, background, dimensions, spacing, alignment, borders, shadows, hover states, and per-device visibility
+- Secure scoped element-style runtime plus authenticated production persistence/rendering tests
 
 ## In progress
 
