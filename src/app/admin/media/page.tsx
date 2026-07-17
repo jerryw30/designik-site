@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../admin-shell";
-import { deleteMediaPermanently, restoreMedia, uploadMedia } from "./actions";
+import { deleteMediaPermanently, restoreMedia } from "./actions";
 import { CopyUrlButton, MediaPreview } from "./media-client";
 
 function formatBytes(bytes: number) {
@@ -78,7 +78,8 @@ export default async function MediaLibrary({
       </div>
       {!trash && (
         <form
-          action={uploadMedia}
+          action="/api/media/upload"
+          method="post"
           encType="multipart/form-data"
           className="mb-6 rounded-2xl border border-dashed border-pink-300 bg-white p-6"
         >
@@ -86,7 +87,7 @@ export default async function MediaLibrary({
             <label className="text-sm font-medium">
               Upload files{" "}
               <span className="font-normal text-neutral-400">
-                (up to 8 MB each)
+                (up to 4 MB each)
               </span>
               <input
                 name="files"

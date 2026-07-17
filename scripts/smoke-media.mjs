@@ -128,8 +128,12 @@ try {
     "select id,title,alt_text from media_assets where filename=$1",
     [uploadName],
   );
-  if (!uploaded || uploaded.alt_text !== uploaded.title)
-    throw new Error("Browser upload workflow failed");
+  if (!uploaded || uploaded.alt_text !== uploaded.title) {
+    const body = await page.evaluate(() =>
+      document.body.innerText.slice(0, 500),
+    );
+    throw new Error(`Browser upload workflow failed at ${page.url()}: ${body}`);
+  }
   await sql.query("delete from media_assets where id=$1", [uploaded.id]);
 
   console.log(

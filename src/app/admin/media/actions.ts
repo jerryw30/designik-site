@@ -7,7 +7,7 @@ import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
 import { requirePermission } from "@/lib/permissions";
 
-const MAX_FILE_SIZE = 8 * 1024 * 1024;
+const MAX_FILE_SIZE = 4 * 1024 * 1024;
 const allowedTypes =
   /^(image|video|audio)\/[a-z0-9.+-]+$|^application\/pdf$|^font\/[a-z0-9.+-]+$/i;
 
@@ -29,7 +29,7 @@ export async function uploadMedia(form: FormData) {
   if (!files.length) throw new Error("Select at least one file to upload.");
   for (const file of files) {
     if (file.size > MAX_FILE_SIZE)
-      throw new Error(`${file.name} exceeds the 8 MB upload limit.`);
+      throw new Error(`${file.name} exceeds the 4 MB upload limit.`);
     if (!allowedTypes.test(file.type))
       throw new Error(`${file.name} is not a supported media type.`);
     const filename = cleanFilename(file.name);
