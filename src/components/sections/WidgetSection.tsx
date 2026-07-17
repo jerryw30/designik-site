@@ -2,6 +2,10 @@ import Image from "next/image";
 import { sectionContent } from "@/cms/section-defaults";
 import PublicForm from "@/components/forms/PublicForm";
 import type { FormDefinition } from "@/app/admin/forms/actions";
+import {
+  CarouselWidget,
+  CountdownWidget,
+} from "@/components/widgets/InteractiveWidgets";
 
 export type WidgetForm = {
   id: string;
@@ -205,7 +209,15 @@ function WidgetView({
         {widget.content}
       </div>
     );
-  if (widget.type === "gallery" || widget.type === "carousel")
+  if (widget.type === "carousel")
+    return (
+      <CarouselWidget
+        sources={widget.content.split("\n").filter(Boolean)}
+        alt={String(widget.settings.alt || "")}
+        height={Number(widget.settings.height || 320)}
+      />
+    );
+  if (widget.type === "gallery")
     return (
       <div
         className="grid"
@@ -307,11 +319,7 @@ function WidgetView({
       <span id={widget.content.replace(/[^a-z0-9-]/gi, "-").toLowerCase()} />
     );
   if (widget.type === "countdown")
-    return (
-      <div className="text-center font-display text-4xl" style={style}>
-        {widget.content}
-      </div>
-    );
+    return <CountdownWidget target={widget.content} />;
   if (widget.type === "html")
     return <div dangerouslySetInnerHTML={{ __html: widget.content }} />;
   return null;

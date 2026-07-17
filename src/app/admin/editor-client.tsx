@@ -1080,23 +1080,41 @@ function WidgetList({
             value={widget.content}
             onChange={(e) => update(index, { content: e.target.value })}
           />
-          {["image", "video", "audio"].includes(widget.type) && (
+          {["image", "video", "audio", "gallery", "carousel"].includes(
+            widget.type,
+          ) && (
             <select
               value=""
               onChange={(e) =>
-                e.target.value && update(index, { content: e.target.value })
+                e.target.value &&
+                update(index, {
+                  content: ["gallery", "carousel"].includes(widget.type)
+                    ? [widget.content, e.target.value]
+                        .filter(Boolean)
+                        .join("\n")
+                    : e.target.value,
+                })
               }
               className="admin-input mt-2 text-xs"
             >
               <option value="">Choose from Media Library…</option>
               {media
-                .filter((asset) => asset.mimeType.startsWith(`${widget.type}/`))
+                .filter((asset) =>
+                  ["gallery", "carousel"].includes(widget.type)
+                    ? asset.mimeType.startsWith("image/")
+                    : asset.mimeType.startsWith(`${widget.type}/`),
+                )
                 .map((asset) => (
                   <option key={asset.id} value={`/api/media/${asset.id}`}>
                     {asset.title}
                   </option>
                 ))}
             </select>
+          )}
+          {widget.type === "countdown" && (
+            <p className="mt-2 text-[10px] text-white/40">
+              Use an ISO date and time, for example 2030-01-01T00:00:00Z.
+            </p>
           )}
           {widget.type === "form" && (
             <label className="mt-2 block text-[10px] uppercase text-white/45">

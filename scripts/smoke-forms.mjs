@@ -6,6 +6,7 @@ const suffix = Date.now().toString(36);
 let formId;
 let submissionId;
 let tokenHash;
+let widgetSectionId;
 
 try {
   const definition = {
@@ -103,6 +104,32 @@ try {
     "insert into sessions(user_id,token_hash,expires_at) values($1,$2,now()+interval '5 minutes')",
     [admin.id, tokenHash],
   );
+  const [home] = await sql.query(
+    "select id from pages where slug='home' limit 1",
+    [],
+  );
+  const [widgetSection] = await sql.query(
+    `insert into sections(page_id,type,name,position,content,draft_content,published_content,styles,responsive,animation,visible,locked)
+     values($1,'widgets','Form widget smoke',(select coalesce(max(position),0)+1 from sections where page_id=$1),$2::jsonb,$2::jsonb,'{"_cmsPublished":false}'::jsonb,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb,true,false) returning id`,
+    [
+      home.id,
+      JSON.stringify({
+        backgroundColor: "#ffffff",
+        paddingTop: 20,
+        paddingBottom: 20,
+        maxWidth: 1280,
+        widgets: [
+          {
+            id: randomUUID(),
+            type: "form",
+            content: "Embedded smoke form",
+            settings: { formId, width: 100 },
+          },
+        ],
+      }),
+    ],
+  );
+  widgetSectionId = widgetSection.id;
   const headers = { cookie: `designik_admin_session=${token}` };
   const [
     publicPage,
@@ -111,6 +138,9 @@ try {
     previewPage,
     inboxPage,
     exportResponse,
+    builderPage,
+    embeddedPreview,
+    searchPage,
   ] = await Promise.all([
     fetch(`https://designik-site.vercel.app/forms/${slug}`),
     fetch("https://designik-site.vercel.app/admin/forms", { headers }),
@@ -128,6 +158,13 @@ try {
       `https://designik-site.vercel.app/admin/forms/${formId}/submissions/export`,
       { headers },
     ),
+    fetch(`https://designik-site.vercel.app/admin/pages/${home.id}/builder`, {
+      headers,
+    }),
+    fetch(`https://designik-site.vercel.app/admin/pages/${home.id}/preview`, {
+      headers,
+    }),
+    fetch("https://designik-site.vercel.app/blog?q=integration-smoke"),
   ]);
   const statuses = [
     publicPage,
@@ -136,9 +173,24 @@ try {
     previewPage,
     inboxPage,
     exportResponse,
+    builderPage,
+    embeddedPreview,
+    searchPage,
   ].map((response) => response.status);
   if (statuses.some((status) => status !== 200))
     throw new Error(`Production form routes failed: ${statuses.join(",")}`);
+  const builderHtml = await builderPage.text();
+  const embeddedHtml = await embeddedPreview.text();
+  const searchHtml = await searchPage.text();
+  if (!builderHtml.includes("Form smoke"))
+    throw new Error("Published form was not offered in widget settings");
+  if (
+    !embeddedHtml.includes("Embedded smoke form") ||
+    !embeddedHtml.includes(`api/forms/${formId}/submit`)
+  )
+    throw new Error("Form widget did not render the real published form");
+  if (!searchHtml.includes("Search the journal"))
+    throw new Error("Public search widget destination is not functional");
   const csv = await exportResponse.text();
   if (!csv.includes("tester@example.com") || !csv.includes("Web"))
     throw new Error("CSV export failed");
@@ -161,6 +213,8 @@ try {
     [formId],
   );
   formId = undefined;
+  await sql.query("delete from sections where id=$1", [widgetSectionId]);
+  widgetSectionId = undefined;
   console.log(
     JSON.stringify({
       create: true,
@@ -176,6 +230,9 @@ try {
       trash: true,
       restore: true,
       deleteForm: true,
+      widgetFormSelector: true,
+      embeddedForm: true,
+      widgetSearchDestination: true,
     }),
   );
 } finally {
@@ -183,6 +240,8 @@ try {
     await sql.query("delete from form_submissions where id=$1", [submissionId]);
   if (formId)
     await sql.query("delete from admin_resources where id=$1", [formId]);
+  if (widgetSectionId)
+    await sql.query("delete from sections where id=$1", [widgetSectionId]);
   if (tokenHash)
     await sql.query("delete from sessions where token_hash=$1", [tokenHash]);
 }

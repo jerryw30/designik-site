@@ -48,6 +48,7 @@ export function newWidget(type: WidgetType, id: string) {
     accordion: "Question\nAnswer",
     tabs: "Tab one\nTab content",
     form: "Contact form",
+    countdown: "2030-01-01T00:00:00Z",
   };
   return {
     id,
