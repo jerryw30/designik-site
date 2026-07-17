@@ -817,6 +817,9 @@ function InlineSelection({
               ["boxShadow", "Shadow", "none"],
               ["hoverColor", "Hover color", ""],
               ["hoverBackgroundColor", "Hover background", ""],
+              ["desktopWidth", "Desktop width", ""],
+              ["tabletWidth", "Tablet width", ""],
+              ["mobileWidth", "Mobile width", ""],
             ].map(([key, label, fallback]) => (
               <label key={key} className="text-[9px] text-white/45">
                 {label}
@@ -833,6 +836,9 @@ function InlineSelection({
               ["fontWeight", "Font weight", 400],
               ["borderWidth", "Border width", 0],
               ["borderRadius", "Border radius", 0],
+              ["desktopFontSize", "Desktop font size", 16],
+              ["tabletFontSize", "Tablet font size", 16],
+              ["mobileFontSize", "Mobile font size", 16],
             ].map(([key, label, fallback]) => (
               <label key={String(key)} className="text-[9px] text-white/45">
                 {label}
@@ -859,6 +865,20 @@ function InlineSelection({
                 <option>left</option>
                 <option>center</option>
                 <option>right</option>
+              </select>
+            </label>
+            <label className="text-[9px] text-white/45">
+              Animation
+              <select
+                aria-label="Element animation"
+                className="admin-input mt-1"
+                value={String(style.animation || "none")}
+                onChange={(event) => setStyle("animation", event.target.value)}
+              >
+                <option>none</option>
+                <option>fade</option>
+                <option>slide-up</option>
+                <option>zoom</option>
               </select>
             </label>
           </div>

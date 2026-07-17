@@ -16,10 +16,13 @@ export default function BuilderBridge() {
           ? node
           : null;
       const widget = node.closest<HTMLElement>("[data-cms-element]");
+      const vector = node.closest<HTMLElement>("svg");
       const candidate =
         widget ||
+        vector ||
         leaf ||
-        node.closest<HTMLElement>("h1,h2,h3,h4,h5,h6,p,a,button,img,video");
+        node.closest<HTMLElement>("h1,h2,h3,h4,h5,h6,p,a,button,img,video") ||
+        (node !== section ? node : section);
       return candidate && section.contains(candidate) ? candidate : section;
     };
     const selector = (node: HTMLElement, section: HTMLElement) => {

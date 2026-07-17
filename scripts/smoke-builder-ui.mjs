@@ -319,7 +319,38 @@ try {
   }, legacySectionId);
   if (!styleHeading.asElement())
     throw new Error("Legacy style target was not rendered");
-  await styleHeading.asElement().click();
+  await previewFrame.evaluate((sectionId) => {
+    const icon = document.querySelector(
+      `[data-cms-section="${sectionId}"] a svg`,
+    );
+    icon?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true }),
+    );
+  }, legacySectionId);
+  await page.waitForSelector('[aria-label="Element animation"]', {
+    timeout: 10000,
+  });
+  const svgElementSelection = await page.evaluate(
+    () =>
+      Boolean(document.querySelector('[aria-label="Element Desktop width"]')) &&
+      Boolean(
+        document.querySelector('[aria-label="Element Mobile font size"]'),
+      ),
+  );
+  if (!svgElementSelection)
+    throw new Error("SVG or responsive element controls are unavailable");
+  const refreshedStyleHeading = await previewFrame.evaluateHandle(
+    (sectionId) => {
+      const section = document.querySelector(
+        `[data-cms-section="${sectionId}"]`,
+      );
+      return [...(section?.querySelectorAll("span") || [])].find(
+        (span) => span.textContent?.trim() === "Inline style smoke",
+      );
+    },
+    legacySectionId,
+  );
+  await refreshedStyleHeading.asElement().click();
   await page.waitForSelector('[aria-label="Element Text color"]', {
     timeout: 10000,
   });
@@ -375,6 +406,7 @@ try {
       directLegacyNested,
       independentElementStyle,
       elementStyleRuntime,
+      svgElementSelection,
     }),
   );
 } finally {
