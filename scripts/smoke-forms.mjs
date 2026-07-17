@@ -186,7 +186,8 @@ try {
     throw new Error("Published form was not offered in widget settings");
   if (
     !embeddedHtml.includes("Embedded smoke form") ||
-    !embeddedHtml.includes(`api/forms/${formId}/submit`)
+    !embeddedHtml.includes("Service") ||
+    !embeddedHtml.includes("Branding")
   )
     throw new Error("Form widget did not render the real published form");
   if (!searchHtml.includes("Search the journal"))

@@ -58,11 +58,7 @@ export default function SiteHome({
   popup?: GlobalDesign | null;
   forms?: WidgetForm[];
 }) {
-  if (
-    !sections?.length ||
-    sections.filter((s) => s.type === "agency-marquee").length < 5
-  )
-    return <LegacyHome hero={hero} />;
+  if (!sections) return <LegacyHome hero={hero} />;
   return (
     <main className="relative overflow-x-hidden">
       {builder && <BuilderBridge />}

@@ -20,6 +20,7 @@
     "test:media": "node --env-file=.env.local scripts/smoke-media.mjs",
     "test:designs": "node --env-file=.env.local scripts/smoke-designs.mjs",
     "test:tools": "node --env-file=.env.local scripts/smoke-tools.mjs",
+    "test:pages": "node --env-file=.env.local scripts/smoke-pages.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
