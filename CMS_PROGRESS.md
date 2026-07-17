@@ -51,6 +51,9 @@ Updated: 2026-07-17
 - Live canonical, description, robots, Google verification, Open Graph, Twitter Card, and title-template metadata
 - Database-driven XML sitemap and robots.txt with noindex filtering
 - Automated production SEO persistence, metadata, sitemap, robots, and editor-route test
+- Revision history and detail comparison screens for page and section snapshots
+- Safe page/section restoration with automatic pre-restore recovery snapshots
+- Revision deletion and authenticated production rollback/recovery testing
 
 ## In progress
 
@@ -70,6 +73,6 @@ Updated: 2026-07-17
 - Author management and public category/tag archive filtering
 - Media library and Vercel Blob uploads
 - Specialized global templates, header/footer, and popup builders
-- Revision restore UI, custom code, and tools
+- Custom code and tools
 - Complete advanced widget controls, inline element editing, and import/export
 - Full editable-element audit and cross-browser/device acceptance testing
