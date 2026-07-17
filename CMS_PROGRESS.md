@@ -36,6 +36,9 @@ Updated: 2026-07-17
 - Hierarchical Menu Builder with item add/edit/duplicate/remove, drag reorder, dropdown parenting, preview, publish, trash, restore, and delete
 - Menu publishing connected to the real homepage Header with revision history and desktop/mobile dropdown rendering
 - Automated isolated menu lifecycle and header-dropdown mapping test
+- Users and Roles management with account creation, role assignment, profile editing, password reset, activation, session revocation, and guarded deletion
+- Central role permission matrix enforced across page, section, post, menu, media, forms, SEO, settings, and template mutations
+- Automated Users lifecycle and authenticated production-route test
 
 ## In progress
 
@@ -56,6 +59,6 @@ Updated: 2026-07-17
 - Media library and Vercel Blob uploads
 - Specialized global templates, header/footer, and popup builders
 - Forms builder and submissions
-- SEO center, global styles/fonts, users/permissions UI, revisions UI, custom code, tools
+- SEO center, global styles/fonts, revision restore UI, custom code, and tools
 - Complete advanced widget controls, inline element editing, and import/export
 - Full editable-element audit and cross-browser/device acceptance testing
