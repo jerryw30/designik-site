@@ -1098,6 +1098,7 @@ function WidgetList({
                   {label}
                   <input
                     type="checkbox"
+                    aria-label={`Widget ${label}`}
                     checked={widget.settings[key] !== false}
                     onChange={(e) => setting(index, key, e.target.checked)}
                   />

@@ -135,16 +135,31 @@ try {
     throw new Error(`Missing builder control: ${JSON.stringify(controls)}`);
   const clickDevice = async (label) => {
     const buttons = await page.$$("button");
+    let clicked = false;
     for (const button of buttons) {
       const text = await button.evaluate((node) =>
         node.textContent?.trim().toLowerCase(),
       );
       if (text === label) {
         await button.click();
+        clicked = true;
         break;
       }
     }
-    await new Promise((resolve) => setTimeout(resolve, 400));
+    if (!clicked) throw new Error(`${label} preview button not found`);
+    const expected = label === "tablet" ? 768 : label === "mobile" ? 390 : null;
+    if (expected)
+      await page.waitForFunction(
+        (width) =>
+          Math.round(
+            document
+              .querySelector('iframe[title="Draft website preview"]')
+              ?.parentElement?.getBoundingClientRect().width || 0,
+          ) === width,
+        { timeout: 10000 },
+        expected,
+      );
+    else await new Promise((resolve) => setTimeout(resolve, 400));
     return page.$eval('iframe[title="Draft website preview"]', (frame) =>
       Math.round(frame.parentElement.getBoundingClientRect().width),
     );
@@ -169,10 +184,20 @@ try {
   if (!widgetButton)
     throw new Error("Widget section navigator control not found");
   await widgetButton.click();
-  await page.waitForFunction(
-    () => document.body.innerText.includes("Advanced widget controls"),
-    { timeout: 10000 },
-  );
+  try {
+    await page.waitForFunction(
+      () =>
+        document.body.innerText
+          .toLowerCase()
+          .includes("advanced widget controls"),
+      { timeout: 10000 },
+    );
+  } catch {
+    const panelText = await page.$eval("aside:last-child", (node) =>
+      node.innerText.slice(0, 1200),
+    );
+    throw new Error(`Widget panel failed to open: ${panelText}`);
+  }
   await clickDevice("desktop");
   const previewFrame = await (
     await page.$('iframe[title="Draft website preview"]')
@@ -185,14 +210,17 @@ try {
     () =>
       [...document.querySelectorAll("details")].some(
         (item) =>
-          item.textContent?.includes("Advanced widget controls") && item.open,
+          item.textContent
+            ?.toLowerCase()
+            .includes("advanced widget controls") && item.open,
       ),
     { timeout: 10000 },
   );
   const advanced = await page.evaluate(() => ({
     directElement: [...document.querySelectorAll("details")].some(
       (item) =>
-        item.textContent?.includes("Advanced widget controls") && item.open,
+        item.textContent?.toLowerCase().includes("advanced widget controls") &&
+        item.open,
     ),
     background: Boolean(
       document.querySelector('[aria-label="Widget background color"]'),
@@ -209,7 +237,9 @@ try {
     animation: Boolean(
       document.querySelector('[aria-label="Widget animation"]'),
     ),
-    responsive: Boolean(document.body.innerText.includes("Mobile visible")),
+    responsive: Boolean(
+      document.querySelector('[aria-label="Widget Mobile visible"]'),
+    ),
     mediaLibrary: Boolean(
       document.body.innerText.includes("Choose from Media Library"),
     ),
