@@ -1,14 +1,32 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-
-const TO = process.env.CONTACT_TO || "designguyluke@gmail.com";
+import { eq } from "drizzle-orm";
+import { db } from "@/db";
+import { siteSettings } from "@/db/schema";
+import { websiteSettings } from "@/cms/website-settings";
 
 function isEmail(v: unknown): v is string {
   return typeof v === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
 export async function POST(request: Request) {
-  let body: { email?: string; name?: string; message?: string; source?: string };
+  const [record] = await db
+    .select()
+    .from(siteSettings)
+    .where(eq(siteSettings.key, "website_settings"))
+    .limit(1);
+  const stored = record?.value as { published?: unknown } | undefined;
+  const configured = websiteSettings(stored?.published);
+  const TO =
+    configured.contact.email ||
+    process.env.CONTACT_TO ||
+    "designguyluke@gmail.com";
+  let body: {
+    email?: string;
+    name?: string;
+    message?: string;
+    source?: string;
+  };
   try {
     body = await request.json();
   } catch {
@@ -17,7 +35,10 @@ export async function POST(request: Request) {
 
   const { email, name, message, source } = body;
   if (!isEmail(email)) {
-    return NextResponse.json({ error: "Please enter a valid email address." }, { status: 422 });
+    return NextResponse.json(
+      { error: "Please enter a valid email address." },
+      { status: 422 },
+    );
   }
 
   const subject =
@@ -55,8 +76,11 @@ export async function POST(request: Request) {
     } catch (err) {
       console.error("[contact] email send failed:", err);
       return NextResponse.json(
-        { error: "We couldn't send your message right now. Please try again later." },
-        { status: 502 }
+        {
+          error:
+            "We couldn't send your message right now. Please try again later.",
+        },
+        { status: 502 },
       );
     }
   } else {

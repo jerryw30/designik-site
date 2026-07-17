@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Oswald, Inter, Akshar } from "next/font/google";
 import "./globals.css";
-import SmoothScroll from "@/components/SmoothScroll";
+import SiteShell from "@/components/SiteShell";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { pages, siteSettings } from "@/db/schema";
@@ -11,6 +11,7 @@ import {
   globalStyleVariables,
 } from "@/cms/global-styles";
 import { safeBase, seoSettings } from "@/cms/seo";
+import { websiteSettings } from "@/cms/website-settings";
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -89,28 +90,49 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [record] = await db
-    .select()
-    .from(siteSettings)
-    .where(eq(siteSettings.key, "global_styles"))
-    .limit(1);
+  const [[record], [websiteRecord]] = await Promise.all([
+    db
+      .select()
+      .from(siteSettings)
+      .where(eq(siteSettings.key, "global_styles"))
+      .limit(1),
+    db
+      .select()
+      .from(siteSettings)
+      .where(eq(siteSettings.key, "website_settings"))
+      .limit(1),
+  ]);
   const stored = record?.value as { published?: unknown } | undefined;
+  const websiteStored = websiteRecord?.value as
+    | { published?: unknown }
+    | undefined;
   const published = globalStyles(stored?.published);
+  const website = websiteSettings(websiteStored?.published);
   const variables = globalStyleVariables(published) as React.CSSProperties;
   const fontCss = customFontCss(published);
   return (
     <html
-      lang="en"
+      lang={website.regional.language}
       className={`${oswald.variable} ${inter.variable} ${akshar.variable}`}
       style={variables}
     >
-      {fontCss && (
-        <head>
-          <style dangerouslySetInnerHTML={{ __html: fontCss }} />
-        </head>
-      )}
+      <head>
+        <link rel="icon" href={website.identity.faviconUrl} />
+        {(fontCss || website.custom.css) && (
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `${fontCss}\n${website.custom.css}`,
+            }}
+          />
+        )}
+        {website.custom.headCode && (
+          <script
+            dangerouslySetInnerHTML={{ __html: website.custom.headCode }}
+          />
+        )}
+      </head>
       <body className="bg-white text-ink font-sans">
-        <SmoothScroll>{children}</SmoothScroll>
+        <SiteShell settings={website}>{children}</SiteShell>
       </body>
     </html>
   );
