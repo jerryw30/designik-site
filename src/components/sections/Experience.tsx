@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import { Reveal } from "@/components/ui/Reveal";
+import { sectionContent } from "@/cms/section-defaults";
 
 type Pill = {
   label: string;
@@ -84,36 +85,35 @@ function FloatingPill({ label, icon, pos, delay }: Pill & { delay: number }) {
   );
 }
 
-export default function Experience() {
+export default function Experience({ content }: { content?: unknown } = {}) {
+  const data=sectionContent("experience",content); const editablePills=PILLS.map((pill,i)=>({...pill,label:data.pills[i]?.label||pill.label,pos:data.pills[i]?.position||pill.pos}));
   return (
     <section className="bg-white px-4 py-10 md:px-8 md:py-14">
       <div className="relative mx-auto max-w-[1280px] overflow-hidden rounded-[32px] shadow-[0_40px_80px_-30px_rgba(83,8,35,0.6)]">
         {/* background: red hills + maroon wash */}
         <div className="absolute inset-0">
-          <Image src={assets.experienceHills} alt="" fill className="object-cover" sizes="100vw" />
+          <Image src={data.backgroundImage || assets.experienceHills} alt="" fill className="object-cover" sizes="100vw" />
           <div className="absolute inset-0 bg-gradient-to-b from-wine-800/95 via-wine-600/90 to-wine-500/95" />
           <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_35%,rgba(255,142,34,0.12),transparent)]" />
         </div>
 
         {/* faded wordmark */}
         <span className="pointer-events-none absolute left-1/2 top-[46%] z-0 -translate-x-1/2 select-none font-display text-[24vw] font-bold uppercase leading-none text-white/[0.06] md:text-[180px]">
-          Designik
+          {data.wordmark}
         </span>
 
         {/* clouds */}
         <div className="pointer-events-none absolute left-[2%] top-[14%] z-10 h-20 w-44 opacity-90 md:h-28 md:w-64">
-          <Image src={assets.cloud} alt="" fill className="object-contain" sizes="256px" />
+          <Image src={data.cloudImage || assets.cloud} alt="" fill className="object-contain" sizes="256px" />
         </div>
         <div className="pointer-events-none absolute right-[3%] top-[10%] z-10 h-16 w-40 opacity-90 md:h-24 md:w-56">
-          <Image src={assets.cloud} alt="" fill className="object-contain" sizes="224px" />
+          <Image src={data.cloudImage || assets.cloud} alt="" fill className="object-contain" sizes="224px" />
         </div>
 
         <div className="relative z-10 px-6 pt-14 pb-16 md:pt-16 lg:pb-0">
           <Reveal className="text-center">
             <h2 className="font-display text-[clamp(32px,5vw,56px)] font-medium uppercase leading-[0.95] text-white">
-              Experience Your
-              <br />
-              Brand to New Height
+              {data.heading.split("\n").map((line,i)=><span className="block" key={i}>{line}</span>)}
             </h2>
           </Reveal>
 
@@ -127,20 +127,20 @@ export default function Experience() {
               <path d="M300 430 q50 -10 70 -40" stroke="white" strokeOpacity="0.5" strokeWidth="2" strokeDasharray="2 6" strokeLinecap="round" />
             </svg>
 
-            {PILLS.map((p, i) => (
+            {editablePills.map((p, i) => (
               <FloatingPill key={p.label} {...p} delay={i * 0.12} />
             ))}
 
             {/* VIEW ALL */}
             <motion.a
-              href="#services"
+              href={data.buttonLink}
               initial={{ opacity: 0, scale: 0.85 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.6 }}
               className="group absolute right-[12%] top-[68%] z-20 hidden items-center gap-2 rounded-full bg-white py-2.5 pl-5 pr-2.5 font-display text-[14px] font-semibold uppercase tracking-wide text-wine-500 shadow-lg lg:flex"
             >
-              View All
+              {data.buttonLabel}
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-wine-500 text-white transition-transform group-hover:rotate-45">
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </span>
@@ -149,7 +149,7 @@ export default function Experience() {
             {/* Statue */}
             <Reveal direction="none" className="relative z-10 mx-auto flex h-full w-[300px] items-end justify-center md:w-[440px]">
               <Image
-                src={assets.statue}
+                src={data.statueImage || assets.statue}
                 alt="Designik — experience your brand"
                 width={820}
                 height={1024}
@@ -162,7 +162,7 @@ export default function Experience() {
 
           {/* mobile pills */}
           <div className="mt-6 flex flex-wrap justify-center gap-2.5 lg:hidden">
-            {PILLS.map((p) => (
+            {editablePills.map((p) => (
               <div key={p.label} className="flex items-center gap-2 rounded-full bg-white py-2 pl-2 pr-4 shadow-md">
                 {p.icon}
                 <span className="font-display text-xs font-semibold uppercase tracking-wide text-ink">{p.label}</span>
