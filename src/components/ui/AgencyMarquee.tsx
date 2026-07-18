@@ -19,10 +19,12 @@ export default function AgencyMarquee({
   className,
   duration,
   content,
+  figmaGray = false,
 }: {
   className?: string;
   duration?: number;
   content?: unknown;
+  figmaGray?: boolean;
 }) {
   const data = sectionContent("agency-marquee", content);
   duration ??= data.duration;
@@ -30,7 +32,7 @@ export default function AgencyMarquee({
     <div className="flex items-center gap-8 pr-8 md:gap-12 md:pr-12">
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="flex items-center gap-8 md:gap-12">
-          <span className="marquee-editable-text font-marquee font-bold uppercase leading-none tracking-[-0.02em] whitespace-nowrap" style={{ ["--marquee-mobile" as string]:`${data.fontSizeMobile}px`, ["--marquee-desktop" as string]:`${data.fontSizeDesktop}px` }}>
+          <span className="marquee-editable-text font-marquee font-bold uppercase leading-[0.9] tracking-[-0.02em] whitespace-nowrap" style={{ ["--marquee-mobile" as string]:`${data.fontSizeMobile}px`, ["--marquee-desktop" as string]:`${figmaGray ? 43.968 : data.fontSizeDesktop}px` }}>
             {data.text}
           </span>
           <Swirl />
@@ -40,7 +42,14 @@ export default function AgencyMarquee({
   );
 
   return (
-    <div className={cn("w-full overflow-hidden py-3 md:py-4", className)} style={{ backgroundColor:data.backgroundColor, color:data.textColor }}>
+    <div
+      className={cn(
+        "flex w-full items-center overflow-hidden py-3 md:py-4",
+        figmaGray && "md:h-[100.959px] md:py-0",
+        className
+      )}
+      style={{ backgroundColor: figmaGray ? "#d9d9d9" : data.backgroundColor, color:data.textColor }}
+    >
       <div
         className="flex w-max animate-marquee will-change-transform"
         style={{ ["--marquee-duration" as string]: `${duration}s` }}

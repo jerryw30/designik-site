@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import { RevealGroup, RevealItem, Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/utils";
@@ -117,15 +116,11 @@ export default function Services({ content }: { content?: unknown } = {}) {
       </div>
 
       {/* hanging discover tag near the heading */}
-      <motion.div
-        initial={{ rotate: -10, y: -12, opacity: 0 }}
-        whileInView={{ rotate: -4, y: 0, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ type: "spring", stiffness: 70, damping: 9 }}
-        className="pointer-events-none absolute right-[20%] top-[22%] z-20 hidden h-36 w-24 md:block"
+      <div
+        className="pointer-events-none absolute right-[82px] top-0 z-20 hidden h-[200px] w-[200px] md:block"
       >
-        <Image src={assets.hangingTag} alt="" fill className="object-contain object-top" sizes="110px" />
-      </motion.div>
+        <Image src={assets.hangingTag} alt="" fill className="object-contain object-top" sizes="200px" />
+      </div>
     </section>
   );
 }

@@ -66,7 +66,8 @@ export default function SiteHome({
       {!builder && <GlobalPopup design={popup} />}
       {sections
         .filter((section) => section.visible)
-        .map((section) => {
+        .map((section, sectionIndex, visibleSections) => {
+          const followsAbout = visibleSections[sectionIndex - 1]?.type === "about";
           const layout = {
             ...sectionLayoutDefaults,
             ...((section.content as { _layout?: Partial<SectionLayout> })
@@ -104,6 +105,8 @@ export default function SiteHome({
               />
               {section.type === "widgets" ? (
                 <WidgetSection content={section.content} forms={forms} />
+              ) : section.type === "agency-marquee" && followsAbout ? (
+                <AgencyMarquee content={section.content} figmaGray />
               ) : (
                 componentMap[section.type]?.(section.content)
               )}
@@ -122,7 +125,7 @@ function LegacyHome({ hero }: { hero?: Partial<HeroContent> }) {
       <AgencyMarquee />
       <StatsBar />
       <AboutIntro />
-      <AgencyMarquee />
+      <AgencyMarquee figmaGray />
       <Services />
       <BrandHeights />
       <Experience />

@@ -22,7 +22,7 @@ export const assets = {
   productDesign: A("image229.png"),
   digitalMarketing: A("image233.png"),
   brandIdentity: A("image231.png"),
-  hangingTag: A("image-photoroom11.png"),
+  hangingTag: A("individual/image-photoroom-1-2--277-73.png"),
   mobileAppHand: A("image236.png"),
   mobileAppScreen: A("image23611.png"),
   iconWebDev: A("web-development1.png"),
