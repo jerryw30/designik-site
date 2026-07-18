@@ -37,10 +37,10 @@ export default function Nav({ content }: { content?: unknown } = {}) {
         style={
           globalStyle
             ? {
-                backgroundColor:
+                backgroundImage:
                   globalStyle.backgroundColor === "transparent"
                     ? undefined
-                    : String(globalStyle.backgroundColor),
+                    : `linear-gradient(${String(globalStyle.backgroundColor)}, ${String(globalStyle.backgroundColor)})`,
                 color: String(globalStyle.textColor || "#ffffff"),
                 fontFamily: String(globalStyle.fontFamily || "inherit"),
                 borderWidth: Number(globalStyle.borderWidth || 0),
@@ -50,7 +50,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
               }
             : undefined
         }
-        className="isolate flex h-[60px] w-full max-w-[720px] items-center justify-between overflow-hidden rounded-full bg-[linear-gradient(180deg,rgba(190,49,99,0.94)_0%,rgba(151,22,65,0.94)_100%)] pl-5 pr-2 shadow-[0_8px_32px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-white/25 md:h-[70px] md:pl-7"
+        className="isolate flex h-[60px] w-full max-w-[720px] items-center justify-between overflow-hidden rounded-full bg-[linear-gradient(180deg,rgb(190,49,99)_0%,rgb(151,22,65)_100%)] pl-5 pr-2 shadow-[0_8px_32px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-white/25 md:h-[70px] md:pl-7"
       >
         <a
           href={links[0]?.href || "#home"}
