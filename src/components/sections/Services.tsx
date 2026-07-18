@@ -51,9 +51,9 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <Image
             src={data.cards.mobile.image || assets.mobileAppHand}
             alt="Mobile app development"
-            width={207}
-            height={194}
-            className="absolute left-[96px] top-[-60px] z-20 h-[194px] w-[207px] max-w-none object-contain transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[2px] group-hover:scale-[1.018]"
+            width={257}
+            height={254}
+            className="absolute left-[61px] top-[-70px] z-20 h-[254px] w-[257px] max-w-none object-contain transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[2px] group-hover:scale-[1.018]"
           />
         </article>
 
