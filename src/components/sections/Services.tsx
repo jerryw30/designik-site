@@ -34,7 +34,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <h3 className="absolute inset-x-0 top-[29px] z-10 text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-white">
             <Lines text={data.cards.digital.title} />
           </h3>
-          <div className="absolute left-[-32px] top-[25px] z-10 h-[250px] w-[287px] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]">
+          <div className="absolute left-[-32px] top-[115px] z-10 h-[250px] w-[287px] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]">
             <Image src={data.cards.digital.image || assets.digitalMarketing} alt="Digital marketing" fill className="object-contain object-bottom" sizes="287px" />
           </div>
         </article>
