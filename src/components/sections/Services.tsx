@@ -90,7 +90,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
             <Lines text={data.cards.brand.title} />
           </h3>
           <Image src={data.cards.brand.image || assets.brandIdentity} alt="" width={767} height={129} className="absolute bottom-0 left-[35px] h-[129px] w-[767px] max-w-none transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.018]" />
-          <Image src={assets.hangingTag} alt="" width={200} height={200} className="absolute left-[375px] top-0 h-[200px] w-[200px] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-[3px] group-hover:rotate-[1deg]" />
+          <Image src={assets.hangingTag} alt="" width={200} height={360} className="absolute left-[240px] top-[-12px] h-[360px] w-[200px] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-[3px] group-hover:rotate-[1deg]" />
         </article>
 
         <Image src={assets.hangingTag} alt="" width={304} height={306} className="pointer-events-none absolute left-[984px] top-[-10px] z-20 h-[306px] w-[304px]" />
