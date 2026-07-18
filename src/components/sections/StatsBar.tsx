@@ -46,9 +46,9 @@ export default function StatsBar({ content }: { content?: unknown } = {}) {
         {data.items.map((stat, index) => (
           <div
             key={stat.label}
-            className="flex min-h-[62px] flex-col items-center justify-between border-neutral-300 md:border-l-[3.262px]"
+            className="flex min-h-[62px] flex-col items-start justify-between border-neutral-300 md:border-l-[3.262px] md:pl-[21px]"
           >
-            <div className="flex items-baseline justify-center gap-[7px] whitespace-nowrap leading-none">
+            <div className="flex items-baseline gap-[7px] whitespace-nowrap leading-none">
               <span className="text-[32.52px] font-semibold tracking-[-0.02em]">
                 <Counter to={stat.value} duration={1.4 + index * 0.1} />
               </span>
@@ -61,7 +61,7 @@ export default function StatsBar({ content }: { content?: unknown } = {}) {
                 <span className="text-[20.766px] font-semibold">{stat.unit}</span>
               )}
             </div>
-            <span className="whitespace-nowrap text-center text-[16.252px] font-normal leading-normal">
+            <span className="whitespace-nowrap text-left text-[16.252px] font-normal leading-normal">
               {stat.label}
             </span>
           </div>
