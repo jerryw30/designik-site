@@ -44,7 +44,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <span className="font-semibold text-wine-500">{data.headingAccent}</span>
         </h2>
 
-        <article className="group absolute left-[854px] top-[305px] h-[135.036px] w-[309.372px] overflow-hidden rounded-[20px] bg-[#ffefef] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+        <article className="group absolute left-[854px] top-[305px] h-[135.036px] w-[309.372px] overflow-visible rounded-[20px] bg-[#ffefef] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <h3 className="absolute left-[19px] top-[38px] z-10 font-display text-[24px] font-medium uppercase leading-[28px] text-black">
             <Lines text={data.cards.mobile.title} />
           </h3>
@@ -53,7 +53,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
             alt="Mobile app development"
             width={207}
             height={194}
-            className="absolute left-[96px] top-[-15px] h-[194px] w-[207px] max-w-none object-contain transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[2px] group-hover:scale-[1.018]"
+            className="absolute left-[96px] top-[-60px] z-20 h-[194px] w-[207px] max-w-none object-contain transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[2px] group-hover:scale-[1.018]"
           />
         </article>
 
