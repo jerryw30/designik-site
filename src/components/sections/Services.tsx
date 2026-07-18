@@ -19,9 +19,9 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <Image
             src={data.cards.product.image || assets.productDesign}
             alt="Product design"
-            width={610}
-            height={434}
-            className="pointer-events-none absolute left-[-85px] top-[-13px] z-10 h-[434px] w-[610px] max-w-none"
+            width={525}
+            height={279}
+            className="pointer-events-none absolute inset-0 z-10 h-[279px] w-[525px] max-w-none transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.012]"
           />
           <span className="absolute left-[30px] top-[42px] z-20 font-display text-[15.319px] font-normal uppercase leading-[18.027px] text-wine-500">{data.eyebrow}</span>
           <h3 className="absolute left-[30px] top-[75.129px] z-20 font-display text-[34.649px] font-medium uppercase leading-[40.776px] text-black">
@@ -34,8 +34,8 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <h3 className="absolute inset-x-0 top-[29px] z-10 text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-white">
             <Lines text={data.cards.digital.title} />
           </h3>
-          <div className="absolute bottom-0 left-[41px] z-10 h-[215px] w-[205px]">
-            <Image src={data.cards.digital.image || assets.digitalMarketing} alt="Digital marketing" fill className="object-contain object-bottom" sizes="205px" />
+          <div className="absolute bottom-0 left-0 z-10 h-[250px] w-[287px] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]">
+            <Image src={data.cards.digital.image || assets.digitalMarketing} alt="Digital marketing" fill className="object-contain object-bottom" sizes="287px" />
           </div>
         </article>
 
@@ -61,7 +61,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
 
         <article className="group absolute left-[1px] top-[407px] h-[178px] w-[171px] overflow-hidden rounded-[20px] bg-[#ffefef] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <h3 className="absolute inset-x-0 top-[29px] z-10 text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-black">{data.cards.seo.title}</h3>
-          <Image src={data.cards.seo.image || assets.seo} alt="SEO" width={155} height={98} className="absolute left-[16px] top-[73px] h-[98px] w-[155px] max-w-none" />
+          <Image src={data.cards.seo.image || assets.seo} alt="SEO" width={155} height={98} className="absolute left-[16px] top-[73px] h-[98px] w-[155px] max-w-none transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.018]" />
         </article>
 
         <article className="group absolute left-[192px] top-[407px] h-[340px] w-[287.202px] overflow-hidden rounded-[20px] bg-[#fff3e9] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
@@ -89,7 +89,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <h3 className="absolute left-[48px] top-[66px] z-10 font-display text-[34.649px] font-medium uppercase leading-[40.776px] text-white">
             <Lines text={data.cards.brand.title} />
           </h3>
-          <Image src="/figma/individual/image-231--221-1583.png" alt="" width={767} height={129} className="absolute bottom-0 left-[35px] h-[129px] w-[767px] max-w-none transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.018]" />
+          <Image src={data.cards.brand.image || assets.brandIdentity} alt="" width={767} height={129} className="absolute bottom-0 left-[35px] h-[129px] w-[767px] max-w-none transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.018]" />
           <Image src={assets.hangingTag} alt="" width={200} height={200} className="absolute left-[375px] top-0 h-[200px] w-[200px] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-[3px] group-hover:rotate-[1deg]" />
         </article>
 

@@ -163,25 +163,25 @@ export const sectionDefaults = {
     cards: {
       product: {
         title: "Product Design\nExcellence",
-        image: "/figma/image229.png",
+        image: "/figma/individual/image-229--221-1147.png",
       },
-      digital: { title: "Digital\nmarketing", image: "/figma/image233.png" },
+      digital: { title: "Digital\nmarketing", image: "/figma/individual/image-233--221-1590.png" },
       mobile: {
         title: "Mobile app\nDevelopment",
         image: "/figma/individual/image-236--221-1591.png",
       },
-      seo: { title: "SEO", image: "/figma/image235.png" },
+      seo: { title: "SEO", image: "/figma/individual/image-235--173-175.png" },
       website: {
         title: "Website\nDevelopment",
         icons: [
-          "/figma/developer1.png",
-          "/figma/web-development1.png",
-          "/figma/custom1.png",
+          "/figma/individual/developer-1--221-1593.png",
+          "/figma/individual/web-development-1--221-1592.png",
+          "/figma/individual/custom-1--221-1594.png",
         ],
       },
       brand: {
         title: "Brand identity\nAnd design",
-        image: "/figma/image231.png",
+        image: "/figma/individual/image-231--221-1583.png",
       },
     },
   },
