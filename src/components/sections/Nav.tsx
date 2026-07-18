@@ -50,7 +50,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
               }
             : undefined
         }
-        className="isolate flex h-[60px] w-full max-w-[720px] items-center justify-between overflow-hidden rounded-full bg-[linear-gradient(180deg,rgb(190,49,99)_0%,rgb(151,22,65)_100%)] pl-5 pr-2 shadow-[0_8px_32px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-white/25 md:h-[70px] md:pl-7"
+        className="isolate flex h-[60px] w-full max-w-[720px] items-center justify-between overflow-hidden rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0.06)_100%),rgba(145,9,57,0.72)] pl-5 pr-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-1px_0_rgba(255,255,255,0.08),0_8px_32px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-white/25 backdrop-blur-xl backdrop-saturate-150 md:h-[70px] md:pl-7"
       >
         <a
           href={links[0]?.href || "#home"}
