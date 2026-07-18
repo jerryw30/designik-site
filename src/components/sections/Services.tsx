@@ -14,7 +14,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
   return (
     <section id="services" className="relative bg-white">
       <div className="relative mx-auto hidden h-[827px] w-[1300px] min-[1200px]:block">
-        <article className="group absolute left-[1px] top-[100px] h-[279px] w-[525px] overflow-hidden rounded-[21px] bg-[#fff3e9] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.14)]">
+        <article className="group absolute left-[1px] top-[100px] h-[279px] w-[525px] overflow-hidden rounded-[21px] bg-[#fff3e9] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <Image src="/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="z-0 object-cover object-bottom opacity-60" sizes="525px" />
           <Image
             src={data.cards.product.image || assets.productDesign}
@@ -29,7 +29,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
           </h3>
         </article>
 
-        <article className="group absolute left-[546px] top-[100px] h-[339.604px] w-[287.202px] overflow-hidden rounded-[20px] bg-wine-500 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.14)]">
+        <article className="group absolute left-[546px] top-[100px] h-[339.604px] w-[287.202px] overflow-hidden rounded-[20px] bg-wine-500 transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <Image src="/figma/rectangle39529.png" alt="" fill className="mix-blend-multiply object-cover" sizes="288px" />
           <h3 className="absolute inset-x-0 top-[29px] z-10 text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-white">
             <Lines text={data.cards.digital.title} />
@@ -44,7 +44,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <span className="font-semibold text-wine-500">{data.headingAccent}</span>
         </h2>
 
-        <article className="group absolute left-[854px] top-[305px] h-[135.036px] w-[309.372px] overflow-hidden rounded-[20px] bg-[#ffefef] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.14)]">
+        <article className="group absolute left-[854px] top-[305px] h-[135.036px] w-[309.372px] overflow-hidden rounded-[20px] bg-[#ffefef] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <h3 className="absolute left-[19px] top-[38px] z-10 font-display text-[24px] font-medium uppercase leading-[28px] text-black">
             <Lines text={data.cards.mobile.title} />
           </h3>
@@ -59,12 +59,12 @@ export default function Services({ content }: { content?: unknown } = {}) {
 
         <Image src="/figma/group1261153735.svg" alt="View all services" width={81} height={81} className="absolute left-[1219px] top-[359px] h-[80.618px] w-[80.618px]" />
 
-        <article className="group absolute left-[1px] top-[407px] h-[178px] w-[171px] overflow-hidden rounded-[20px] bg-[#ffefef] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.14)]">
+        <article className="group absolute left-[1px] top-[407px] h-[178px] w-[171px] overflow-hidden rounded-[20px] bg-[#ffefef] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <h3 className="absolute inset-x-0 top-[29px] z-10 text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-black">{data.cards.seo.title}</h3>
           <Image src={data.cards.seo.image || assets.seo} alt="SEO" width={155} height={98} className="absolute left-[16px] top-[73px] h-[98px] w-[155px] max-w-none" />
         </article>
 
-        <article className="group absolute left-[192px] top-[407px] h-[340px] w-[287.202px] overflow-hidden rounded-[20px] bg-[#fff3e9] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.14)]">
+        <article className="group absolute left-[192px] top-[407px] h-[340px] w-[287.202px] overflow-hidden rounded-[20px] bg-[#fff3e9] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <span className="absolute inset-x-0 top-[50px] text-center font-display text-[15.319px] font-normal uppercase leading-[18.027px] text-wine-500">{data.eyebrow}</span>
           <div className="absolute left-[34px] top-[127px] flex items-center gap-[9px]">
             {data.cards.website.icons.map((src, index) => (
@@ -84,12 +84,13 @@ export default function Services({ content }: { content?: unknown } = {}) {
           </h3>
         </article>
 
-        <article className="group absolute left-[498px] top-[467.821px] h-[279.141px] w-[802.151px] overflow-hidden rounded-[20px] bg-[linear-gradient(176.398deg,#a10140_10.085%,#db2f73_137.48%)] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.18)]">
+        <article className="group absolute left-[498px] top-[467.821px] h-[279.141px] w-[802.151px] overflow-hidden rounded-[20px] bg-[linear-gradient(176.398deg,#a10140_10.085%,#db2f73_137.48%)] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.15)]">
           <span className="absolute left-[48px] top-[33px] z-10 font-display text-[15.319px] font-normal uppercase leading-[18.027px] text-white">{data.eyebrow}</span>
           <h3 className="absolute left-[48px] top-[66px] z-10 font-display text-[34.649px] font-medium uppercase leading-[40.776px] text-white">
             <Lines text={data.cards.brand.title} />
           </h3>
-          <Image src={data.cards.brand.image || assets.brandIdentity} alt="Brand identity and design" width={802} height={344} className="absolute bottom-0 left-0 h-[344px] w-[802px] max-w-none transition-transform duration-500 ease-out group-hover:scale-[1.025]" />
+          <Image src="/figma/individual/image-231--221-1583.png" alt="" width={767} height={129} className="absolute bottom-0 left-[35px] h-[129px] w-[767px] max-w-none transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.018]" />
+          <Image src={assets.hangingTag} alt="" width={200} height={200} className="absolute left-[375px] top-0 h-[200px] w-[200px] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-[3px] group-hover:rotate-[1deg]" />
         </article>
 
         <Image src={assets.hangingTag} alt="" width={200} height={200} className="pointer-events-none absolute left-[1088px] top-0 z-20 h-[200px] w-[200px]" />
@@ -106,10 +107,10 @@ export default function Services({ content }: { content?: unknown } = {}) {
         ].map(([item, tone]) => {
           const card = item as { title: string; image?: string };
           return (
-            <article key={card.title} className={`group relative min-h-[280px] overflow-hidden rounded-[20px] p-6 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.14)] ${tone}`}>
+            <article key={card.title} className={`group relative min-h-[280px] overflow-hidden rounded-[20px] p-6 transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)] ${tone}`}>
               <span className="font-display text-xs uppercase text-wine-500">{data.eyebrow}</span>
               <h3 className="relative z-10 mt-3 font-display text-3xl font-medium uppercase leading-tight"><Lines text={card.title} /></h3>
-              {card.image && <Image src={card.image} alt="" fill className="object-contain object-bottom pt-20 transition-transform duration-500 ease-out group-hover:scale-[1.025]" sizes="50vw" />}
+              {card.image && <Image src={card.image} alt="" fill className="object-contain object-bottom pt-20 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.018]" sizes="50vw" />}
             </article>
           );
         })}
