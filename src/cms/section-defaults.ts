@@ -168,7 +168,7 @@ export const sectionDefaults = {
       digital: { title: "Digital\nmarketing", image: "/figma/image233.png" },
       mobile: {
         title: "Mobile app\nDevelopment",
-        image: "/figma/image236.png",
+        image: "/figma/individual/image-236--221-1591.png",
       },
       seo: { title: "SEO", image: "/figma/image235.png" },
       website: {
