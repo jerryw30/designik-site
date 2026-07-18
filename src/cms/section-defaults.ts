@@ -174,9 +174,9 @@ export const sectionDefaults = {
       website: {
         title: "Website\nDevelopment",
         icons: [
+          "/figma/developer1.png",
           "/figma/web-development1.png",
           "/figma/custom1.png",
-          "/figma/send1.png",
         ],
       },
       brand: {

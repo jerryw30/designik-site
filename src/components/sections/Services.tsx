@@ -2,124 +2,117 @@
 
 import Image from "next/image";
 import { assets } from "@/lib/assets";
-import { RevealGroup, RevealItem, Reveal } from "@/components/ui/Reveal";
-import { cn } from "@/lib/utils";
 import { sectionContent } from "@/cms/section-defaults";
 
-function Eyebrow({ dark, label }: { dark?: boolean; label:string }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 font-display text-[10px] font-medium uppercase tracking-[0.2em]",
-        dark ? "bg-white/15 text-white" : "bg-wine-500/10 text-wine-500"
-      )}
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {label}
-    </span>
-  );
+function Lines({ text }: { text: string }) {
+  return text.split("\n").map((line) => <span className="block" key={line}>{line}</span>);
 }
 
-const card = "group relative overflow-hidden rounded-[20px] p-6 transition-shadow duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)]";
-
 export default function Services({ content }: { content?: unknown } = {}) {
-  const data=sectionContent("services",content); const lines=(text:string)=>text.split("\n").map((line,i)=><span className="block" key={i}>{line}</span>);
+  const data = sectionContent("services", content);
+
   return (
-    <section id="services" className="relative bg-white px-5 py-16 md:py-24">
-      <div className="mx-auto max-w-[1280px]">
-        <RevealGroup className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-5">
-          {/* Product Design (wide, tall) */}
-          <RevealItem className="md:col-span-5">
-            <article className={cn(card, "h-full min-h-[360px] bg-cream-100")}>
-              <Eyebrow label={data.eyebrow} />
-              <h3 className="mt-4 font-display text-[34px] font-medium uppercase leading-[0.95] text-ink">
-                {lines(data.cards.product.title)}
-              </h3>
-              <div className="pointer-events-none absolute inset-x-3 bottom-3 h-[210px]">
-                <Image src={data.cards.product.image || assets.productDesign} alt="Product design" fill className="object-contain object-bottom transition-transform duration-500 group-hover:scale-[1.03]" sizes="(max-width:768px) 100vw, 460px" />
-              </div>
-            </article>
-          </RevealItem>
+    <section id="services" className="relative bg-white">
+      <div className="relative mx-auto hidden h-[827px] w-[1300px] min-[1200px]:block">
+        <article className="absolute left-[1px] top-[100px] h-[279px] w-[525px] overflow-hidden rounded-[21px] bg-[#fff3e9]">
+          <Image src="/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="z-0 object-cover object-bottom opacity-60" sizes="525px" />
+          <Image
+            src={data.cards.product.image || assets.productDesign}
+            alt="Product design"
+            width={610}
+            height={434}
+            className="pointer-events-none absolute left-[-85px] top-[-13px] z-10 h-[434px] w-[610px] max-w-none"
+          />
+          <span className="absolute left-[30px] top-[42px] z-20 font-display text-[15.319px] font-normal uppercase leading-[18.027px] text-wine-500">{data.eyebrow}</span>
+          <h3 className="absolute left-[30px] top-[75.129px] z-20 font-display text-[34.649px] font-medium uppercase leading-[40.776px] text-black">
+            <Lines text={data.cards.product.title} />
+          </h3>
+        </article>
 
-          {/* Digital Marketing (tall) */}
-          <RevealItem className="md:col-span-3">
-            <article className={cn(card, "h-full min-h-[360px] bg-gradient-to-br from-wine-500 to-wine-400")}>
-              <h3 className="font-display text-[26px] font-semibold uppercase leading-[0.95] text-white">
-                {lines(data.cards.digital.title)}
-              </h3>
-              <div className="pointer-events-none absolute inset-x-2 bottom-2 top-[90px]">
-                <Image src={data.cards.digital.image || assets.digitalMarketing} alt="Digital marketing" fill className="object-contain transition-transform duration-500 group-hover:scale-105" sizes="320px" />
-              </div>
-            </article>
-          </RevealItem>
-
-          {/* Right column: heading + mobile app */}
-          <div className="flex flex-col gap-4 md:col-span-4 md:gap-5">
-            <Reveal direction="left" className="flex items-start justify-end pt-1">
-              <h2 className="text-right font-display text-[clamp(40px,5vw,64px)] font-medium uppercase leading-[0.9]">
-                <span className="text-ink">{data.headingPrefix} </span>
-                <span className="text-wine-500">{data.headingAccent}</span>
-              </h2>
-            </Reveal>
-            <RevealItem className="flex-1">
-              <article className={cn(card, "flex h-full min-h-[210px] items-center justify-between bg-blush-100")}>
-                <h3 className="font-display text-[22px] font-medium uppercase leading-[0.95] text-ink">
-                  {lines(data.cards.mobile.title)}
-                </h3>
-                <div className="relative h-[180px] w-[130px] shrink-0">
-                  <Image src={data.cards.mobile.image || assets.mobileAppHand} alt="Mobile app development" fill className="object-contain object-right transition-transform duration-500 group-hover:-translate-y-1" sizes="150px" />
-                </div>
-              </article>
-            </RevealItem>
+        <article className="absolute left-[546px] top-[100px] h-[339.604px] w-[287.202px] overflow-hidden rounded-[20px] bg-wine-500">
+          <Image src="/figma/rectangle39529.png" alt="" fill className="mix-blend-multiply object-cover" sizes="288px" />
+          <h3 className="absolute inset-x-0 top-[29px] z-10 text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-white">
+            <Lines text={data.cards.digital.title} />
+          </h3>
+          <div className="absolute bottom-0 left-[41px] z-10 h-[215px] w-[205px]">
+            <Image src={data.cards.digital.image || assets.digitalMarketing} alt="Digital marketing" fill className="object-contain object-bottom" sizes="205px" />
           </div>
+        </article>
 
-          {/* SEO */}
-          <RevealItem className="md:col-span-3">
-            <article className={cn(card, "flex h-full min-h-[250px] flex-col bg-blush-200")}>
-              <Eyebrow label={data.eyebrow} />
-              <div className="pointer-events-none relative mt-2 flex-1">
-                <Image src={data.cards.seo.image || assets.seo} alt={data.cards.seo.title} fill className="object-contain transition-transform duration-500 group-hover:scale-105" sizes="300px" />
-              </div>
-            </article>
-          </RevealItem>
+        <h2 className="absolute left-[853.6px] top-[131.278px] w-[439.37px] whitespace-nowrap font-display text-[77.031px] uppercase leading-[90.652px]">
+          <span className="font-normal text-black">{data.headingPrefix} </span>
+          <span className="font-semibold text-wine-500">{data.headingAccent}</span>
+        </h2>
 
-          {/* Website Development */}
-          <RevealItem className="md:col-span-4">
-            <article className={cn(card, "flex h-full min-h-[250px] flex-col items-center justify-between bg-blush-100 text-center")}>
-              <Eyebrow label={data.eyebrow} />
-              <div className="flex items-center gap-4">
-                {data.cards.website.icons.map((src, i) => (
-                  <div key={i} className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm transition-transform duration-300 hover:-translate-y-1">
-                    <Image src={src} alt="" width={28} height={28} className="h-7 w-7 object-contain" />
-                  </div>
-                ))}
-              </div>
-              <h3 className="font-display text-[24px] font-medium uppercase leading-[0.95] text-ink">
-                {lines(data.cards.website.title)}
-              </h3>
-            </article>
-          </RevealItem>
+        <article className="absolute left-[854px] top-[305px] h-[135.036px] w-[309.372px] overflow-hidden rounded-[20px] bg-[#ffefef]">
+          <h3 className="absolute left-[19px] top-[38px] z-10 font-display text-[24px] font-medium uppercase leading-[28px] text-black">
+            <Lines text={data.cards.mobile.title} />
+          </h3>
+          <Image
+            src={data.cards.mobile.image || assets.mobileAppHand}
+            alt="Mobile app development"
+            width={149}
+            height={207}
+            className="absolute left-[160px] top-[-72px] h-[207px] w-[149px] max-w-none object-contain"
+          />
+        </article>
 
-          {/* Brand Identity (wide) */}
-          <RevealItem className="md:col-span-5">
-            <article className={cn(card, "h-full min-h-[250px] bg-gradient-to-br from-wine-600 to-pink-brand")}>
-              <Eyebrow dark label={data.eyebrow} />
-              <h3 className="mt-3 font-display text-[30px] font-semibold uppercase leading-[0.95] text-white">
-                {lines(data.cards.brand.title)}
-              </h3>
-              <div className="pointer-events-none absolute bottom-0 right-0 h-[170px] w-[62%]">
-                <Image src={data.cards.brand.image || assets.brandIdentity} alt="Brand identity and design" fill className="object-contain object-bottom transition-transform duration-500 group-hover:scale-105" sizes="360px" />
-              </div>
-            </article>
-          </RevealItem>
-        </RevealGroup>
+        <Image src="/figma/group1261153735.svg" alt="View all services" width={81} height={81} className="absolute left-[1219px] top-[359px] h-[80.618px] w-[80.618px]" />
+
+        <article className="absolute left-[1px] top-[407px] h-[178px] w-[171px] overflow-hidden rounded-[20px] bg-[#ffefef]">
+          <h3 className="absolute inset-x-0 top-[29px] z-10 text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-black">{data.cards.seo.title}</h3>
+          <Image src={data.cards.seo.image || assets.seo} alt="SEO" width={155} height={98} className="absolute left-[16px] top-[73px] h-[98px] w-[155px] max-w-none" />
+        </article>
+
+        <article className="absolute left-[192px] top-[407px] h-[340px] w-[287.202px] overflow-hidden rounded-[20px] bg-[#fff3e9]">
+          <span className="absolute inset-x-0 top-[50px] text-center font-display text-[15.319px] font-normal uppercase leading-[18.027px] text-wine-500">{data.eyebrow}</span>
+          <div className="absolute left-[34px] top-[127px] flex items-center gap-[9px]">
+            {data.cards.website.icons.map((src, index) => (
+              <span key={src} className={`flex items-center justify-center rounded-full bg-white ${index === 1 ? "h-[86px] w-[86px]" : "h-[58px] w-[58px]"}`}>
+                <Image
+                  src={src}
+                  alt=""
+                  width={32}
+                  height={32}
+                  className={`object-contain ${index === 0 ? "h-[22px] w-[22px]" : index === 1 ? "h-[32px] w-[32px]" : "h-[25px] w-[25px]"}`}
+                />
+              </span>
+            ))}
+          </div>
+          <h3 className="absolute inset-x-0 top-[226px] text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-black">
+            <Lines text={data.cards.website.title} />
+          </h3>
+        </article>
+
+        <article className="absolute left-[498px] top-[467.821px] h-[279.141px] w-[802.151px] overflow-hidden rounded-[20px] bg-[linear-gradient(176.398deg,#a10140_10.085%,#db2f73_137.48%)]">
+          <span className="absolute left-[48px] top-[33px] z-10 font-display text-[15.319px] font-normal uppercase leading-[18.027px] text-white">{data.eyebrow}</span>
+          <h3 className="absolute left-[48px] top-[66px] z-10 font-display text-[34.649px] font-medium uppercase leading-[40.776px] text-white">
+            <Lines text={data.cards.brand.title} />
+          </h3>
+          <Image src={data.cards.brand.image || assets.brandIdentity} alt="Brand identity and design" width={767} height={129} className="absolute bottom-0 left-[35px] h-[129px] w-[767px] max-w-none" />
+        </article>
+
+        <Image src={assets.hangingTag} alt="" width={200} height={200} className="pointer-events-none absolute left-[1088px] top-0 z-20 h-[200px] w-[200px]" />
       </div>
 
-      {/* hanging discover tag near the heading */}
-      <div
-        className="pointer-events-none absolute right-[82px] top-0 z-20 hidden h-[200px] w-[200px] md:block"
-      >
-        <Image src={assets.hangingTag} alt="" fill className="object-contain object-top" sizes="200px" />
+      <div className="grid gap-4 px-5 py-12 min-[1200px]:hidden sm:grid-cols-2">
+        {[
+          [data.cards.product, "bg-cream-100"],
+          [data.cards.digital, "bg-wine-500 text-white"],
+          [data.cards.mobile, "bg-blush-100"],
+          [data.cards.seo, "bg-blush-100"],
+          [data.cards.website, "bg-cream-100"],
+          [data.cards.brand, "bg-wine-500 text-white"],
+        ].map(([item, tone]) => {
+          const card = item as { title: string; image?: string };
+          return (
+            <article key={card.title} className={`relative min-h-[280px] overflow-hidden rounded-[20px] p-6 ${tone}`}>
+              <span className="font-display text-xs uppercase text-wine-500">{data.eyebrow}</span>
+              <h3 className="relative z-10 mt-3 font-display text-3xl font-medium uppercase leading-tight"><Lines text={card.title} /></h3>
+              {card.image && <Image src={card.image} alt="" fill className="object-contain object-bottom pt-20" sizes="50vw" />}
+            </article>
+          );
+        })}
       </div>
     </section>
   );
