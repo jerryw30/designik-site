@@ -93,7 +93,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <Image src={assets.hangingTag} alt="" width={200} height={200} className="absolute left-[375px] top-0 h-[200px] w-[200px] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-[3px] group-hover:rotate-[1deg]" />
         </article>
 
-        <Image src={assets.hangingTag} alt="" width={200} height={200} className="pointer-events-none absolute left-[1088px] top-0 z-20 h-[200px] w-[200px]" />
+        <Image src={assets.hangingTag} alt="" width={304} height={306} className="pointer-events-none absolute left-[984px] top-[-10px] z-20 h-[306px] w-[304px]" />
       </div>
 
       <div className="grid gap-4 px-5 py-12 min-[1200px]:hidden sm:grid-cols-2">
