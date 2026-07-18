@@ -2,13 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import {
-  AnimatePresence,
-  motion,
-  useMotionValueEvent,
-  useScroll,
-} from "framer-motion";
-import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 import { sectionContent } from "@/cms/section-defaults";
 
 export default function Nav({ content }: { content?: unknown } = {}) {
@@ -23,11 +17,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
     children?: HeaderLink[];
   };
   const links = data.links as unknown as HeaderLink[];
-  const { scrollY } = useScroll();
-  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-
-  useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 40));
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -60,12 +50,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
               }
             : undefined
         }
-        className={cn(
-          "flex h-[60px] w-full max-w-[720px] items-center justify-between rounded-full pl-5 pr-2 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-inset transition-colors duration-300 md:h-[70px] md:pl-7",
-          scrolled
-            ? "bg-wine-900/70 ring-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
-            : "bg-gradient-to-b from-white/20 to-white/5 ring-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
-        )}
+        className="isolate flex h-[60px] w-full max-w-[720px] items-center justify-between overflow-hidden rounded-full bg-[linear-gradient(180deg,rgba(190,49,99,0.94)_0%,rgba(151,22,65,0.94)_100%)] pl-5 pr-2 shadow-[0_8px_32px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-white/25 md:h-[70px] md:pl-7"
       >
         <a
           href={links[0]?.href || "#home"}
