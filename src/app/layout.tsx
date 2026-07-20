@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Oswald, Inter, Akshar } from "next/font/google";
+import { Oswald, Inter, Akshar, Raleway } from "next/font/google";
 import "./globals.css";
 import SiteShell from "@/components/SiteShell";
 import { eq } from "drizzle-orm";
@@ -31,6 +31,13 @@ const akshar = Akshar({
   variable: "--font-akshar",
   subsets: ["latin"],
   weight: ["500", "600", "700"],
+  display: "swap",
+});
+
+const raleway = Raleway({
+  variable: "--font-raleway",
+  subsets: ["latin"],
+  weight: ["400", "700"],
   display: "swap",
 });
 
@@ -113,7 +120,7 @@ export default async function RootLayout({
   return (
     <html
       lang={website.regional.language}
-      className={`${oswald.variable} ${inter.variable} ${akshar.variable}`}
+      className={`${oswald.variable} ${inter.variable} ${akshar.variable} ${raleway.variable}`}
       style={variables}
     >
       <head>

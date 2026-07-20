@@ -64,6 +64,12 @@ export const assets = {
   teamSky: A("individual/image-220--221-1153.png"),
   teamGrid: A("individual/6847051fca9d03f2175253ef-grid-1-6--221-1154.png"),
 
+  // Footer (exact per-node Figma exports)
+  footerBadge: A("individual/footer-badge--229-15.svg"),
+  footerTag: A("individual/image-photoroom-1-5--277-82.png"),
+  footerSend: A("individual/send-1--221-1671.png"),
+  footerField: A("individual/a9b0fcd7-d136-4e8e-8600-cc7ec606d501-1--221-1647.png"),
+
   // Testimonials (exact per-node Figma exports)
   testiPhoneRaw: A("individual/testi-phone-raw--245-180.png"),
   testiTrafficRaw: A("individual/testi-traffic-raw--249-229.png"),

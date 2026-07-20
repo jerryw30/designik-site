@@ -1,7 +1,17 @@
 import Image from "next/image";
 import { assets } from "@/lib/assets";
-import NewsletterForm from "@/components/ui/NewsletterForm";
+import FigmaNewsletterForm from "@/components/ui/FigmaNewsletterForm";
 import { sectionContent } from "@/cms/section-defaults";
+
+/**
+ * Pixel-exact port of the Figma footer (1440 canvas, 1cqw = 14.4px,
+ * section 1440x1017 at y10594). Gradient #580a25 -> #b12a4a, giant 51%
+ * "Designik" wordmark, red field image at the bottom, hanging tag,
+ * Oswald link columns with hairlines, white circular badge, mint
+ * Raleway newsletter.
+ */
+
+const RALEWAY = { fontFamily: "var(--font-raleway), sans-serif" } as const;
 
 export default function Footer({ content }: { content?: unknown } = {}) {
   const data = sectionContent("footer", content);
@@ -11,7 +21,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
   return (
     <footer
       id="contact"
-      className="relative overflow-hidden bg-wine-700 text-white"
+      className="relative text-white"
       style={
         globalStyle
           ? {
@@ -21,47 +31,91 @@ export default function Footer({ content }: { content?: unknown } = {}) {
                   : String(globalStyle.backgroundColor),
               color: String(globalStyle.textColor || "#ffffff"),
               fontFamily: String(globalStyle.fontFamily || "inherit"),
-              borderWidth: Number(globalStyle.borderWidth || 0),
-              borderColor: String(globalStyle.borderColor || "transparent"),
-              borderRadius: Number(globalStyle.borderRadius || 0),
-              boxShadow: String(globalStyle.shadow || "none"),
             }
           : undefined
       }
     >
-      <div className="relative z-10 mx-auto max-w-[1280px] px-6 pt-16 pb-40 md:pt-20">
-        {/* top: logo + heading */}
-        <div className="flex flex-col items-start justify-between gap-8 border-b border-white/10 pb-12 md:flex-row md:items-center">
-          <div className="flex items-center gap-3">
+      <div
+        className="@container relative mx-auto w-full overflow-hidden"
+        style={{
+          backgroundImage:
+            "linear-gradient(180deg, #580a25 15.978%, #b12a4a 77.139%)",
+        }}
+      >
+        {/* ======================= desktop (exact) ======================= */}
+        <div className="relative hidden h-[70.625cqw] md:block">
+          {/* giant faded wordmark */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute left-[0.6944cqw] top-[21.5278cqw] z-0 select-none whitespace-nowrap font-display text-[26.1277cqw] font-semibold uppercase leading-[30.7478cqw] text-[#8e0038] opacity-[0.51]"
+          >
+            Designik
+          </span>
+
+          {/* red field scene at the bottom */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1]">
+            <Image
+              src={data.backgroundImage || assets.footerField}
+              alt=""
+              width={1440}
+              height={421}
+              sizes="100vw"
+              className="h-auto w-full"
+            />
+          </div>
+
+          {/* hanging tag (Figma: 198 box at x639) */}
+          <div className="pointer-events-none absolute left-[43.4931cqw] top-[2.8681cqw] z-[5] w-[22.7143cqw]">
+            <Image src={assets.footerTag} alt="" width={324} height={315} className="h-auto w-full" sizes="330px" />
+          </div>
+
+          {/* logo + DESIGNIK (y121) */}
+          <div className="absolute left-[5.2083cqw] top-[8.4028cqw] z-10 w-[7.7778cqw]">
             <Image
               src={data.logo || assets.logo}
               alt={data.brand}
-              width={48}
-              height={48}
-              className="h-11 w-11 brightness-0 invert"
+              width={112}
+              height={114}
+              className="h-auto w-full"
             />
-            <span className="font-display text-3xl font-bold uppercase tracking-tight">
-              {data.brand}
-            </span>
           </div>
-          <h2 className="font-display text-[clamp(26px,3vw,40px)] font-medium uppercase leading-[0.95] md:text-right">
-            {data.heading.split("\n").map((line, i) => (
-              <span className="block" key={i}>
-                {line}
-              </span>
-            ))}
-          </h2>
-        </div>
+          <span className="absolute left-[14.6528cqw] top-[8.4722cqw] z-10 whitespace-nowrap font-display text-[6.6581cqw] font-semibold uppercase leading-[7.8355cqw]">
+            {data.brand}
+          </span>
 
-        {/* columns + newsletter */}
-        <div className="mt-12 grid grid-cols-2 gap-8 md:grid-cols-5">
-          {data.columns.map((links, i) => (
-            <nav key={i} className="flex flex-col gap-3">
-              {links.map((l) => (
+          {/* right heading (left-aligned at x921) */}
+          <div className="absolute left-[63.9583cqw] top-[7.7778cqw] z-10 uppercase">
+            <p className="whitespace-nowrap font-display text-[4.3433cqw] font-normal leading-[5.1114cqw]">
+              {data.heading.split("\n")[0]}
+            </p>
+            <p className="whitespace-nowrap font-display text-[3.4585cqw] font-medium leading-[4.0701cqw]">
+              {data.heading.split("\n")[1] || ""}
+            </p>
+          </div>
+
+          {/* horizontal hairline (y295.5) */}
+          <div aria-hidden className="absolute left-[4.8611cqw] top-[20.5208cqw] z-10 h-px w-[90.2431cqw] bg-black/25" />
+
+          {/* link columns with vertical hairlines (y361) */}
+          {[0, 1, 2].map((c) => (
+            <div
+              aria-hidden
+              key={`line-${c}`}
+              className="absolute top-[25.0694cqw] z-10 h-[10.1389cqw] w-px bg-black/25"
+              style={{ left: `${[4.8611, 18.9931, 33.1597][c]}cqw` }}
+            />
+          ))}
+          {data.columns.map((links, c) => (
+            <nav
+              key={c}
+              className="absolute top-[25.1042cqw] z-10 flex flex-col"
+              style={{ left: `${[6.2847, 20.4167, 34.5833][c]}cqw` }}
+            >
+              {links.map((l, r) => (
                 <a
-                  key={l}
+                  key={l + r}
                   href="#"
-                  className="text-[14px] font-light text-white/75 transition-colors hover:text-white"
+                  className="whitespace-nowrap font-display text-[1.2902cqw] font-medium leading-[2.1528cqw] tracking-[-0.0348em] text-white transition-opacity hover:opacity-70"
                 >
                   {l}
                 </a>
@@ -69,46 +123,75 @@ export default function Footer({ content }: { content?: unknown } = {}) {
             </nav>
           ))}
 
-          {/* badge */}
-          <div className="hidden items-start justify-center md:flex">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/20">
-              <Image
-                src={data.logo || assets.logo}
-                alt=""
-                width={36}
-                height={36}
-                className="h-9 w-9 brightness-0 invert"
-              />
-            </div>
+          {/* circular VIEW ALL SERVICES badge (x755) */}
+          <div className="absolute left-[52.4306cqw] top-[25.7431cqw] z-10 w-[7.8604cqw]">
+            <Image src={assets.footerBadge} alt="View all services" width={122} height={122} className="h-auto w-full" />
           </div>
 
-          {/* newsletter */}
-          <div className="col-span-2 md:col-span-1">
-            <h3 className="font-display text-[15px] font-semibold uppercase tracking-wide">
+          {/* newsletter (x1034) */}
+          <div className="absolute left-[71.8056cqw] top-[25.9722cqw] z-10">
+            <h3 className="text-[1.0417cqw] font-bold leading-[1.5625cqw] text-mint" style={RALEWAY}>
               {data.newsletterHeading}
             </h3>
-            <NewsletterForm />
-            <p className="mt-3 text-[11px] font-light leading-relaxed text-white/55">
+            <div className="mt-[0.5903cqw]">
+              <FigmaNewsletterForm />
+            </div>
+            <p className="mt-[1.0417cqw] w-[16.4583cqw] text-[0.9028cqw] leading-[1.1458cqw] text-mint" style={RALEWAY}>
               {data.newsletterNote}
             </p>
           </div>
+
+          {/* copyright (y623, centered) */}
+          <p className="absolute inset-x-0 top-[43.2639cqw] z-10 text-center text-[1.1111cqw] leading-[1.1458cqw]" style={RALEWAY}>
+            {data.copyright}
+          </p>
         </div>
 
-        <p className="mt-14 text-center text-[13px] font-light text-white/60">
-          {data.copyright}
-        </p>
-      </div>
-
-      {/* desert scene */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[260px] w-full opacity-70">
-        <Image
-          src={data.backgroundImage || assets.desert}
-          alt=""
-          fill
-          className="object-cover object-bottom"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-wine-700/40 to-wine-700" />
+        {/* ======================= mobile (stacked) ======================= */}
+        <div className="relative overflow-hidden px-5 pb-56 pt-12 md:hidden">
+          <span
+            aria-hidden
+            className="pointer-events-none absolute left-0 top-[45%] z-0 select-none whitespace-nowrap font-display text-[38vw] font-semibold uppercase leading-none text-[#8e0038] opacity-[0.51]"
+          >
+            Designik
+          </span>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1]">
+            <Image src={data.backgroundImage || assets.footerField} alt="" width={1440} height={421} sizes="100vw" className="h-auto w-full" />
+          </div>
+          <div className="relative z-10 flex items-center gap-3">
+            <Image src={data.logo || assets.logo} alt={data.brand} width={44} height={45} className="h-11 w-auto" />
+            <span className="font-display text-3xl font-semibold uppercase">{data.brand}</span>
+          </div>
+          <h2 className="relative z-10 mt-6 font-display uppercase leading-[1.15]">
+            <span className="block text-[26px] font-normal">{data.heading.split("\n")[0]}</span>
+            <span className="block text-[21px] font-medium">{data.heading.split("\n")[1] || ""}</span>
+          </h2>
+          <div className="relative z-10 mt-8 grid grid-cols-2 gap-6 border-t border-black/25 pt-8">
+            {data.columns.map((links, i) => (
+              <nav key={i} className="flex flex-col gap-2">
+                {links.map((l) => (
+                  <a key={l} href="#" className="font-display text-[15px] font-medium text-white/90">
+                    {l}
+                  </a>
+                ))}
+              </nav>
+            ))}
+          </div>
+          <div className="relative z-10 mt-10">
+            <h3 className="text-[14px] font-bold text-mint" style={RALEWAY}>
+              {data.newsletterHeading}
+            </h3>
+            <div className="mt-3">
+              <FigmaNewsletterForm />
+            </div>
+            <p className="mt-3 text-[12px] leading-relaxed text-mint" style={RALEWAY}>
+              {data.newsletterNote}
+            </p>
+          </div>
+          <p className="relative z-10 mt-12 text-center text-[13px]" style={RALEWAY}>
+            {data.copyright}
+          </p>
+        </div>
       </div>
     </footer>
   );

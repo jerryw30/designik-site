@@ -95,7 +95,7 @@ export const sectionDefaults = {
     newsletterNote:
       "By subscribing you agree to our privacy policy and its terms.",
     copyright: "@ 2026, All rights reserved.",
-    backgroundImage: "/figma/a9-b0-fcd7-d1364-e8-e8600-cc7-ec606-d5011.png",
+    backgroundImage: "/figma/individual/a9b0fcd7-d136-4e8e-8600-cc7ec606d501-1--221-1647.png",
   },
   header: {
     logo: "/figma/vector1.svg",
