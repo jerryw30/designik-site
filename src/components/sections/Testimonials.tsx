@@ -154,7 +154,7 @@ function ImageTile({
           />
         </div>
       ) : (
-        <div className="absolute left-[1.3889cqw] top-[1.1111cqw] h-[19.3056cqw] w-[14.8611cqw] overflow-hidden shadow-[-2px_1px_6px_rgba(0,0,0,0.1),-10px_2px_10px_rgba(0,0,0,0.09)]">
+        <div className="absolute left-[1.3889cqw] top-[1.1111cqw] h-[19.3056cqw] w-[14.8611cqw] overflow-hidden">
           <Image
             src={assets.testiTrafficRaw}
             alt="Social traffic light"
