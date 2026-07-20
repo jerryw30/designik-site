@@ -203,10 +203,6 @@ export default function Portfolio({ content }: { content?: unknown } = {}) {
           />
         </div>
 
-        {/* side hairlines */}
-        <div aria-hidden className="absolute bottom-[3cqw] left-[2.7083cqw] top-[1.1111cqw] z-0 hidden w-px bg-[#e9e9e9] md:block" />
-        <div aria-hidden className="absolute bottom-[3cqw] right-[2.6389cqw] top-[1.1111cqw] z-0 hidden w-px bg-[#e9e9e9] md:block" />
-
         {/* hanging Designik tag (top left) */}
         <motion.div
           initial={{ rotate: -8, y: -10, opacity: 0 }}
