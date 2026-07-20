@@ -143,7 +143,7 @@ function ImageTile({
         }}
       />
       {isPhone ? (
-        <div className="absolute left-[1.7361cqw] top-[1.1111cqw] h-[19.3056cqw] w-[15.2083cqw] overflow-hidden rounded-[1.0417cqw] shadow-[-5px_-1px_11px_rgba(0,0,0,0.1),-20px_-5px_21px_rgba(0,0,0,0.09)]">
+        <div className="absolute left-[1.7361cqw] top-[1.1111cqw] h-[19.3056cqw] w-[15.2083cqw] overflow-hidden rounded-[1.0417cqw]">
           <Image
             src={assets.testiPhoneRaw}
             alt="Designik mobile app"
