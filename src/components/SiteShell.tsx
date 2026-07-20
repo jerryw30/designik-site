@@ -1,6 +1,8 @@
 "use client";
 import { usePathname } from "next/navigation";
 import SmoothScroll from "./SmoothScroll";
+import BackToTop from "./ui/BackToTop";
+import GetStartedModal from "./ui/GetStartedModal";
 import type { WebsiteSettings } from "@/cms/website-settings";
 export default function SiteShell({
   children,
@@ -34,6 +36,8 @@ export default function SiteShell({
   return (
     <SmoothScroll>
       {children}
+      <BackToTop />
+      <GetStartedModal />
       {settings.custom.footerCode && (
         <script
           dangerouslySetInnerHTML={{ __html: settings.custom.footerCode }}

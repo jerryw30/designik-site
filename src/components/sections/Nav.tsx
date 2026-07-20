@@ -109,6 +109,10 @@ export default function Nav({ content }: { content?: unknown } = {}) {
 
         <a
           href={data.buttonLink}
+          onClick={(e) => {
+            e.preventDefault();
+            window.dispatchEvent(new CustomEvent("open-get-started"));
+          }}
           className="hidden h-[43.25px] items-center rounded-full bg-white px-[22.5px] font-display text-[15.75px] font-semibold uppercase leading-[22.5px] text-wine-500 transition-transform duration-300 hover:scale-[1.04] active:scale-95 md:inline-flex"
         >
           {data.buttonLabel}
@@ -174,7 +178,11 @@ export default function Nav({ content }: { content?: unknown } = {}) {
             ))}
             <motion.a
               href={data.buttonLink}
-              onClick={() => setOpen(false)}
+              onClick={(e) => {
+                e.preventDefault();
+                setOpen(false);
+                window.dispatchEvent(new CustomEvent("open-get-started"));
+              }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08 * links.length + 0.1 }}
