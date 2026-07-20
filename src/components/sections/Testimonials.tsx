@@ -82,20 +82,19 @@ function SmallQuoteCard({
       )}
     >
       {tone === "orange" && (
-        <>
-          <Image
-            src={assets.testiTexture}
-            alt=""
-            fill
-            sizes="310px"
-            className="rounded-[1.1111cqw] object-cover opacity-[0.38] [mix-blend-mode:overlay]"
-          />
-          <div
-            aria-hidden
-            className="absolute left-[0.6944cqw] top-[0.6806cqw] h-[19.0601cqw] w-[19.5139cqw] rounded-[1.0373cqw] bg-white/20 shadow-[0_0_5px_rgba(0,0,0,0.42)]"
-          />
-        </>
+        <Image
+          src={assets.testiTexture}
+          alt=""
+          fill
+          sizes="310px"
+          className="rounded-[1.1111cqw] object-cover opacity-[0.38] [mix-blend-mode:overlay]"
+        />
       )}
+      {/* glass inner frame (Figma: 281x274.5 at 10px inset, on both wine and orange) */}
+      <div
+        aria-hidden
+        className="absolute left-[0.6944cqw] top-[0.6806cqw] h-[19.0601cqw] w-[19.5139cqw] rounded-[1.0373cqw] bg-white/20 shadow-[0_0_5px_rgba(0,0,0,0.42)]"
+      />
       <p className="absolute left-[2.0833cqw] top-[1.875cqw] w-[16.7361cqw] text-[1.25cqw] leading-[1.8611cqw] text-white">
         {data.quote.split(" ").slice(0, 13).join(" ")}
       </p>
@@ -205,13 +204,6 @@ export default function Testimonials({ content }: { content?: unknown } = {}) {
           {/* row 1 */}
           <CreamCard data={q} className="left-[7.9167cqw] top-0" />
           <SmallQuoteCard data={q} tone="wine" className="left-[51.25cqw] top-0" />
-          {/* faint texture wash behind the phone tile (Figma: 301-wide multiply 38%) */}
-          <div
-            aria-hidden
-            className="absolute left-[72.1528cqw] top-0 h-[20.4167cqw] w-[20.9028cqw] overflow-hidden rounded-[1.1111cqw] opacity-[0.38] [mix-blend-mode:multiply]"
-          >
-            <Image src={assets.testiTexture} alt="" fill sizes="310px" className="object-cover" />
-          </div>
           <ImageTile variant="phone" className="left-[73.8194cqw] top-0" />
 
           {/* row 2 */}
