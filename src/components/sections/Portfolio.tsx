@@ -110,7 +110,7 @@ function StackCard({
             {/* translucent inner frame (Figma: white 10% + soft shadow, inset 21/16) */}
             <div
               aria-hidden
-              className="absolute left-[1.4583cqw] top-[1.1111cqw] h-[34.931cqw] w-[87.361cqw] rounded-[1.2768cqw] border border-white/60 bg-white/10 shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
+              className="absolute left-[1.4583cqw] top-[1.1111cqw] h-[34.931cqw] w-[87.361cqw] rounded-[1.2768cqw] border border-white/60 bg-white/10 shadow-[0_4px_4px_rgba(0,0,0,0.25)] [backdrop-filter:blur(0.5556cqw)]"
             />
 
             {/* device image (pre-cropped Figma export) */}
