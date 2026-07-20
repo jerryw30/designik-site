@@ -31,7 +31,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-      className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 md:top-12"
+      className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 md:top-5"
     >
       <motion.nav
         initial={{ maxWidth: 236 }}
