@@ -17,14 +17,14 @@ export default function BrandHeights({ content }: { content?: unknown } = {}) {
   return (
     <section className="relative isolate overflow-hidden bg-white px-5 py-16 md:py-24">
       {/* Background texture at the top of the section (Figma: cloud mist + grid) */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[900px] overflow-hidden">
-        <div className="absolute inset-x-0 top-0 h-[380px]">
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[1100px] overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-[540px]">
           <Image
             src={assets.gridTexture}
             alt=""
             fill
             sizes="100vw"
-            className="object-cover object-top opacity-50"
+            className="object-cover object-bottom opacity-[0.25]"
           />
         </div>
         <Image
@@ -33,7 +33,7 @@ export default function BrandHeights({ content }: { content?: unknown } = {}) {
           width={1200}
           height={838}
           sizes="1705px"
-          className="absolute left-1/2 top-0 h-auto w-[1705px] max-w-none -translate-x-1/2 opacity-[0.55] [mix-blend-mode:luminosity]"
+          className="absolute left-1/2 top-0 h-auto w-[1705px] max-w-none -translate-x-1/2 opacity-[0.05] [mix-blend-mode:luminosity]"
         />
       </div>
 
@@ -84,8 +84,9 @@ export default function BrandHeights({ content }: { content?: unknown } = {}) {
                   />
 
                   <h3
+                    style={{ lineHeight: 1.03 }}
                     className={cn(
-                      "w-[150px] shrink-0 whitespace-pre-line font-display font-bold uppercase leading-[1.02] text-[clamp(24px,3.3vw,48px)] md:w-[360px]",
+                      "w-[150px] shrink-0 whitespace-pre-line font-display font-bold uppercase text-[clamp(24px,3.3vw,48px)] md:w-[360px]",
                       isActive ? "text-white" : "text-wine-500"
                     )}
                   >
