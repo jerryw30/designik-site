@@ -55,6 +55,15 @@ export const assets = {
   teamA: A("rectangle39532.png"),
   teamB: A("rectangle39535.png"),
 
+  // Team (exact per-node Figma exports)
+  teamPhoto1: A("individual/image-243--275-49.png"),
+  teamPhoto2: A("individual/image-248--275-50.png"),
+  teamPhoto3: A("individual/image-245--275-51.png"),
+  teamPhoto4: A("individual/image-251--278-87.png"),
+  teamWatermark: A("individual/team-watermark--283-18.svg"),
+  teamSky: A("individual/image-220--221-1153.png"),
+  teamGrid: A("individual/6847051fca9d03f2175253ef-grid-1-6--221-1154.png"),
+
   // Testimonials
   trafficLight: A("image241.png"),
   testimonialPhone: A("image23611.png"),

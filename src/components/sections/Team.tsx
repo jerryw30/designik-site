@@ -1,62 +1,205 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { PillButton } from "@/components/ui/Buttons";
-import { Reveal, RevealGroup, RevealItem } from "@/components/ui/Reveal";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { assets } from "@/lib/assets";
+import { Reveal } from "@/components/ui/Reveal";
+import { cn } from "@/lib/utils";
 import { sectionContent } from "@/cms/section-defaults";
 
-export default function Team({ content }: { content?: unknown } = {}) {
-  const data=sectionContent("team",content);
+/**
+ * Pixel-exact port of the Figma "Meet Our Team" section (1440 canvas,
+ * 1cqw = 14.4px). Cards are a full-bleed row of 339.3x396.4 tiles with the
+ * member name/role below each tile. The row is a scroll-snap carousel with
+ * arrow controls (requested addition; not part of the Figma design).
+ */
+
+// Per-card art defaults from Figma (photo box + watermark tint), by index
+const CARD_ART = [
+  { photoLeft: "10.609%", photoWidth: "70.732%", photoW: 240, photoH: 389, watermark: "#94013B" },
+  { photoLeft: "2.829%", photoWidth: "84.285%", photoW: 286, photoH: 382, watermark: "#CCAEFF" },
+  { photoLeft: "8.841%", photoWidth: "78.096%", photoW: 265, photoH: 389, watermark: "#F0841D" },
+  { photoLeft: "5.894%", photoWidth: "88.115%", photoW: 299, photoH: 389, watermark: "#E04637" },
+];
+
+function CarouselArrow({ dir, onClick, disabled }: { dir: "prev" | "next"; onClick: () => void; disabled: boolean }) {
   return (
-    <section className="bg-white px-5 py-16 md:py-24">
-      <div className="mx-auto max-w-[1280px]">
-        <Reveal className="mb-12 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-          <h2 className="font-display text-[clamp(34px,5.5vw,58px)] font-medium uppercase leading-[0.95]">
-            <span className="text-wine-500">{data.headingAccent}</span> <span className="text-ink">{data.heading}</span>
+    <button
+      type="button"
+      aria-label={dir === "prev" ? "Previous team members" : "Next team members"}
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "pointer-events-auto flex size-11 items-center justify-center rounded-full bg-wine-500 text-white shadow-[0_8px_24px_rgba(161,1,64,0.35)] transition-all duration-300 md:size-[3.4722cqw]",
+        disabled ? "cursor-default opacity-30" : "hover:scale-110"
+      )}
+    >
+      <svg
+        viewBox="0 0 16 16"
+        fill="none"
+        className={cn("h-[38%] w-[38%]", dir === "prev" && "rotate-180")}
+        aria-hidden
+      >
+        <path d="M2 8h11M9 3.5 13.5 8 9 12.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+}
+
+export default function Team({ content }: { content?: unknown } = {}) {
+  const data = sectionContent("team", content);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [scrollState, setScrollState] = useState({ overflow: false, canPrev: false, canNext: false });
+
+  const updateScrollState = useCallback(() => {
+    const t = trackRef.current;
+    if (!t) return;
+    setScrollState({
+      overflow: t.scrollWidth > t.clientWidth + 2,
+      canPrev: t.scrollLeft > 2,
+      canNext: t.scrollLeft < t.scrollWidth - t.clientWidth - 2,
+    });
+  }, []);
+
+  useEffect(() => {
+    updateScrollState();
+    window.addEventListener("resize", updateScrollState);
+    return () => window.removeEventListener("resize", updateScrollState);
+  }, [updateScrollState]);
+
+  const scrollByCard = (dir: 1 | -1) => {
+    const t = trackRef.current;
+    if (!t) return;
+    const cell = t.firstElementChild as HTMLElement | null;
+    if (!cell) return;
+    const gap = parseFloat(getComputedStyle(t).columnGap || "0") || 0;
+    t.scrollBy({ left: dir * (cell.getBoundingClientRect().width + gap), behavior: "smooth" });
+  };
+
+  return (
+    <section className="relative bg-white">
+      <div className="@container relative mx-auto max-w-[1440px] pb-[6cqw]">
+        {/* background texture: grid + sky mist (Figma treatment) */}
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[65cqw] overflow-hidden">
+          <Image
+            src={assets.teamGrid}
+            alt=""
+            width={1440}
+            height={679}
+            sizes="100vw"
+            className="absolute top-0 h-auto w-full opacity-[0.6]"
+          />
+          <Image
+            src={assets.teamSky}
+            alt=""
+            width={1439}
+            height={937}
+            sizes="100vw"
+            className="absolute top-0 h-auto w-full opacity-[0.05] [mix-blend-mode:luminosity]"
+          />
+        </div>
+
+        {/* header: heading left, description right (Figma: y77 / y88) */}
+        <Reveal className="relative z-10 px-5 pt-[5.3472cqw] md:px-[4.8611cqw]">
+          <h2 className="font-display uppercase text-[8vw] leading-[1.18] md:text-[5.3494cqw] md:leading-[6.2953cqw]">
+            <span className="font-semibold text-wine-500">{data.headingAccent} </span>
+            <span className="font-normal text-black">{data.heading}</span>
           </h2>
-          <p className="max-w-[36ch] text-[14px] font-light leading-relaxed text-neutral-600">
+          <p className="mt-3 max-w-[46ch] text-[13px] leading-relaxed text-black md:hidden">{data.description}</p>
+          <p className="absolute left-[54.7222cqw] top-[6.1111cqw] hidden w-[37.5cqw] text-[1.1111cqw] leading-[1.5799cqw] text-black md:block">
             {data.description}
           </p>
         </Reveal>
 
-        <RevealGroup className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5" stagger={0.1}>
-          {data.members.map((m, i) => (
-            <RevealItem key={i}>
-              <motion.article
-                whileHover={{ y: -6 }}
-                className="group relative aspect-[3/4] overflow-hidden rounded-[20px]"
-                style={{backgroundColor:m.background}}
-              >
-                <Image
-                  src={m.photo}
-                  alt={m.name}
-                  fill
-                  className="object-cover object-top mix-blend-luminosity opacity-95 transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width:768px) 50vw, 300px"
-                />
-                <div className="absolute inset-0 bg-black/10" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-4">
-                  <div>
-                    <h3 className="font-display text-[16px] font-bold uppercase leading-tight text-white">{m.name}</h3>
-                    <p className="text-[11px] font-light text-white/80">{m.role}</p>
+        {/* carousel: full-bleed card row (Figma: y230, cards 339.3x396.4, ~27.6 gaps) */}
+        <div className="relative z-10 mt-[4.3056cqw]">
+          <div
+            ref={trackRef}
+            onScroll={updateScrollState}
+            className="flex snap-x snap-mandatory gap-[1.9141cqw] overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:px-0"
+          >
+            {data.members.map((m, i) => {
+              const art = CARD_ART[i % CARD_ART.length];
+              return (
+                <div key={i} className="w-[68cqw] shrink-0 snap-start md:w-[23.5644cqw]">
+                  {/* card tile */}
+                  <div
+                    className="relative aspect-[339.327/396.41] overflow-hidden rounded-[1.4682cqw]"
+                    style={{ backgroundColor: m.background }}
+                  >
+                    {/* watermark logo shape */}
+                    <span
+                      aria-hidden
+                      className="absolute left-[5.894%] top-[14.883%] aspect-[300.273/304.64] w-[88.487%]"
+                      style={{
+                        backgroundColor: art.watermark,
+                        WebkitMaskImage: `url(${assets.teamWatermark})`,
+                        maskImage: `url(${assets.teamWatermark})`,
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskSize: "100% 100%",
+                        maskSize: "100% 100%",
+                      }}
+                    />
+                    {/* member photo, flush to card bottom */}
+                    <div className="absolute bottom-0" style={{ left: art.photoLeft, width: art.photoWidth }}>
+                      <Image
+                        src={m.photo}
+                        alt={m.name}
+                        width={art.photoW}
+                        height={art.photoH}
+                        className="h-auto w-full"
+                        sizes="(max-width:768px) 68vw, 340px"
+                      />
+                    </div>
                   </div>
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-wine-500 transition-transform duration-300 group-hover:rotate-45">
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden>
-                      <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </span>
-                </div>
-              </motion.article>
-            </RevealItem>
-          ))}
-        </RevealGroup>
 
-        <Reveal className="mt-12 flex justify-center">
-          <PillButton href={data.buttonLink} variant="wine">
-            {data.buttonLabel}
-          </PillButton>
+                  {/* name / role / arrow below the tile */}
+                  <div className="relative mt-[1.5625cqw]">
+                    <h3 className="font-marquee font-bold uppercase tracking-[-0.0616em] text-black text-[22px] leading-[1] md:text-[2.3484cqw] md:leading-[2.0139cqw]">
+                      {m.name}
+                    </h3>
+                    <p className="capitalize text-black text-[13px] leading-[2] md:text-[1.0123cqw] md:leading-[2.2928cqw]">
+                      {m.role}
+                    </p>
+                    <svg
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      className="absolute right-[1.0069cqw] top-[2.1319cqw] size-5 text-wine-500 md:size-[1.5854cqw]"
+                      aria-hidden
+                    >
+                      <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* carousel arrows (site addition — not in the Figma design) */}
+          {scrollState.overflow && (
+            <div className="pointer-events-none absolute inset-x-3 top-[13cqw] z-20 flex justify-between md:inset-x-[1.5cqw]">
+              <CarouselArrow dir="prev" onClick={() => scrollByCard(-1)} disabled={!scrollState.canPrev} />
+              <CarouselArrow dir="next" onClick={() => scrollByCard(1)} disabled={!scrollState.canNext} />
+            </div>
+          )}
+        </div>
+
+        {/* View All (Figma: 183x55 wine pill, centered at y787) */}
+        <Reveal className="relative z-10 mt-[4.909cqw] flex justify-center">
+          <a
+            href={data.buttonLink}
+            className="group inline-flex h-11 w-[160px] items-center justify-between rounded-full bg-wine-500 pl-6 pr-2.5 md:h-[3.8194cqw] md:w-[12.7083cqw] md:pl-[2.3764cqw] md:pr-[1.0806cqw]"
+          >
+            <span className="font-display font-semibold uppercase leading-none text-white text-[13px] md:text-[1.2928cqw]">
+              {data.buttonLabel}
+            </span>
+            <span className="flex size-7 items-center justify-center rounded-full bg-blush-300 text-wine-500 transition-transform duration-300 group-hover:rotate-45 md:size-[2.3764cqw]">
+              <svg viewBox="0 0 16 16" fill="none" className="h-[44%] w-[44%]" aria-hidden>
+                <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+          </a>
         </Reveal>
       </div>
     </section>
