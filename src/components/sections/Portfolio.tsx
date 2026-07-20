@@ -191,7 +191,7 @@ export default function Portfolio({ content }: { content?: unknown } = {}) {
             width={1440}
             height={539}
             sizes="100vw"
-            className="absolute top-0 h-auto w-full opacity-[0.25]"
+            className="absolute top-0 h-auto w-full opacity-[0.6]"
           />
           <Image
             src={assets.pfSky}
@@ -199,7 +199,7 @@ export default function Portfolio({ content }: { content?: unknown } = {}) {
             width={1440}
             height={1191}
             sizes="100vw"
-            className="absolute top-0 h-auto w-full opacity-[0.05] [mix-blend-mode:luminosity]"
+            className="absolute top-0 h-auto w-full opacity-[0.09] [mix-blend-mode:luminosity]"
           />
         </div>
 
