@@ -188,9 +188,9 @@ export const sectionDefaults = {
   experience: {
     heading: "Experience Your\nBrand to New Height",
     wordmark: "Designik",
-    backgroundImage: "/figma/rectangle39502.png",
-    statueImage: "/figma/df1770-b34-c504758-a6-ff6499604366-a11.png",
-    cloudImage: "/figma/image217.png",
+    backgroundImage: "/figma/individual/exp-card-final--221-1293.png",
+    statueImage: "/figma/individual/exp-statue-clean--221-1357.png",
+    cloudImage: "/figma/individual/image-218--221-1314.png",
     buttonLabel: "View All",
     buttonLink: "#services",
     pills: [

@@ -65,8 +65,8 @@ export const assets = {
   teamGrid: A("individual/6847051fca9d03f2175253ef-grid-1-6--221-1154.png"),
 
   // Experience (exact per-node Figma exports)
-  expCard: A("individual/rectangle-39502--221-1293.png"),
-  expStatue: A("individual/df1770b3-4c50-4758-a6ff-6499604366a1-1--221-1357.png"),
+  expCard: A("individual/exp-card-final--221-1293.png"),
+  expStatue: A("individual/exp-statue-clean--221-1357.png"),
   expCloudL: A("individual/image-218--221-1314.png"),
   expCloudR: A("individual/image-217--221-1313.png"),
   expCornerL: A("individual/exp-corner-l--221-1295.svg"),

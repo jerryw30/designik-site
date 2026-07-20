@@ -85,7 +85,7 @@ export default function Experience({ content }: { content?: unknown } = {}) {
       <div className="@container relative mx-auto max-w-[1440px]">
         {/* ===================== desktop (exact) ===================== */}
         <div className="relative hidden pt-[5.7639cqw] md:block">
-          <div className="relative mx-auto h-[56.8056cqw] w-[96.9444cqw] overflow-hidden rounded-[1.6667cqw]">
+          <div className="relative mx-auto h-[56.8056cqw] w-[96.9444cqw] overflow-hidden rounded-[1.3194cqw]">
             {/* red hills card background (exact export) */}
             <Image src={data.backgroundImage || assets.expCard} alt="" fill sizes="100vw" className="object-cover" priority={false} />
 
@@ -128,14 +128,14 @@ export default function Experience({ content }: { content?: unknown } = {}) {
               </div>
             ))}
 
-            {/* statue (1:1 export incl. baked shadow; node box at 359,216) */}
-            <div className="absolute left-[0.2083cqw] top-[15cqw] z-10 w-[69.5833cqw]">
+            {/* statue (clean node crop at exact box 359,216 — 646x586) */}
+            <div className="absolute left-[24.9306cqw] top-[15cqw] z-10 w-[44.8611cqw]">
               <Image
                 src={data.statueImage || assets.expStatue}
                 alt="Designik — experience your brand"
-                width={1002}
-                height={867}
-                sizes="(min-width: 768px) 70vw, 100vw"
+                width={646}
+                height={586}
+                sizes="(min-width: 768px) 45vw, 100vw"
                 className="h-auto w-full"
               />
             </div>
@@ -176,8 +176,8 @@ export default function Experience({ content }: { content?: unknown } = {}) {
                 <span className="block text-[5vw] font-medium leading-[1.18]">{headingLines[1] || ""}</span>
               </h2>
             </div>
-            <div className="absolute left-[0.2%] top-[26%] z-10 w-[69.6%]">
-              <Image src={data.statueImage || assets.expStatue} alt="" width={1002} height={867} className="h-auto w-full" sizes="100vw" />
+            <div className="absolute left-[25%] top-[26%] z-10 w-[44.9%]">
+              <Image src={data.statueImage || assets.expStatue} alt="" width={646} height={586} className="h-auto w-full" sizes="100vw" />
             </div>
           </div>
           <div className="mt-5 flex flex-wrap justify-center gap-2.5">
