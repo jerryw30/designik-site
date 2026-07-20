@@ -12,18 +12,44 @@ export default function BrandHeights({ content }: { content?: unknown } = {}) {
   const data=sectionContent("brand-heights",content);
   const [active, setActive] = useState(1);
 
+  const logoSrc = data.logo || assets.logo;
+
   return (
-    <section className="bg-white px-5 py-16 md:py-24">
-      <div className="mx-auto max-w-[1200px]">
+    <section className="relative isolate overflow-hidden bg-white px-5 py-16 md:py-24">
+      {/* Background texture at the top of the section (Figma: cloud mist + grid) */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[900px] overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-[380px]">
+          <Image
+            src={assets.gridTexture}
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover object-top opacity-50"
+          />
+        </div>
+        <Image
+          src={assets.brandMist}
+          alt=""
+          width={1705}
+          height={776}
+          sizes="1705px"
+          className="absolute left-1/2 top-0 h-auto w-[1705px] max-w-none -translate-x-1/2 opacity-70"
+        />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-[1200px]">
         <Reveal className="text-center">
-          <h2 className="font-display text-[clamp(34px,5.5vw,56px)] font-medium uppercase leading-[0.95]">
-            <span className="text-wine-500">{data.headingAccent}</span>
-            <br />
-            <span className="text-ink">{data.heading}</span>
+          <h2 className="font-display uppercase leading-[1.08]">
+            <span className="block font-semibold text-wine-500 text-[clamp(36px,5.4vw,77px)]">
+              {data.headingAccent}
+            </span>
+            <span className="block font-medium text-ink text-[clamp(28px,4.3vw,61px)]">
+              {data.heading}
+            </span>
           </h2>
         </Reveal>
 
-        <RevealGroup className="mt-12 flex flex-col gap-4" stagger={0.08}>
+        <RevealGroup className="mt-12 flex flex-col gap-4 md:mt-16" stagger={0.08}>
           {data.rows.map((title, i) => {
             const isActive = active === i;
             return (
@@ -33,33 +59,43 @@ export default function BrandHeights({ content }: { content?: unknown } = {}) {
                   onFocus={() => setActive(i)}
                   onClick={() => setActive(i)}
                   className={cn(
-                    "group flex w-full items-center gap-5 rounded-[18px] px-6 py-5 text-left transition-colors duration-300 md:gap-7 md:px-8",
-                    isActive ? "bg-wine-500 text-white" : "bg-blush-200 text-ink hover:bg-blush-300"
+                    "group flex w-full items-center gap-4 rounded-[16px] border px-5 py-5 text-left transition-colors duration-300 md:gap-7 md:px-8 md:py-6",
+                    isActive
+                      ? "border-transparent bg-wine-500 text-white"
+                      : "border-rose-200 bg-blush-100 text-ink hover:bg-blush-300"
                   )}
                 >
                   <span
+                    aria-hidden
                     className={cn(
-                      "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-colors",
-                      isActive ? "bg-white/15" : "bg-white"
+                      "h-9 w-9 shrink-0 transition-colors md:h-11 md:w-11",
+                      isActive ? "bg-white" : "bg-wine-500"
+                    )}
+                    style={{
+                      WebkitMaskImage: `url(${logoSrc})`,
+                      maskImage: `url(${logoSrc})`,
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                      WebkitMaskSize: "contain",
+                      maskSize: "contain",
+                    }}
+                  />
+
+                  <h3
+                    className={cn(
+                      "w-[150px] shrink-0 whitespace-pre-line font-display font-bold uppercase leading-[1.02] text-[clamp(24px,3.3vw,48px)] md:w-[360px]",
+                      isActive ? "text-white" : "text-wine-500"
                     )}
                   >
-                    <Image
-                      src={data.logo || assets.logo}
-                      alt=""
-                      width={26}
-                      height={26}
-                      className={cn("h-6 w-6", isActive ? "brightness-0 invert" : "brightness-0")}
-                    />
-                  </span>
-
-                  <h3 className="w-[170px] shrink-0 whitespace-pre-line font-display text-[22px] font-semibold uppercase leading-[1.05] md:w-[210px] md:text-[26px]">
                     {title}
                   </h3>
 
                   <p
                     className={cn(
-                      "hidden flex-1 max-w-[460px] text-[13px] font-light leading-relaxed md:block",
-                      isActive ? "text-white/85" : "text-neutral-500"
+                      "hidden max-w-[420px] flex-1 text-[15px] font-normal leading-[1.55] md:block",
+                      isActive ? "text-white/85" : "text-neutral-600"
                     )}
                   >
                     {data.description}
@@ -67,11 +103,11 @@ export default function BrandHeights({ content }: { content?: unknown } = {}) {
 
                   <span
                     className={cn(
-                      "ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-300 group-hover:rotate-45",
+                      "ml-auto flex h-14 w-14 shrink-0 items-center justify-center rounded-full transition-all duration-300 group-hover:rotate-45 md:h-16 md:w-16",
                       isActive ? "bg-white text-wine-500" : "bg-wine-500 text-white"
                     )}
                   >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+                    <svg width="22" height="22" viewBox="0 0 16 16" fill="none" aria-hidden>
                       <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </span>

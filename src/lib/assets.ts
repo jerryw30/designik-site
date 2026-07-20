@@ -8,6 +8,7 @@ export const assets = {
   cloud: A("image217.png"),
   cloudSky: A("image220.png"),
   interactiveScene: A("image252.png"),
+  brandMist: A("image219.png"),
   desert: A("a9-b0-fcd7-d1364-e8-e8600-cc7-ec606-d5011.png"),
   statue: A("df1770-b34-c504758-a6-ff6499604366-a11.png"),
   experienceHills: A("rectangle39502.png"),
