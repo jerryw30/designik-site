@@ -61,7 +61,7 @@ export default function SiteHome({
 }) {
   if (!sections) return <LegacyHome hero={hero} />;
   return (
-    <main className="relative overflow-x-hidden">
+    <main className="relative overflow-x-clip">
       {builder && <BuilderBridge />}
       {!builder && <GlobalPopup design={popup} />}
       {sections
@@ -119,7 +119,7 @@ export default function SiteHome({
 
 function LegacyHome({ hero }: { hero?: Partial<HeroContent> }) {
   return (
-    <main className="relative overflow-x-hidden">
+    <main className="relative overflow-x-clip">
       <Nav />
       <Hero content={hero} />
       <AgencyMarquee />
