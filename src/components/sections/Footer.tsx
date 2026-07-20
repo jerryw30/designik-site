@@ -65,7 +65,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
           </div>
 
           {/* hanging tag (Figma: 198 box at x639) */}
-          <div className="pointer-events-none absolute left-[43.4931cqw] top-[2.8681cqw] z-[5] w-[22.7143cqw]">
+          <div className="pointer-events-none absolute left-[34.4931cqw] top-[-12px] z-[5] w-[22.7143cqw]">
             <Image src={assets.footerTag} alt="" width={324} height={315} className="h-auto w-full" sizes="330px" />
           </div>
 
