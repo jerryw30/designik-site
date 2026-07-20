@@ -24,14 +24,15 @@ const PILLS = [
   { x: 142, y: 678, w: 268, icon: assets.expIconInsight, ix: 23.9, iy: 16.9, iw: 39, ih: 39, tx: 75, split: false },
 ];
 
-// Hand-drawn arrows (card-local design px: x, y, w, asset)
+// Hand-drawn arrows — positions measured from the Figma render
+// (the raw node coords sit inside flipped groups and are unreliable)
 const ARROWS = [
-  { x: 569.7, y: 302.2, w: 100, src: assets.expArrow208 },
-  { x: 802.4, y: 331.2, w: 100, src: assets.expArrow207 },
-  { x: 435.7, y: 412, w: 125, src: assets.expSwirl },
-  { x: 953.3, y: 399, w: 121.5, src: assets.expArrow205 },
-  { x: 458, y: 664.8, w: 51, src: assets.expArrow209 },
-  { x: 944, y: 665.8, w: 51, src: assets.expArrow210 },
+  { x: 478, y: 244, w: 101, src: assets.expArrow208 },
+  { x: 798, y: 272, w: 101, src: assets.expArrow207 },
+  { x: 365, y: 420, w: 93.9, src: assets.expSwirl },
+  { x: 915, y: 377, w: 122, src: assets.expArrow205 },
+  { x: 408, y: 616, w: 51, src: assets.expArrow209 },
+  { x: 943, y: 615, w: 51, src: assets.expArrow210 },
 ];
 
 const q = (px: number) => `${(px / 14.4).toFixed(4)}cqw`;
@@ -128,8 +129,8 @@ export default function Experience({ content }: { content?: unknown } = {}) {
               </div>
             ))}
 
-            {/* statue (clean node crop at exact box 359,216 — 646x586) */}
-            <div className="absolute left-[24.9306cqw] top-[15cqw] z-10 w-[44.8611cqw]">
+            {/* statue (clean node crop, anchored to the card bottom) */}
+            <div className="absolute bottom-0 left-[24.9306cqw] z-10 w-[44.8611cqw]">
               <Image
                 src={data.statueImage || assets.expStatue}
                 alt="Designik — experience your brand"
@@ -176,7 +177,7 @@ export default function Experience({ content }: { content?: unknown } = {}) {
                 <span className="block text-[5vw] font-medium leading-[1.18]">{headingLines[1] || ""}</span>
               </h2>
             </div>
-            <div className="absolute left-[25%] top-[26%] z-10 w-[44.9%]">
+            <div className="absolute bottom-0 left-[25%] z-10 w-[44.9%]">
               <Image src={data.statueImage || assets.expStatue} alt="" width={646} height={586} className="h-auto w-full" sizes="100vw" />
             </div>
           </div>
