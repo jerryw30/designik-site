@@ -112,12 +112,23 @@ export default function Experience({ content }: { content?: unknown } = {}) {
 
         <div className="relative z-10 px-6 pt-14 pb-16 md:pt-16 lg:pb-0">
           <Reveal className="text-center">
-            <h2 className="font-display text-[clamp(32px,5vw,56px)] font-medium uppercase leading-[0.95] text-white">
-              {data.heading.split("\n").map((line,i)=><span className="block" key={i}>{line}</span>)}
+            <h2 className="font-display uppercase leading-[1.15] text-white">
+              {data.heading.split("\n").map((line, i) => (
+                <span
+                  key={i}
+                  className={
+                    i === 0
+                      ? "block font-semibold text-[clamp(30px,5.5vw,71px)]"
+                      : "block font-medium text-[clamp(22px,3.9vw,50px)]"
+                  }
+                >
+                  {line}
+                </span>
+              ))}
             </h2>
           </Reveal>
 
-          <div className="relative mx-auto mt-6 h-[460px] max-w-[1080px] md:h-[560px]">
+          <div className="relative mx-auto mt-6 h-[440px] max-w-[1080px] md:h-[600px] lg:h-[700px]">
             {/* connector arrows (desktop) */}
             <svg className="pointer-events-none absolute inset-0 hidden h-full w-full lg:block" viewBox="0 0 1080 560" fill="none" aria-hidden>
               <path d="M250 150 q70 10 90 60" stroke="white" strokeOpacity="0.5" strokeWidth="2" strokeDasharray="2 6" strokeLinecap="round" />
@@ -147,7 +158,7 @@ export default function Experience({ content }: { content?: unknown } = {}) {
             </motion.a>
 
             {/* Statue */}
-            <Reveal direction="none" className="relative z-10 mx-auto flex h-full w-[300px] items-end justify-center md:w-[440px]">
+            <Reveal direction="none" className="relative z-10 mx-auto flex h-full w-[300px] items-end justify-center md:w-[500px] lg:w-[590px]">
               <Image
                 src={data.statueImage || assets.statue}
                 alt="Designik — experience your brand"
