@@ -220,7 +220,7 @@ export default function Team({ content }: { content?: unknown } = {}) {
           </div>
 
           {/* carousel arrows (always visible — infinite loop) */}
-          <div className="pointer-events-none absolute inset-x-3 top-[13cqw] z-20 flex justify-between md:inset-x-[1.5cqw]">
+          <div className="pointer-events-none absolute inset-x-3 top-[34cqw] z-20 flex justify-between md:inset-x-[1.5cqw] md:top-[13cqw]">
             <CarouselArrow dir="prev" onClick={prev} disabled={false} />
             <CarouselArrow dir="next" onClick={next} disabled={false} />
           </div>

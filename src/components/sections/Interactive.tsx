@@ -16,7 +16,58 @@ export default function Interactive({ content }: { content?: unknown } = {}) {
 
   return (
     <section className="relative bg-wine-700">
-      <div className="@container relative w-full overflow-hidden">
+      {/* ============ mobile: zoomed scene, readable heading ============ */}
+      <div
+        className="relative w-full overflow-hidden md:hidden"
+        style={{
+          backgroundImage:
+            "linear-gradient(-66.108deg, #AF2A4A 27.401%, #580A25 121.26%)",
+        }}
+      >
+        <div className="relative z-10 px-6 pt-10 text-center">
+          <Reveal>
+            <h2 className="font-display font-normal uppercase tracking-[-0.02em] text-white text-[7.2vw] leading-[1.1]">
+              {data.heading}
+            </h2>
+          </Reveal>
+          <Reveal delay={0.1} className="mt-4 flex justify-center">
+            <a
+              href={data.buttonLink}
+              className="group inline-flex h-9 items-center gap-2 rounded-full bg-white px-4"
+            >
+              <span className="font-sans text-[12px] font-semibold leading-none text-wine-500">{data.buttonLabel}</span>
+              <span className="flex size-6 items-center justify-center rounded-full bg-wine-500 text-white">
+                <svg viewBox="0 0 16 16" fill="none" className="h-[44%] w-[44%]" aria-hidden>
+                  <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            </a>
+          </Reveal>
+        </div>
+        {/* zoomed canvas (2x) so the TV reads well on small screens */}
+        <div className="@container relative left-1/2 -mt-[6vw] w-[200%] -translate-x-1/2">
+          <div className="relative h-[64.5139cqw] w-full">
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[49.7917cqw]">
+              <Image src={assets.interactiveGrid} alt="" fill sizes="100vw" className="object-cover object-bottom opacity-60" />
+            </div>
+            <div aria-hidden className="pointer-events-none absolute left-[6.7361cqw] top-[11.1111cqw] w-[25.0694cqw]">
+              <Image src={assets.interactiveCloudL} alt="" width={361} height={183} className="h-auto w-full" sizes="361px" />
+            </div>
+            <div aria-hidden className="pointer-events-none absolute left-[68.2639cqw] top-[11.1111cqw] w-[25.0694cqw]">
+              <Image src={assets.interactiveCloudR} alt="" width={361} height={183} className="h-auto w-full" sizes="361px" />
+            </div>
+            <div className="absolute left-[41.4583cqw] top-[26.5972cqw] h-[13.3333cqw] w-[18.6806cqw] overflow-hidden rounded-[1.25cqw]">
+              <Image src={assets.interactiveScreen} alt="" fill sizes="270px" className="object-cover" />
+            </div>
+            <div className="absolute inset-x-0 top-[16.3889cqw]">
+              <Image src={data.backgroundImage || assets.interactiveScene2} alt="" width={1440} height={720} sizes="200vw" className="h-auto w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ============ desktop: exact Figma canvas (unchanged) ============ */}
+      <div className="@container relative hidden w-full overflow-hidden md:block">
         <div
           className="relative h-[64.5139cqw] w-full overflow-hidden"
           style={{

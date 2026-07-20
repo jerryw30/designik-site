@@ -222,10 +222,10 @@ export default function Portfolio({ content }: { content?: unknown } = {}) {
         {/* heading — Oswald SemiBold 77 / Medium 61 (Figma) */}
         <Reveal className="relative z-10 pt-[8.1944cqw] text-center">
           <h2 className="font-display uppercase">
-            <span className="block text-[5.3494cqw] font-semibold leading-[6.2953cqw] text-wine-500">
+            <span className="block font-semibold text-wine-500 text-[max(28px,5.3494cqw)] leading-[max(33px,6.2953cqw)]">
               {data.headingAccent}
             </span>
-            <span className="block text-[4.2596cqw] font-medium leading-[5.0128cqw] text-black">{data.heading}</span>
+            <span className="block font-medium text-black text-[max(22px,4.2596cqw)] leading-[max(26px,5.0128cqw)]">{data.heading}</span>
           </h2>
         </Reveal>
 

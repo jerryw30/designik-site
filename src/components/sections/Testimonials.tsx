@@ -216,6 +216,35 @@ export default function Testimonials({ content }: { content?: unknown } = {}) {
 
         {/* mobile stack */}
         <div className="mt-8 flex flex-col gap-4 px-5 md:hidden">
+          {/* image tiles side by side */}
+          <div className="grid grid-cols-2 gap-4">
+            {(["phone", "traffic"] as const).map((variant) => (
+              <div key={variant} className="relative aspect-[244/294] overflow-hidden rounded-2xl bg-blush-200">
+                <span
+                  aria-hidden
+                  className="absolute left-[7%] top-[14%] aspect-[209.6/212.64] w-[86%]"
+                  style={{
+                    backgroundColor: "#EBDDDD",
+                    WebkitMaskImage: `url(${assets.testiWatermark})`,
+                    maskImage: `url(${assets.testiWatermark})`,
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskSize: "100% 100%",
+                    maskSize: "100% 100%",
+                  }}
+                />
+                {variant === "phone" ? (
+                  <div className="absolute left-[10%] top-[5.4%] h-[94.6%] w-[87%] overflow-hidden rounded-xl">
+                    <Image src={assets.testiPhoneRaw} alt="Designik mobile app" width={804} height={1010} sizes="50vw" className="absolute left-0 top-[-0.12%] h-[101.67%] w-[102.74%] max-w-none object-cover" />
+                  </div>
+                ) : (
+                  <div className="absolute left-[8%] top-[5.4%] h-[94.6%] w-[87%] overflow-hidden">
+                    <Image src={assets.testiTrafficRaw} alt="Social traffic light" width={1472} height={1472} sizes="50vw" className="absolute left-[-42.99%] top-[-43.17%] h-[143.17%] w-[185.98%] max-w-none object-cover" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
           {(["cream", "wine", "orange"] as const).map((tone, i) => (
             <article
               key={i}
