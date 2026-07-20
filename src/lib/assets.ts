@@ -64,6 +64,13 @@ export const assets = {
   teamSky: A("individual/image-220--221-1153.png"),
   teamGrid: A("individual/6847051fca9d03f2175253ef-grid-1-6--221-1154.png"),
 
+  // Interactive (exact per-node Figma exports)
+  interactiveScene2: A("individual/image-252--279-94.png"),
+  interactiveScreen: A("individual/tv-screen--279-96.png"),
+  interactiveGrid: A("individual/6847051fca9d03f2175253ef-grid-1-7--221-1152.png"),
+  interactiveCloudL: A("individual/image-250--277-64.png"),
+  interactiveCloudR: A("individual/image-249--277-63.png"),
+
   // Testimonials
   trafficLight: A("image241.png"),
   testimonialPhone: A("image23611.png"),
