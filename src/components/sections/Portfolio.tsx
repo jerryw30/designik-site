@@ -213,7 +213,7 @@ export default function Portfolio({ content }: { content?: unknown } = {}) {
           whileInView={{ rotate: 0, y: 0, opacity: 1 }}
           viewport={{ once: true }}
           transition={{ type: "spring", stiffness: 70, damping: 9 }}
-          className="pointer-events-none absolute left-[7.7222cqw] top-[0.4764cqw] z-[5] hidden w-[18.028cqw] md:block"
+          className="pointer-events-none absolute left-[7.7222cqw] top-[-0.5417cqw] z-[5] hidden w-[18.028cqw] md:block"
         >
           <Image src={assets.pfTag} alt="" width={366} height={365} className="h-auto w-full" sizes="260px" />
         </motion.div>
