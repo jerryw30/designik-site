@@ -181,7 +181,7 @@ export default function Testimonials({ content }: { content?: unknown } = {}) {
           whileInView={{ rotate: 0, y: 0, opacity: 1 }}
           viewport={{ once: true }}
           transition={{ type: "spring", stiffness: 70, damping: 9 }}
-          className="pointer-events-none absolute left-[39.6717cqw] top-[-1.0229cqw] z-20 hidden w-[15.5208cqw] md:block"
+          className="pointer-events-none absolute left-[32.2487cqw] top-[-0.6739cqw] z-20 hidden w-[22.7143cqw] md:block"
         >
           <Image src={assets.testiTag} alt="" width={324} height={315} className="h-auto w-full" sizes="230px" />
         </motion.div>
