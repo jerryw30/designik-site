@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import { Reveal } from "@/components/ui/Reveal";
 import { sectionContent } from "@/cms/section-defaults";
@@ -87,12 +88,26 @@ export default function Interactive({ content }: { content?: unknown } = {}) {
           </div>
 
           {/* clouds (Figma: y160, x97 and x983, 361 wide) */}
-          <div aria-hidden className="pointer-events-none absolute left-[6.7361cqw] top-[11.1111cqw] w-[25.0694cqw]">
+          <motion.div
+            aria-hidden
+            initial={{ opacity: 0, x: -40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            className="pointer-events-none absolute left-[6.7361cqw] top-[11.1111cqw] w-[25.0694cqw]"
+          >
             <Image src={assets.interactiveCloudL} alt="" width={361} height={183} className="h-auto w-full" sizes="361px" />
-          </div>
-          <div aria-hidden className="pointer-events-none absolute left-[68.2639cqw] top-[11.1111cqw] w-[25.0694cqw]">
+          </motion.div>
+          <motion.div
+            aria-hidden
+            initial={{ opacity: 0, x: 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            className="pointer-events-none absolute left-[68.2639cqw] top-[11.1111cqw] w-[25.0694cqw]"
+          >
             <Image src={assets.interactiveCloudR} alt="" width={361} height={183} className="h-auto w-full" sizes="361px" />
-          </div>
+          </motion.div>
 
           {/* TV screen content — sits behind the scene's transparent window */}
           <div className="absolute left-[41.4583cqw] top-[26.5972cqw] h-[13.3333cqw] w-[18.6806cqw] overflow-hidden rounded-[1.25cqw]">
@@ -100,7 +115,13 @@ export default function Interactive({ content }: { content?: unknown } = {}) {
           </div>
 
           {/* scene: red flower hills + TV with transparent screen window (y236) */}
-          <div className="absolute inset-x-0 top-[16.3889cqw]">
+          <motion.div
+            initial={{ opacity: 0, y: 60 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-x-0 top-[16.3889cqw]"
+          >
             <Image
               src={data.backgroundImage || assets.interactiveScene2}
               alt=""
@@ -109,7 +130,7 @@ export default function Interactive({ content }: { content?: unknown } = {}) {
               sizes="100vw"
               className="h-auto w-full"
             />
-          </div>
+          </motion.div>
 
           {/* heading + button (Figma: y83 centered, Oswald 400 72/64.8 -0.02em) */}
           <div className="absolute inset-x-0 top-[5.7639cqw] z-10 text-center">

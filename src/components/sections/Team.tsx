@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { assets } from "@/lib/assets";
 import { Reveal } from "@/components/ui/Reveal";
@@ -162,7 +163,14 @@ export default function Team({ content }: { content?: unknown } = {}) {
               data.members.map((m, i) => {
                 const art = CARD_ART[i % CARD_ART.length];
                 return (
-                  <div key={`${copy}-${i}`} className="w-[68cqw] shrink-0 snap-start md:w-[23.5644cqw]">
+                  <motion.div
+                    key={`${copy}-${i}`}
+                    initial={{ opacity: 0, y: 36 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.6, delay: (i % data.members.length) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                    className="w-[68cqw] shrink-0 snap-start md:w-[23.5644cqw]"
+                  >
                   {/* card tile */}
                   <div
                     className="relative aspect-[339.327/396.41] overflow-hidden rounded-[1.4682cqw]"
@@ -212,7 +220,7 @@ export default function Team({ content }: { content?: unknown } = {}) {
                       <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
-                </div>
+                </motion.div>
                 );
               })
             )}

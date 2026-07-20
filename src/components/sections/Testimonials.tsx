@@ -34,10 +34,14 @@ function Stars({ className }: { className?: string }) {
 type QuoteData = { quote: string; author: string; role: string; rating: string };
 
 /** Big cream card — 595x294, glass inner frame, text at exact offsets */
-function CreamCard({ data, className }: { data: QuoteData; className?: string }) {
+function CreamCard({ data, className, delay = 0 }: { data: QuoteData; className?: string; delay?: number }) {
   return (
     <motion.article
       whileHover={HOVER}
+      initial={{ opacity: 0, y: 36 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
       className={cn("absolute h-[20.4167cqw] w-[41.3194cqw] rounded-[1.1111cqw] bg-cream-100", CARD_HOVER_CLASS, className)}
     >
       <div
@@ -66,14 +70,20 @@ function SmallQuoteCard({
   data,
   tone,
   className,
+  delay = 0,
 }: {
   data: QuoteData;
   tone: "wine" | "orange";
   className?: string;
+  delay?: number;
 }) {
   return (
     <motion.article
       whileHover={HOVER}
+      initial={{ opacity: 0, y: 36 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
         "absolute h-[20.4167cqw] w-[20.9028cqw] overflow-hidden rounded-[1.1111cqw]",
         tone === "wine" ? "bg-wine-400" : "bg-orange-brand",
@@ -115,14 +125,20 @@ function SmallQuoteCard({
 function ImageTile({
   variant,
   className,
+  delay = 0,
 }: {
   variant: "phone" | "traffic";
   className?: string;
+  delay?: number;
 }) {
   const isPhone = variant === "phone";
   return (
     <motion.article
       whileHover={HOVER}
+      initial={{ opacity: 0, y: 36 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
       className={cn("absolute h-[20.4167cqw] w-[16.9444cqw] rounded-[1.1111cqw] bg-blush-200", CARD_HOVER_CLASS, className)}
     >
       {/* logo watermark */}
@@ -205,13 +221,13 @@ export default function Testimonials({ content }: { content?: unknown } = {}) {
         <div className="relative z-10 mt-[5.2778cqw] hidden h-[43.4028cqw] md:block">
           {/* row 1 */}
           <CreamCard data={q} className="left-[7.9167cqw] top-0" />
-          <SmallQuoteCard data={q} tone="wine" className="left-[51.25cqw] top-0" />
-          <ImageTile variant="phone" className="left-[73.8194cqw] top-0" />
+          <SmallQuoteCard data={q} tone="wine" className="left-[51.25cqw] top-0" delay={0.12} />
+          <ImageTile variant="phone" className="left-[73.8194cqw] top-0" delay={0.24} />
 
           {/* row 2 */}
-          <SmallQuoteCard data={q} tone="orange" className="left-[7.9167cqw] top-[22.9861cqw]" />
-          <ImageTile variant="traffic" className="left-[30.4167cqw] top-[22.9861cqw]" />
-          <CreamCard data={q} className="left-[49.4444cqw] top-[22.9861cqw]" />
+          <SmallQuoteCard data={q} tone="orange" className="left-[7.9167cqw] top-[22.9861cqw]" delay={0.1} />
+          <ImageTile variant="traffic" className="left-[30.4167cqw] top-[22.9861cqw]" delay={0.2} />
+          <CreamCard data={q} className="left-[49.4444cqw] top-[22.9861cqw]" delay={0.3} />
         </div>
 
         {/* mobile stack */}

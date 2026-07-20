@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import FigmaNewsletterForm from "@/components/ui/FigmaNewsletterForm";
 import { sectionContent } from "@/cms/section-defaults";
@@ -65,12 +68,24 @@ export default function Footer({ content }: { content?: unknown } = {}) {
           </div>
 
           {/* hanging tag (Figma: 198 box at x639) */}
-          <div className="pointer-events-none absolute left-[34.4931cqw] top-[-12px] z-[5] w-[22.7143cqw]">
+          <motion.div
+            initial={{ rotate: -8, y: -10, opacity: 0 }}
+            whileInView={{ rotate: 0, y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ type: "spring", stiffness: 70, damping: 9 }}
+            className="pointer-events-none absolute left-[34.4931cqw] top-[-12px] z-[5] w-[22.7143cqw]"
+          >
             <Image src={assets.footerTag} alt="" width={324} height={315} className="h-auto w-full" sizes="330px" />
-          </div>
+          </motion.div>
 
           {/* logo + DESIGNIK (y121) */}
-          <div className="absolute left-[5.2083cqw] top-[8.4028cqw] z-10 w-[7.7778cqw]">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute left-[5.2083cqw] top-[8.4028cqw] z-10 w-[7.7778cqw]"
+          >
             <Image
               src={data.logo || assets.logo}
               alt={data.brand}
@@ -78,23 +93,42 @@ export default function Footer({ content }: { content?: unknown } = {}) {
               height={114}
               className="h-auto w-full"
             />
-          </div>
-          <span className="absolute left-[14.6528cqw] top-[8.4722cqw] z-10 whitespace-nowrap font-display text-[6.6581cqw] font-semibold uppercase leading-[7.8355cqw]">
+          </motion.div>
+          <motion.span
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute left-[14.6528cqw] top-[8.4722cqw] z-10 whitespace-nowrap font-display text-[6.6581cqw] font-semibold uppercase leading-[7.8355cqw]"
+          >
             {data.brand}
-          </span>
+          </motion.span>
 
           {/* right heading (left-aligned at x921) */}
-          <div className="absolute left-[63.9583cqw] top-[7.7778cqw] z-10 uppercase">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute left-[63.9583cqw] top-[7.7778cqw] z-10 uppercase"
+          >
             <p className="whitespace-nowrap font-display text-[4.3433cqw] font-normal leading-[5.1114cqw]">
               {data.heading.split("\n")[0]}
             </p>
             <p className="whitespace-nowrap font-display text-[3.4585cqw] font-medium leading-[4.0701cqw]">
               {data.heading.split("\n")[1] || ""}
             </p>
-          </div>
+          </motion.div>
 
           {/* horizontal hairline (y295.5) */}
-          <div aria-hidden className="absolute left-[4.8611cqw] top-[20.5208cqw] z-10 h-px w-[90.2431cqw] bg-black/25" />
+          <motion.div
+            aria-hidden
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute left-[4.8611cqw] top-[20.5208cqw] z-10 h-px w-[90.2431cqw] origin-left bg-black/25"
+          />
 
           {/* link columns with vertical hairlines (y361) */}
           {[0, 1, 2].map((c) => (
@@ -106,8 +140,12 @@ export default function Footer({ content }: { content?: unknown } = {}) {
             />
           ))}
           {data.columns.map((links, c) => (
-            <nav
+            <motion.nav
               key={c}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 + c * 0.1, ease: [0.22, 1, 0.36, 1] }}
               className="absolute top-[25.1042cqw] z-10 flex flex-col"
               style={{ left: `${[6.2847, 20.4167, 34.5833][c]}cqw` }}
             >
@@ -120,16 +158,28 @@ export default function Footer({ content }: { content?: unknown } = {}) {
                   {l}
                 </a>
               ))}
-            </nav>
+            </motion.nav>
           ))}
 
           {/* circular VIEW ALL SERVICES badge (x755) */}
-          <div className="absolute left-[52.4306cqw] top-[25.7431cqw] z-10 w-[7.8604cqw]">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.6, rotate: -30 }}
+            whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute left-[52.4306cqw] top-[25.7431cqw] z-10 w-[7.8604cqw]"
+          >
             <Image src={assets.footerBadge} alt="View all services" width={122} height={122} className="h-auto w-full" />
-          </div>
+          </motion.div>
 
           {/* newsletter (x1034) */}
-          <div className="absolute left-[71.8056cqw] top-[25.9722cqw] z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute left-[71.8056cqw] top-[25.9722cqw] z-10"
+          >
             <h3 className="text-[1.0417cqw] font-bold leading-[1.5625cqw] text-mint" style={RALEWAY}>
               {data.newsletterHeading}
             </h3>
@@ -139,7 +189,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
             <p className="mt-[1.0417cqw] w-[16.4583cqw] text-[0.9028cqw] leading-[1.1458cqw] text-mint" style={RALEWAY}>
               {data.newsletterNote}
             </p>
-          </div>
+          </motion.div>
 
           {/* copyright (y623, centered) */}
           <p className="absolute inset-x-0 top-[43.2639cqw] z-10 text-center text-[1.1111cqw] leading-[1.1458cqw]" style={RALEWAY}>

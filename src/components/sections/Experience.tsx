@@ -107,12 +107,26 @@ export default function Experience({ content }: { content?: unknown } = {}) {
             </span>
 
             {/* clouds */}
-            <div aria-hidden className="pointer-events-none absolute left-[1.4583cqw] top-[4.2361cqw] z-[2] w-[25.0694cqw]">
+            <motion.div
+              aria-hidden
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              className="pointer-events-none absolute left-[1.4583cqw] top-[4.2361cqw] z-[2] w-[25.0694cqw]"
+            >
               <Image src={data.cloudImage || assets.expCloudL} alt="" width={361} height={183} className="h-auto w-full" sizes="361px" />
-            </div>
-            <div aria-hidden className="pointer-events-none absolute left-[69.7917cqw] top-[5.625cqw] z-[2] w-[25.0694cqw]">
+            </motion.div>
+            <motion.div
+              aria-hidden
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              className="pointer-events-none absolute left-[69.7917cqw] top-[5.625cqw] z-[2] w-[25.0694cqw]"
+            >
               <Image src={assets.expCloudR} alt="" width={361} height={183} className="h-auto w-full" sizes="361px" />
-            </div>
+            </motion.div>
 
             {/* heading — Oswald 600 77 / 500 54.5 (Figma) */}
             <Reveal className="absolute inset-x-0 top-[3.1944cqw] z-10 text-center">
@@ -124,13 +138,28 @@ export default function Experience({ content }: { content?: unknown } = {}) {
 
             {/* hand-drawn arrows */}
             {ARROWS.map((a, i) => (
-              <div key={i} aria-hidden className="pointer-events-none absolute z-[15]" style={{ left: q(a.x), top: q(a.y), width: q(a.w) }}>
+              <motion.div
+                key={i}
+                aria-hidden
+                initial={{ opacity: 0, scale: 0.5 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: 0.5 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="pointer-events-none absolute z-[15]"
+                style={{ left: q(a.x), top: q(a.y), width: q(a.w) }}
+              >
                 <Image src={a.src} alt="" width={125} height={123} className="h-auto w-full" />
-              </div>
+              </motion.div>
             ))}
 
             {/* statue (clean node crop, anchored to the card bottom) */}
-            <div className="absolute bottom-0 left-[24.9306cqw] z-10 w-[44.8611cqw]">
+            <motion.div
+              initial={{ opacity: 0, y: 70 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute bottom-0 left-[24.9306cqw] z-10 w-[44.8611cqw]"
+            >
               <Image
                 src={data.statueImage || assets.expStatue}
                 alt="Designik — experience your brand"
@@ -139,7 +168,7 @@ export default function Experience({ content }: { content?: unknown } = {}) {
                 sizes="(min-width: 768px) 45vw, 100vw"
                 className="h-auto w-full"
               />
-            </div>
+            </motion.div>
 
             {/* floating pills */}
             {PILLS.map((p, i) => (

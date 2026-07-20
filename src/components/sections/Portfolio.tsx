@@ -97,7 +97,13 @@ function StackCard({
 
   return (
     <div ref={ref} className="static md:sticky" style={{ top: `calc(100px + ${index * 1.6}rem)` }}>
-      <div className="mb-8 md:mb-[6.3194cqw]">
+      <motion.div
+        initial={{ opacity: 0, y: 48 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="mb-8 md:mb-[6.3194cqw]"
+      >
         <motion.article
           style={{ scale: isLast ? 1 : scale }}
           className="relative aspect-[1300/535] w-full overflow-hidden rounded-[1.3889cqw] max-md:[transform:none!important]"
@@ -176,7 +182,7 @@ function StackCard({
             </span>
           </a>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
