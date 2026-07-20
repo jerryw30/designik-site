@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { assets } from "@/lib/assets";
 import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/utils";
@@ -49,32 +49,68 @@ function CarouselArrow({ dir, onClick, disabled }: { dir: "prev" | "next"; onCli
 export default function Team({ content }: { content?: unknown } = {}) {
   const data = sectionContent("team", content);
   const trackRef = useRef<HTMLDivElement>(null);
-  const [scrollState, setScrollState] = useState({ overflow: false, canPrev: false, canNext: false });
+  const pausedRef = useRef(false);
 
-  const updateScrollState = useCallback(() => {
+  // Infinite loop: the track holds 3 copies of the member list. Whenever the
+  // scroll position drifts out of the middle copy, silently jump one copy.
+  const normalizeLoop = useCallback(() => {
     const t = trackRef.current;
     if (!t) return;
-    setScrollState({
-      overflow: t.scrollWidth > t.clientWidth + 2,
-      canPrev: t.scrollLeft > 2,
-      canNext: t.scrollLeft < t.scrollWidth - t.clientWidth - 2,
-    });
+    const copyW = t.scrollWidth / 3;
+    if (copyW <= 0) return;
+    if (t.scrollLeft < copyW * 0.5 || t.scrollLeft > copyW * 1.75) {
+      const prev = t.style.scrollBehavior;
+      t.style.scrollBehavior = "auto";
+      t.scrollLeft += t.scrollLeft < copyW * 0.5 ? copyW : -copyW;
+      t.style.scrollBehavior = prev;
+    }
   }, []);
 
+  // Start in the middle copy
   useEffect(() => {
-    updateScrollState();
-    window.addEventListener("resize", updateScrollState);
-    return () => window.removeEventListener("resize", updateScrollState);
-  }, [updateScrollState]);
+    const t = trackRef.current;
+    if (!t) return;
+    t.style.scrollBehavior = "auto";
+    t.scrollLeft = t.scrollWidth / 3;
+    t.style.scrollBehavior = "";
+  }, []);
 
-  const scrollByCard = (dir: 1 | -1) => {
+  // JS-driven tween (native smooth scrolling is unreliable with snap tracks)
+  const animRef = useRef<number | null>(null);
+  const scrollByCard = useCallback((dir: 1 | -1) => {
     const t = trackRef.current;
     if (!t) return;
     const cell = t.firstElementChild as HTMLElement | null;
     if (!cell) return;
     const gap = parseFloat(getComputedStyle(t).columnGap || "0") || 0;
-    t.scrollBy({ left: dir * (cell.getBoundingClientRect().width + gap), behavior: "smooth" });
-  };
+    const delta = dir * (cell.getBoundingClientRect().width + gap);
+    const start = t.scrollLeft;
+    const t0 = performance.now();
+    const ms = 450;
+    const ease = (p: number) => 1 - Math.pow(1 - p, 3);
+    if (animRef.current !== null) window.clearInterval(animRef.current);
+    animRef.current = window.setInterval(() => {
+      const p = Math.min(1, (performance.now() - t0) / ms);
+      t.scrollLeft = start + delta * ease(p);
+      if (p >= 1 && animRef.current !== null) {
+        window.clearInterval(animRef.current);
+        animRef.current = null;
+      }
+    }, 16);
+  }, []);
+
+  useEffect(() => () => {
+    if (animRef.current !== null) window.clearInterval(animRef.current);
+  }, []);
+
+  // Autoplay (pauses on hover/touch; respects reduced-motion)
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = setInterval(() => {
+      if (!pausedRef.current && document.visibilityState === "visible") scrollByCard(1);
+    }, 3500);
+    return () => clearInterval(id);
+  }, [scrollByCard]);
 
   return (
     <section className="relative bg-white">
@@ -115,13 +151,18 @@ export default function Team({ content }: { content?: unknown } = {}) {
         <div className="relative z-10 mt-[4.3056cqw]">
           <div
             ref={trackRef}
-            onScroll={updateScrollState}
-            className="flex snap-x snap-mandatory gap-[1.9141cqw] overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:px-0"
+            onScroll={normalizeLoop}
+            onMouseEnter={() => (pausedRef.current = true)}
+            onMouseLeave={() => (pausedRef.current = false)}
+            onTouchStart={() => (pausedRef.current = true)}
+            onTouchEnd={() => (pausedRef.current = false)}
+            className="flex snap-x snap-proximity gap-[1.9141cqw] overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:px-0"
           >
-            {data.members.map((m, i) => {
-              const art = CARD_ART[i % CARD_ART.length];
-              return (
-                <div key={i} className="w-[68cqw] shrink-0 snap-start md:w-[23.5644cqw]">
+            {[0, 1, 2].flatMap((copy) =>
+              data.members.map((m, i) => {
+                const art = CARD_ART[i % CARD_ART.length];
+                return (
+                  <div key={`${copy}-${i}`} className="w-[68cqw] shrink-0 snap-start md:w-[23.5644cqw]">
                   {/* card tile */}
                   <div
                     className="relative aspect-[339.327/396.41] overflow-hidden rounded-[1.4682cqw]"
@@ -172,17 +213,16 @@ export default function Team({ content }: { content?: unknown } = {}) {
                     </svg>
                   </div>
                 </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
 
-          {/* carousel arrows (site addition — not in the Figma design) */}
-          {scrollState.overflow && (
-            <div className="pointer-events-none absolute inset-x-3 top-[13cqw] z-20 flex justify-between md:inset-x-[1.5cqw]">
-              <CarouselArrow dir="prev" onClick={() => scrollByCard(-1)} disabled={!scrollState.canPrev} />
-              <CarouselArrow dir="next" onClick={() => scrollByCard(1)} disabled={!scrollState.canNext} />
-            </div>
-          )}
+          {/* carousel arrows (always visible — infinite loop) */}
+          <div className="pointer-events-none absolute inset-x-3 top-[13cqw] z-20 flex justify-between md:inset-x-[1.5cqw]">
+            <CarouselArrow dir="prev" onClick={() => scrollByCard(-1)} disabled={false} />
+            <CarouselArrow dir="next" onClick={() => scrollByCard(1)} disabled={false} />
+          </div>
         </div>
 
         {/* View All (Figma: 183x55 wine pill, centered at y787) */}
