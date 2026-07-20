@@ -137,20 +137,20 @@ export const sectionDefaults = {
     buttonLink: "#contact",
     cards: [
       {
-        background: "/figma/rectangle39359.png",
-        device: "/figma/image213.png",
+        background: "/figma/individual/rectangle-39359--221-1364.png",
+        device: "/figma/individual/image-213--221-1366.png",
         deviceSide: "left",
         light: false,
       },
       {
-        background: "/figma/rectangle39515.png",
-        device: "/figma/image-photoroom2411.png",
+        background: "/figma/individual/rectangle-39515--221-1382.png",
+        device: "/figma/individual/image-photoroom-24-1-1--221-1395.png",
         deviceSide: "right",
         light: true,
       },
       {
-        background: "/figma/rectangle39360.png",
-        device: "/figma/image214.png",
+        background: "/figma/individual/rectangle-39359--221-1398.png",
+        device: "/figma/individual/image-214--221-1411.png",
         deviceSide: "left",
         light: false,
       },

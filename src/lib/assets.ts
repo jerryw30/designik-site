@@ -39,6 +39,18 @@ export const assets = {
   portfolioPhone2: A("image214.png"),
   cubes: A("image-photoroom2411.png"),
 
+  // Portfolio (exact per-node Figma exports)
+  pfCard1Bg: A("individual/rectangle-39359--221-1364.png"),
+  pfCard2Bg: A("individual/rectangle-39515--221-1382.png"),
+  pfCard3Bg: A("individual/rectangle-39359--221-1398.png"),
+  pfPhoneHand: A("individual/image-213--221-1366.png"),
+  pfLaptop: A("individual/image-photoroom-24-1-1--221-1395.png"),
+  pfPhones: A("individual/image-214--221-1411.png"),
+  pfCloud: A("individual/image-217--221-1377.png"),
+  pfTag: A("individual/image-photoroom-1-1--277-70.png"),
+  pfSky: A("individual/image-220--221-1290.png"),
+  pfGrid: A("individual/6847051fca9d03f2175253ef-grid-1-6--221-1291.png"),
+
   // Team (greyscale portraits, duotoned over coloured cards)
   teamA: A("rectangle39532.png"),
   teamB: A("rectangle39535.png"),
