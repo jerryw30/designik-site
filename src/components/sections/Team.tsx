@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { assets } from "@/lib/assets";
 import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/utils";
@@ -48,69 +48,52 @@ function CarouselArrow({ dir, onClick, disabled }: { dir: "prev" | "next"; onCli
 
 export default function Team({ content }: { content?: unknown } = {}) {
   const data = sectionContent("team", content);
-  const trackRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
+  const touchX = useRef<number | null>(null);
+  const n = data.members.length;
 
-  // Infinite loop: the track holds 3 copies of the member list. Whenever the
-  // scroll position drifts out of the middle copy, silently jump one copy.
-  const normalizeLoop = useCallback(() => {
-    const t = trackRef.current;
-    if (!t) return;
-    const copyW = t.scrollWidth / 3;
-    if (copyW <= 0) return;
-    if (t.scrollLeft < copyW * 0.5 || t.scrollLeft > copyW * 1.75) {
-      const prev = t.style.scrollBehavior;
-      t.style.scrollBehavior = "auto";
-      t.scrollLeft += t.scrollLeft < copyW * 0.5 ? copyW : -copyW;
-      t.style.scrollBehavior = prev;
-    }
-  }, []);
+  // Transform-based infinite carousel: 3 copies, index starts on the middle
+  // copy and is silently re-centered after each wrap transition.
+  const [idx, setIdx] = useState<number>(n);
+  const [animate, setAnimate] = useState(true);
 
-  // Start in the middle copy
-  useEffect(() => {
-    const t = trackRef.current;
-    if (!t) return;
-    t.style.scrollBehavior = "auto";
-    t.scrollLeft = t.scrollWidth / 3;
-    t.style.scrollBehavior = "";
-  }, []);
+  const next = useCallback(() => setIdx((i) => i + 1), []);
+  const prev = useCallback(() => setIdx((i) => i - 1), []);
 
-  // JS-driven tween (native smooth scrolling is unreliable with snap tracks)
-  const animRef = useRef<number | null>(null);
-  const scrollByCard = useCallback((dir: 1 | -1) => {
-    const t = trackRef.current;
-    if (!t) return;
-    const cell = t.firstElementChild as HTMLElement | null;
-    if (!cell) return;
-    const gap = parseFloat(getComputedStyle(t).columnGap || "0") || 0;
-    const delta = dir * (cell.getBoundingClientRect().width + gap);
-    const start = t.scrollLeft;
-    const t0 = performance.now();
-    const ms = 450;
-    const ease = (p: number) => 1 - Math.pow(1 - p, 3);
-    if (animRef.current !== null) window.clearInterval(animRef.current);
-    animRef.current = window.setInterval(() => {
-      const p = Math.min(1, (performance.now() - t0) / ms);
-      t.scrollLeft = start + delta * ease(p);
-      if (p >= 1 && animRef.current !== null) {
-        window.clearInterval(animRef.current);
-        animRef.current = null;
+  const onTransitionEnd = useCallback(() => {
+    setIdx((i) => {
+      if (i >= n * 2 || i < n) {
+        setAnimate(false);
+        return i >= n * 2 ? i - n : i + n;
       }
-    }, 16);
-  }, []);
+      return i;
+    });
+  }, [n]);
 
-  useEffect(() => () => {
-    if (animRef.current !== null) window.clearInterval(animRef.current);
-  }, []);
+  // re-enable the transition one frame after a silent wrap jump
+  useEffect(() => {
+    if (!animate) {
+      const id = window.setTimeout(() => setAnimate(true), 30);
+      return () => window.clearTimeout(id);
+    }
+  }, [animate]);
+
+  // Fallback wrap: if the transitionend event never fires (hidden tab,
+  // skipped transitions), re-center shortly after leaving the middle copy.
+  useEffect(() => {
+    if (idx >= n && idx < n * 2) return;
+    const id = window.setTimeout(onTransitionEnd, 650);
+    return () => window.clearTimeout(id);
+  }, [idx, n, onTransitionEnd]);
 
   // Autoplay (pauses on hover/touch; respects reduced-motion)
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const id = setInterval(() => {
-      if (!pausedRef.current && document.visibilityState === "visible") scrollByCard(1);
-    }, 3500);
+      if (!pausedRef.current && document.visibilityState === "visible") next();
+    }, 3000);
     return () => clearInterval(id);
-  }, [scrollByCard]);
+  }, [next]);
 
   return (
     <section className="relative bg-white">
@@ -150,14 +133,31 @@ export default function Team({ content }: { content?: unknown } = {}) {
         {/* carousel: full-bleed card row (Figma: y230, cards 339.3x396.4, ~27.6 gaps) */}
         <div className="relative z-10 mt-[4.3056cqw]">
           <div
-            ref={trackRef}
-            onScroll={normalizeLoop}
             onMouseEnter={() => (pausedRef.current = true)}
             onMouseLeave={() => (pausedRef.current = false)}
-            onTouchStart={() => (pausedRef.current = true)}
-            onTouchEnd={() => (pausedRef.current = false)}
-            className="flex snap-x snap-proximity gap-[1.9141cqw] overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:px-0"
+            onTouchStart={(e) => {
+              pausedRef.current = true;
+              touchX.current = e.touches[0].clientX;
+            }}
+            onTouchEnd={(e) => {
+              pausedRef.current = false;
+              if (touchX.current !== null) {
+                const d = e.changedTouches[0].clientX - touchX.current;
+                if (d < -40) next();
+                else if (d > 40) prev();
+                touchX.current = null;
+              }
+            }}
+            className="overflow-hidden px-5 md:px-0"
           >
+            <div
+              onTransitionEnd={onTransitionEnd}
+              className="flex gap-[1.9141cqw] [--step:69.9141cqw] md:[--step:25.4785cqw]"
+              style={{
+                transform: `translateX(calc(var(--step) * ${-idx}))`,
+                transition: animate ? "transform 550ms cubic-bezier(0.22, 1, 0.36, 1)" : "none",
+              }}
+            >
             {[0, 1, 2].flatMap((copy) =>
               data.members.map((m, i) => {
                 const art = CARD_ART[i % CARD_ART.length];
@@ -216,12 +216,13 @@ export default function Team({ content }: { content?: unknown } = {}) {
                 );
               })
             )}
+            </div>
           </div>
 
           {/* carousel arrows (always visible — infinite loop) */}
           <div className="pointer-events-none absolute inset-x-3 top-[13cqw] z-20 flex justify-between md:inset-x-[1.5cqw]">
-            <CarouselArrow dir="prev" onClick={() => scrollByCard(-1)} disabled={false} />
-            <CarouselArrow dir="next" onClick={() => scrollByCard(1)} disabled={false} />
+            <CarouselArrow dir="prev" onClick={prev} disabled={false} />
+            <CarouselArrow dir="next" onClick={next} disabled={false} />
           </div>
         </div>
 
