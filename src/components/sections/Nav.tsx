@@ -33,7 +33,10 @@ export default function Nav({ content }: { content?: unknown } = {}) {
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
       className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 md:top-12"
     >
-      <nav
+      <motion.nav
+        initial={{ maxWidth: 236 }}
+        animate={{ maxWidth: 719 }}
+        transition={{ duration: 1.0, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
         style={
           globalStyle
             ? {
@@ -53,7 +56,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
                   "linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1)), linear-gradient(rgba(145,9,57,0.55), rgba(145,9,57,0.55))",
               }
         }
-        className="isolate relative z-50 flex h-[60px] w-full max-w-[719px] items-center justify-between overflow-hidden rounded-full pl-5 pr-2 shadow-[0_4px_4px_rgba(0,0,0,0.25)] backdrop-blur-xl md:h-[70px] md:pl-[31px] md:pr-[18px]"
+        className="isolate relative z-50 flex h-[60px] w-full max-w-[236px] items-center justify-between overflow-hidden rounded-full pl-5 pr-2 shadow-[0_4px_4px_rgba(0,0,0,0.25)] backdrop-blur-xl md:h-[70px] md:pl-[31px] md:pr-[18px]"
       >
         <a
           href={links[0]?.href || "#home"}
@@ -70,7 +73,12 @@ export default function Nav({ content }: { content?: unknown } = {}) {
           />
         </a>
 
-        <ul className="hidden items-center gap-[38px] md:flex">
+        <motion.ul
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.45, delay: 1.45 }}
+          className="hidden min-w-0 flex-1 items-center justify-center gap-[38px] overflow-hidden whitespace-nowrap md:flex"
+        >
           {links.map((l) => (
             <li key={l.label} className="group relative py-4">
               <a
@@ -97,7 +105,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
               )}
             </li>
           ))}
-        </ul>
+        </motion.ul>
 
         <a
           href={data.buttonLink}
@@ -127,7 +135,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
             />
           </div>
         </button>
-      </nav>
+      </motion.nav>
 
       <AnimatePresence>
         {open && (
