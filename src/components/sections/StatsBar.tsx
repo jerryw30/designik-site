@@ -14,9 +14,9 @@ export default function StatsBar({ content }: { content?: unknown } = {}) {
   return (
     <Reveal className="w-full bg-white">
       <div
-        className={`mx-auto grid min-h-[129px] w-full max-w-[1440px] grid-cols-1 items-center gap-6 px-6 py-8 text-black md:grid-cols-[280px_280px_278px_280px_177px] md:gap-0 md:px-[72px] md:py-0 ${proxima}`}
+        className={`mx-auto grid min-h-[129px] w-full max-w-[1440px] grid-cols-2 items-center gap-x-4 gap-y-8 px-6 py-8 text-black md:grid-cols-[280px_280px_278px_280px_177px] md:gap-0 md:px-[72px] md:py-0 ${proxima}`}
       >
-        <div className="flex h-[62px] items-start gap-[15px] md:pr-[20px]">
+        <div className="col-span-2 flex h-[62px] items-start justify-center gap-[15px] md:col-span-1 md:justify-start md:pr-[20px]">
           <div className="flex h-full min-w-[83px] flex-col justify-between">
             <span className="text-center text-[13.543px] font-normal leading-normal">
               {data.reviewLabel}
@@ -46,9 +46,9 @@ export default function StatsBar({ content }: { content?: unknown } = {}) {
         {data.items.map((stat, index) => (
           <div
             key={stat.label}
-            className="flex min-h-[62px] flex-col items-start justify-between border-neutral-300 md:border-l-[3.262px] md:pl-[21px]"
+            className="flex min-h-[62px] flex-col items-center justify-between border-neutral-300 md:items-start md:border-l-[3.262px] md:pl-[21px]"
           >
-            <div className="flex items-baseline gap-[7px] whitespace-nowrap leading-none">
+            <div className="flex items-baseline justify-center gap-[7px] whitespace-nowrap leading-none md:justify-start">
               <span className="text-[32.52px] font-semibold tracking-[-0.02em]">
                 <Counter to={stat.value} duration={1.4 + index * 0.1} />
               </span>
@@ -61,7 +61,7 @@ export default function StatsBar({ content }: { content?: unknown } = {}) {
                 <span className="text-[20.766px] font-semibold">{stat.unit}</span>
               )}
             </div>
-            <span className="whitespace-nowrap text-left text-[16.252px] font-normal leading-normal">
+            <span className="whitespace-nowrap text-center text-[16.252px] font-normal leading-normal md:text-left">
               {stat.label}
             </span>
           </div>

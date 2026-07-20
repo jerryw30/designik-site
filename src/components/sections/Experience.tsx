@@ -168,7 +168,7 @@ export default function Experience({ content }: { content?: unknown } = {}) {
         </div>
 
         {/* ===================== mobile (stacked) ===================== */}
-        <div className="px-4 pt-8 md:hidden">
+        <div className="px-4 pb-12 pt-8 md:hidden">
           <div className="relative overflow-hidden rounded-3xl">
             <Image src={data.backgroundImage || assets.expCard} alt="" width={1396} height={818} className="h-auto w-full" sizes="100vw" />
             <div className="absolute inset-x-0 top-[6%] z-10 text-center">

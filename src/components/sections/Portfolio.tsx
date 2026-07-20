@@ -96,13 +96,16 @@ function StackCard({
   const light = banner.light;
 
   return (
-    <div ref={ref} className="sticky" style={{ top: `calc(100px + ${index * 1.6}rem)` }}>
-      <div className="mb-[6.3194cqw]">
+    <div ref={ref} className="static md:sticky" style={{ top: `calc(100px + ${index * 1.6}rem)` }}>
+      <div className="mb-8 md:mb-[6.3194cqw]">
         <motion.article
           style={{ scale: isLast ? 1 : scale }}
-          className="relative aspect-[1300/535] w-full overflow-hidden rounded-[1.3889cqw]"
+          className="relative aspect-[1300/535] w-full overflow-hidden rounded-[1.3889cqw] max-md:[transform:none!important]"
         >
-          <motion.div style={{ filter: isLast ? undefined : brightnessFilter }} className="absolute inset-0">
+          <motion.div
+            style={{ filter: isLast ? undefined : brightnessFilter }}
+            className="absolute inset-0 max-md:[filter:none!important]"
+          >
             {/* background scene (exact Figma crop) */}
             <Image src={banner.background} alt="" fill className="object-cover" sizes="100vw" priority={index === 0} />
             {spec.overlay && <div className="absolute inset-0 bg-black/[0.11]" />}
