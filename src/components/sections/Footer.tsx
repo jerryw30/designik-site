@@ -172,7 +172,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
             transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="absolute left-[52.4306cqw] top-[25.7431cqw] z-10 w-[7.8604cqw]"
           >
-            <Image src={assets.footerBadge} alt="View all services" width={122} height={122} className="h-auto w-full" />
+            <Image src={assets.footerBadge} alt="View all services" width={122} height={122} className="h-auto w-full [animation:spin360_14s_linear_infinite]" />
           </motion.div>
 
           {/* newsletter (x1034) */}

@@ -50,6 +50,11 @@
     infinite;
 }
 
+@keyframes spin360 {
+  to {
+    transform: rotate(360deg);
+  }
+}
 @keyframes marquee {
   from {
     transform: translateX(0);
