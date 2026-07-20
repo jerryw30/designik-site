@@ -81,15 +81,17 @@ function SmallQuoteCard({
         className
       )}
     >
-      {tone === "orange" && (
-        <Image
-          src={assets.testiTexture}
-          alt=""
-          fill
-          sizes="310px"
-          className="rounded-[1.1111cqw] object-cover opacity-[0.38] [mix-blend-mode:overlay]"
-        />
-      )}
+      {/* landscape texture at 38% (Figma: multiply on wine, overlay on orange) */}
+      <Image
+        src={assets.testiTexture}
+        alt=""
+        fill
+        sizes="310px"
+        className={cn(
+          "rounded-[1.1111cqw] object-cover opacity-[0.38]",
+          tone === "wine" ? "[mix-blend-mode:multiply]" : "[mix-blend-mode:overlay]"
+        )}
+      />
       {/* glass inner frame (Figma: 281x274.5 at 10px inset, on both wine and orange) */}
       <div
         aria-hidden
