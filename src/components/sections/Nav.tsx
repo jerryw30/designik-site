@@ -31,7 +31,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-      className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 md:top-6"
+      className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 md:top-12"
     >
       <nav
         style={
@@ -39,7 +39,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
             ? {
                 backgroundImage:
                   globalStyle.backgroundColor === "transparent"
-                    ? "linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%), linear-gradient(rgba(145,9,57,0.72), rgba(145,9,57,0.72))"
+                    ? "linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1)), linear-gradient(rgba(145,9,57,0.55), rgba(145,9,57,0.55))"
                     : `linear-gradient(${String(globalStyle.backgroundColor)}, ${String(globalStyle.backgroundColor)})`,
                 color: String(globalStyle.textColor || "#ffffff"),
                 fontFamily: String(globalStyle.fontFamily || "inherit"),
@@ -50,10 +50,10 @@ export default function Nav({ content }: { content?: unknown } = {}) {
               }
             : {
                 backgroundImage:
-                  "linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%), linear-gradient(rgba(145,9,57,0.72), rgba(145,9,57,0.72))",
+                  "linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1)), linear-gradient(rgba(145,9,57,0.55), rgba(145,9,57,0.55))",
               }
         }
-        className="isolate relative z-50 flex h-[60px] w-full max-w-[720px] items-center justify-between overflow-hidden rounded-full pl-5 pr-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-1px_0_rgba(255,255,255,0.08),0_8px_32px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-white/25 backdrop-blur-xl backdrop-saturate-150 md:h-[70px] md:pl-7"
+        className="isolate relative z-50 flex h-[60px] w-full max-w-[719px] items-center justify-between overflow-hidden rounded-full pl-5 pr-2 shadow-[0_4px_4px_rgba(0,0,0,0.25)] backdrop-blur-xl md:h-[70px] md:pl-[31px] md:pr-[18px]"
       >
         <a
           href={links[0]?.href || "#home"}
@@ -65,18 +65,18 @@ export default function Nav({ content }: { content?: unknown } = {}) {
             alt={data.logoAlt}
             width={44}
             height={44}
-            className="h-9 w-9 md:h-10 md:w-10"
+            className="h-9 w-9 md:h-11 md:w-11"
             priority
           />
         </a>
 
-        <ul className="hidden items-center gap-8 md:flex">
+        <ul className="hidden items-center gap-[38px] md:flex">
           {links.map((l) => (
             <li key={l.label} className="group relative py-4">
               <a
                 href={l.href}
                 target={l.target}
-                className="font-display text-[15px] font-medium uppercase tracking-wide text-white/90 transition-colors hover:text-white"
+                className="font-display text-[15.75px] font-medium uppercase leading-[22.5px] text-white transition-opacity hover:opacity-75"
               >
                 {l.label}
               </a>
@@ -101,7 +101,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
 
         <a
           href={data.buttonLink}
-          className="hidden items-center rounded-full bg-white px-6 py-2.5 font-display text-[15px] font-semibold uppercase tracking-wide text-wine-500 transition-transform duration-300 hover:scale-[1.04] active:scale-95 md:inline-flex"
+          className="hidden h-[43.25px] items-center rounded-full bg-white px-[22.5px] font-display text-[15.75px] font-semibold uppercase leading-[22.5px] text-wine-500 transition-transform duration-300 hover:scale-[1.04] active:scale-95 md:inline-flex"
         >
           {data.buttonLabel}
         </a>
