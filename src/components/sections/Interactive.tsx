@@ -16,7 +16,7 @@ export default function Interactive({ content }: { content?: unknown } = {}) {
 
   return (
     <section className="relative bg-wine-700">
-      <div className="@container relative mx-auto max-w-[1440px] overflow-hidden">
+      <div className="@container relative w-full overflow-hidden">
         <div
           className="relative h-[64.5139cqw] w-full overflow-hidden"
           style={{
