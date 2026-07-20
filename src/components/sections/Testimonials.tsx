@@ -175,6 +175,17 @@ export default function Testimonials({ content }: { content?: unknown } = {}) {
   return (
     <section className="relative bg-white">
       <div className="@container relative mx-auto max-w-[1440px] pb-[6.3194cqw] pt-[9.4444cqw]">
+        {/* hanging Designik tag (Figma: 198px box at x584, overlapping the marquee above) */}
+        <motion.div
+          initial={{ rotate: -8, y: -10, opacity: 0 }}
+          whileInView={{ rotate: 0, y: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ type: "spring", stiffness: 70, damping: 9 }}
+          className="pointer-events-none absolute left-[39.6717cqw] top-[-1.0229cqw] z-20 hidden w-[15.5208cqw] md:block"
+        >
+          <Image src={assets.testiTag} alt="" width={324} height={315} className="h-auto w-full" sizes="230px" />
+        </motion.div>
+
         {/* header: heading left (x116), description right (x788) */}
         <Reveal className="relative z-10">
           <h2 className="ml-[8.0556cqw] font-display uppercase text-[8vw] leading-[1.18] md:text-[5.3494cqw] md:leading-[6.2953cqw]">

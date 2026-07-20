@@ -69,6 +69,7 @@ export const assets = {
   testiTrafficRaw: A("individual/testi-traffic-raw--249-229.png"),
   testiWatermark: A("individual/testi-watermark--249-245.svg"),
   testiTexture: A("individual/rectangle-39537--245-131.png"),
+  testiTag: A("individual/image-photoroom-1-4--277-79.png"),
 
   // Interactive (exact per-node Figma exports)
   interactiveScene2: A("individual/image-252--279-94.png"),
