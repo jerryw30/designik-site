@@ -4,81 +4,72 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import { Reveal } from "@/components/ui/Reveal";
+import { cn } from "@/lib/utils";
 import { sectionContent } from "@/cms/section-defaults";
 
-type Pill = {
-  label: string;
-  icon: React.ReactNode;
-  pos: string; // absolute positioning classes (desktop)
-};
+/**
+ * Pixel-exact port of the Figma "Experience Your Brand" section
+ * (1440 canvas, 1cqw = 14.4px; card 1396x818 at x22).
+ * Layers: red-hills card -> corner logo shapes -> Akshar wordmark ->
+ * clouds -> heading -> arrows -> statue (1:1 export with baked shadow)
+ * -> floating pills -> View All button.
+ */
 
-const ICON = "h-7 w-7 rounded-lg flex items-center justify-center text-white";
-
-const PILLS: Pill[] = [
-  {
-    label: "Social Strategy",
-    icon: (
-      <span className={`${ICON} bg-pink-brand`}>
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 13V7M6 13V3M10 13V9M14 13V5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
-      </span>
-    ),
-    pos: "left-[6%] top-[30%]",
-  },
-  {
-    label: "Creator Management",
-    icon: (
-      <span className={`${ICON} bg-orange-brand`}>
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="2.4" stroke="currentColor" strokeWidth="1.5" /><path d="M3 13c0-2.5 2.2-4 5-4s5 1.5 5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-      </span>
-    ),
-    pos: "right-[6%] top-[27%]",
-  },
-  {
-    label: "Influencer Partnerships",
-    icon: (
-      <span className={`${ICON} bg-wine-500`}>
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="5.5" cy="6" r="2" stroke="currentColor" strokeWidth="1.4" /><circle cx="10.5" cy="6" r="2" stroke="currentColor" strokeWidth="1.4" /><path d="M2 13c0-2 1.6-3 3.5-3M14 13c0-2-1.6-3-3.5-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
-      </span>
-    ),
-    pos: "left-[3%] top-[50%]",
-  },
-  {
-    label: "Social Publishing",
-    icon: (
-      <span className={`${ICON} bg-pink-brand`}>
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M14 2L7 9M14 2l-4.5 12-2.5-5-5-2.5L14 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg>
-      </span>
-    ),
-    pos: "right-[3%] top-[50%]",
-  },
-  {
-    label: "Insight Analysis",
-    icon: (
-      <span className={`${ICON} bg-redorange`}>
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.2" stroke="currentColor" strokeWidth="1.5" /><path d="M10 10l3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-      </span>
-    ),
-    pos: "left-[12%] top-[68%]",
-  },
+// Pill geometry from the Figma render (card-local design px)
+const PILLS = [
+  { x: 182, y: 283, w: 301, icon: assets.expIconStrategy, ix: 22, iy: 17.8, iw: 39, ih: 38, tx: 70, split: false },
+  { x: 913, y: 283, w: 272, icon: assets.expIconCreator, ix: 24, iy: 18, iw: 35.7, ih: 35.5, tx: 78, split: true },
+  { x: 47, y: 486, w: 295, icon: assets.expIconInfluencer, ix: 28, iy: 17.9, iw: 36.1, ih: 32.5, tx: 86, split: true },
+  { x: 1023, y: 486, w: 274, icon: assets.expIconPublishing, ix: 29.5, iy: 12, iw: 50, ih: 47, tx: 94, split: true },
+  { x: 142, y: 678, w: 268, icon: assets.expIconInsight, ix: 23.9, iy: 16.9, iw: 39, ih: 39, tx: 75, split: false },
 ];
 
-function FloatingPill({ label, icon, pos, delay }: Pill & { delay: number }) {
+// Hand-drawn arrows (card-local design px: x, y, w, asset)
+const ARROWS = [
+  { x: 569.7, y: 302.2, w: 100, src: assets.expArrow208 },
+  { x: 802.4, y: 331.2, w: 100, src: assets.expArrow207 },
+  { x: 435.7, y: 412, w: 125, src: assets.expSwirl },
+  { x: 953.3, y: 399, w: 121.5, src: assets.expArrow205 },
+  { x: 458, y: 664.8, w: 51, src: assets.expArrow209 },
+  { x: 944, y: 665.8, w: 51, src: assets.expArrow210 },
+];
+
+const q = (px: number) => `${(px / 14.4).toFixed(4)}cqw`;
+
+function Pill({ spec, label, delay }: { spec: (typeof PILLS)[number]; label: string; delay: number }) {
+  const words = label.split(" ");
+  const lines = spec.split && words.length > 1 ? [words[0], words.slice(1).join(" ")] : [label];
   return (
     <motion.div
-      className={`absolute z-20 hidden lg:block ${pos}`}
       initial={{ opacity: 0, scale: 0.85 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay }}
+      className="absolute z-20"
+      style={{ left: q(spec.x), top: q(spec.y), width: q(spec.w), height: q(71) }}
     >
       <motion.div
         animate={{ y: [0, -9, 0] }}
         transition={{ duration: 3.6 + delay, repeat: Infinity, ease: "easeInOut" }}
-        className="flex items-center gap-2.5 rounded-full bg-white py-2.5 pl-2.5 pr-5 shadow-[0_10px_30px_rgba(83,8,35,0.25)]"
+        className="relative h-full w-full rounded-full bg-blush-100 shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
       >
-        {icon}
-        <span className="font-display text-[14px] font-semibold uppercase tracking-wide text-ink whitespace-nowrap">
-          {label}
+        <Image
+          src={spec.icon}
+          alt=""
+          width={Math.round(spec.iw)}
+          height={Math.round(spec.ih)}
+          className="absolute"
+          style={{ left: q(spec.ix), top: q(spec.iy), width: q(spec.iw), height: q(spec.ih) }}
+        />
+        <span
+          className="absolute flex h-full flex-col justify-center font-display font-semibold uppercase text-black text-[1.5847cqw] leading-[1.8403cqw]"
+          style={{ left: q(spec.tx) }}
+        >
+          {lines.map((l, i) => (
+            <span key={i} className="whitespace-nowrap">
+              {l}
+            </span>
+          ))}
         </span>
       </motion.div>
     </motion.div>
@@ -86,99 +77,126 @@ function FloatingPill({ label, icon, pos, delay }: Pill & { delay: number }) {
 }
 
 export default function Experience({ content }: { content?: unknown } = {}) {
-  const data=sectionContent("experience",content); const editablePills=PILLS.map((pill,i)=>({...pill,label:data.pills[i]?.label||pill.label,pos:data.pills[i]?.position||pill.pos}));
+  const data = sectionContent("experience", content);
+  const headingLines = data.heading.split("\n");
+
   return (
-    <section className="bg-white px-4 py-10 md:px-8 md:py-14">
-      <div className="relative mx-auto max-w-[1280px] overflow-hidden rounded-[32px] shadow-[0_40px_80px_-30px_rgba(83,8,35,0.6)]">
-        {/* background: red hills + maroon wash */}
-        <div className="absolute inset-0">
-          <Image src={data.backgroundImage || assets.experienceHills} alt="" fill className="object-cover" sizes="100vw" />
-          <div className="absolute inset-0 bg-gradient-to-b from-wine-800/95 via-wine-600/90 to-wine-500/95" />
-          <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_35%,rgba(255,142,34,0.12),transparent)]" />
-        </div>
+    <section className="bg-white">
+      <div className="@container relative mx-auto max-w-[1440px]">
+        {/* ===================== desktop (exact) ===================== */}
+        <div className="relative hidden pt-[5.7639cqw] md:block">
+          <div className="relative mx-auto h-[56.8056cqw] w-[96.9444cqw] overflow-hidden rounded-[1.6667cqw]">
+            {/* red hills card background (exact export) */}
+            <Image src={data.backgroundImage || assets.expCard} alt="" fill sizes="100vw" className="object-cover" priority={false} />
 
-        {/* faded wordmark */}
-        <span className="pointer-events-none absolute left-1/2 top-[46%] z-0 -translate-x-1/2 select-none font-display text-[24vw] font-bold uppercase leading-none text-white/[0.06] md:text-[180px]">
-          {data.wordmark}
-        </span>
+            {/* corner logo shapes (3% black, baked in svg) */}
+            <div aria-hidden className="absolute left-[2.5cqw] top-[0.2083cqw] w-[16.9444cqw]">
+              <Image src={assets.expCornerL} alt="" width={244} height={247} className="h-auto w-full" />
+            </div>
+            <div aria-hidden className="absolute left-[79.9306cqw] top-[0.2083cqw] w-[16.9444cqw]">
+              <Image src={assets.expCornerR} alt="" width={244} height={247} className="h-auto w-full" />
+            </div>
 
-        {/* clouds */}
-        <div className="pointer-events-none absolute left-[2%] top-[14%] z-10 h-20 w-44 opacity-90 md:h-28 md:w-64">
-          <Image src={data.cloudImage || assets.cloud} alt="" fill className="object-contain" sizes="256px" />
-        </div>
-        <div className="pointer-events-none absolute right-[3%] top-[10%] z-10 h-16 w-40 opacity-90 md:h-24 md:w-56">
-          <Image src={data.cloudImage || assets.cloud} alt="" fill className="object-contain" sizes="224px" />
-        </div>
+            {/* giant Akshar wordmark */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute left-[-0.0694cqw] top-[34.0278cqw] z-[1] select-none whitespace-nowrap font-marquee font-bold uppercase leading-[26.5504cqw] tracking-[-0.0368em] text-[#840135] opacity-[0.34] text-[26.2093cqw]"
+            >
+              {data.wordmark}
+            </span>
 
-        <div className="relative z-10 px-6 pt-14 pb-16 md:pt-16 lg:pb-0">
-          <Reveal className="text-center">
-            <h2 className="font-display uppercase leading-[1.15] text-white">
-              {data.heading.split("\n").map((line, i) => (
-                <span
-                  key={i}
-                  className={
-                    i === 0
-                      ? "block font-semibold text-[clamp(30px,5.5vw,71px)]"
-                      : "block font-medium text-[clamp(22px,3.9vw,50px)]"
-                  }
-                >
-                  {line}
-                </span>
-              ))}
-            </h2>
-          </Reveal>
+            {/* clouds */}
+            <div aria-hidden className="pointer-events-none absolute left-[1.4583cqw] top-[4.2361cqw] z-[2] w-[25.0694cqw]">
+              <Image src={data.cloudImage || assets.expCloudL} alt="" width={361} height={183} className="h-auto w-full" sizes="361px" />
+            </div>
+            <div aria-hidden className="pointer-events-none absolute left-[69.7917cqw] top-[5.625cqw] z-[2] w-[25.0694cqw]">
+              <Image src={assets.expCloudR} alt="" width={361} height={183} className="h-auto w-full" sizes="361px" />
+            </div>
 
-          <div className="relative mx-auto mt-6 h-[440px] max-w-[1080px] md:h-[600px] lg:h-[700px]">
-            {/* connector arrows (desktop) */}
-            <svg className="pointer-events-none absolute inset-0 hidden h-full w-full lg:block" viewBox="0 0 1080 560" fill="none" aria-hidden>
-              <path d="M250 150 q70 10 90 60" stroke="white" strokeOpacity="0.5" strokeWidth="2" strokeDasharray="2 6" strokeLinecap="round" />
-              <path d="M830 140 q-70 10 -95 60" stroke="white" strokeOpacity="0.5" strokeWidth="2" strokeDasharray="2 6" strokeLinecap="round" />
-              <path d="M170 300 q60 10 90 30" stroke="white" strokeOpacity="0.5" strokeWidth="2" strokeDasharray="2 6" strokeLinecap="round" />
-              <path d="M910 300 q-60 10 -95 30" stroke="white" strokeOpacity="0.5" strokeWidth="2" strokeDasharray="2 6" strokeLinecap="round" />
-              <path d="M300 430 q50 -10 70 -40" stroke="white" strokeOpacity="0.5" strokeWidth="2" strokeDasharray="2 6" strokeLinecap="round" />
-            </svg>
+            {/* heading — Oswald 600 77 / 500 54.5 (Figma) */}
+            <Reveal className="absolute inset-x-0 top-[3.1944cqw] z-10 text-center">
+              <h2 className="font-display uppercase text-white">
+                <span className="block text-[5.3494cqw] font-semibold leading-[6.2953cqw]">{headingLines[0]}</span>
+                <span className="block text-[3.782cqw] font-medium leading-[4.4508cqw]">{headingLines[1] || ""}</span>
+              </h2>
+            </Reveal>
 
-            {editablePills.map((p, i) => (
-              <FloatingPill key={p.label} {...p} delay={i * 0.12} />
+            {/* hand-drawn arrows */}
+            {ARROWS.map((a, i) => (
+              <div key={i} aria-hidden className="pointer-events-none absolute z-[15]" style={{ left: q(a.x), top: q(a.y), width: q(a.w) }}>
+                <Image src={a.src} alt="" width={125} height={123} className="h-auto w-full" />
+              </div>
             ))}
 
-            {/* VIEW ALL */}
+            {/* statue (1:1 export incl. baked shadow; node box at 359,216) */}
+            <div className="absolute left-[0.2083cqw] top-[15cqw] z-10 w-[69.5833cqw]">
+              <Image
+                src={data.statueImage || assets.expStatue}
+                alt="Designik — experience your brand"
+                width={1002}
+                height={867}
+                sizes="(min-width: 768px) 70vw, 100vw"
+                className="h-auto w-full"
+              />
+            </div>
+
+            {/* floating pills */}
+            {PILLS.map((p, i) => (
+              <Pill key={i} spec={p} label={data.pills[i]?.label || ""} delay={i * 0.12} />
+            ))}
+
+            {/* View All button (953,686 — 184x55) */}
             <motion.a
               href={data.buttonLink}
               initial={{ opacity: 0, scale: 0.85 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.6 }}
-              className="group absolute right-[12%] top-[68%] z-20 hidden items-center gap-2 rounded-full bg-white py-2.5 pl-5 pr-2.5 font-display text-[14px] font-semibold uppercase tracking-wide text-wine-500 shadow-lg lg:flex"
+              className="group absolute left-[66.1806cqw] top-[47.6389cqw] z-20 flex h-[3.8194cqw] w-[12.7778cqw] items-center justify-between rounded-full bg-white pl-[2.3764cqw] pr-[1.0806cqw]"
             >
-              {data.buttonLabel}
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-wine-500 text-white transition-transform group-hover:rotate-45">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <span className="font-display text-[1.2928cqw] font-semibold uppercase leading-none text-wine-500">
+                {data.buttonLabel}
+              </span>
+              <span className="flex size-[2.3764cqw] items-center justify-center rounded-full bg-wine-500 text-white transition-transform duration-300 group-hover:rotate-45">
+                <svg viewBox="0 0 16 16" fill="none" className="h-[44%] w-[44%]" aria-hidden>
+                  <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </span>
             </motion.a>
-
-            {/* Statue */}
-            <Reveal direction="none" className="relative z-10 mx-auto flex h-full w-[300px] items-end justify-center md:w-[500px] lg:w-[590px]">
-              <Image
-                src={data.statueImage || assets.statue}
-                alt="Designik — experience your brand"
-                width={820}
-                height={1024}
-                className="h-auto w-full drop-shadow-[0_24px_50px_rgba(0,0,0,0.45)]"
-                sizes="440px"
-                priority={false}
-              />
-            </Reveal>
           </div>
+        </div>
 
-          {/* mobile pills */}
-          <div className="mt-6 flex flex-wrap justify-center gap-2.5 lg:hidden">
-            {editablePills.map((p) => (
-              <div key={p.label} className="flex items-center gap-2 rounded-full bg-white py-2 pl-2 pr-4 shadow-md">
-                {p.icon}
-                <span className="font-display text-xs font-semibold uppercase tracking-wide text-ink">{p.label}</span>
+        {/* ===================== mobile (stacked) ===================== */}
+        <div className="px-4 pt-8 md:hidden">
+          <div className="relative overflow-hidden rounded-3xl">
+            <Image src={data.backgroundImage || assets.expCard} alt="" width={1396} height={818} className="h-auto w-full" sizes="100vw" />
+            <div className="absolute inset-x-0 top-[6%] z-10 text-center">
+              <h2 className="font-display uppercase text-white">
+                <span className="block text-[7vw] font-semibold leading-[1.18]">{headingLines[0]}</span>
+                <span className="block text-[5vw] font-medium leading-[1.18]">{headingLines[1] || ""}</span>
+              </h2>
+            </div>
+            <div className="absolute left-[0.2%] top-[26%] z-10 w-[69.6%]">
+              <Image src={data.statueImage || assets.expStatue} alt="" width={1002} height={867} className="h-auto w-full" sizes="100vw" />
+            </div>
+          </div>
+          <div className="mt-5 flex flex-wrap justify-center gap-2.5">
+            {data.pills.map((p, i) => (
+              <div key={i} className="flex items-center gap-2 rounded-full bg-blush-100 py-2 pl-3 pr-4 shadow-md">
+                <Image src={PILLS[i % PILLS.length].icon} alt="" width={22} height={22} className="h-5 w-5 object-contain" />
+                <span className="font-display text-xs font-semibold uppercase text-black">{p.label}</span>
               </div>
             ))}
+          </div>
+          <div className="mt-5 flex justify-center">
+            <a href={data.buttonLink} className={cn("group inline-flex h-10 items-center gap-2 rounded-full bg-white px-5 font-display text-[12px] font-semibold uppercase text-wine-500 shadow")}>
+              {data.buttonLabel}
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-wine-500 text-white transition-transform group-hover:rotate-45">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            </a>
           </div>
         </div>
       </div>

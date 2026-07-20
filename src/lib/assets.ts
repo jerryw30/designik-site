@@ -64,6 +64,25 @@ export const assets = {
   teamSky: A("individual/image-220--221-1153.png"),
   teamGrid: A("individual/6847051fca9d03f2175253ef-grid-1-6--221-1154.png"),
 
+  // Experience (exact per-node Figma exports)
+  expCard: A("individual/rectangle-39502--221-1293.png"),
+  expStatue: A("individual/df1770b3-4c50-4758-a6ff-6499604366a1-1--221-1357.png"),
+  expCloudL: A("individual/image-218--221-1314.png"),
+  expCloudR: A("individual/image-217--221-1313.png"),
+  expCornerL: A("individual/exp-corner-l--221-1295.svg"),
+  expCornerR: A("individual/exp-corner-r--221-1294.svg"),
+  expArrow205: A("individual/image-205--221-1345.png"),
+  expArrow207: A("individual/image-207--221-1301.png"),
+  expArrow208: A("individual/image-208--221-1302.png"),
+  expArrow209: A("individual/image-209--221-1299.png"),
+  expArrow210: A("individual/image-210--221-1300.png"),
+  expSwirl: A("individual/exp-swirl--221-1346.svg"),
+  expIconStrategy: A("individual/icon-socialstrategy-crop.png"),
+  expIconCreator: A("individual/icon-creator--221-1323.svg"),
+  expIconInfluencer: A("individual/icon-influencer--221-1334.svg"),
+  expIconPublishing: A("individual/icon-socialpub-crop.png"),
+  expIconInsight: A("individual/icon-insight-crop.png"),
+
   // Footer (exact per-node Figma exports)
   footerBadge: A("individual/footer-badge--229-15.svg"),
   footerTag: A("individual/image-photoroom-1-5--277-82.png"),
