@@ -67,7 +67,8 @@ export default function SiteHome({
       {sections
         .filter((section) => section.visible)
         .map((section, sectionIndex, visibleSections) => {
-          const followsAbout = visibleSections[sectionIndex - 1]?.type === "about";
+          const prevType = visibleSections[sectionIndex - 1]?.type;
+          const followsAbout = prevType === "about" || prevType === "interactive";
           const layout = {
             ...sectionLayoutDefaults,
             ...((section.content as { _layout?: Partial<SectionLayout> })
@@ -133,7 +134,7 @@ function LegacyHome({ hero }: { hero?: Partial<HeroContent> }) {
       <Portfolio />
       <Team />
       <Interactive />
-      <AgencyMarquee />
+      <AgencyMarquee figmaGray />
       <Testimonials />
       <AgencyMarquee />
       <Footer />
