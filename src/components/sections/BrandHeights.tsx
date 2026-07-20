@@ -30,16 +30,16 @@ export default function BrandHeights({ content }: { content?: unknown } = {}) {
         <Image
           src={assets.brandMist}
           alt=""
-          width={1705}
-          height={776}
+          width={1200}
+          height={838}
           sizes="1705px"
-          className="absolute left-1/2 top-0 h-auto w-[1705px] max-w-none -translate-x-1/2 opacity-70"
+          className="absolute left-1/2 top-0 h-auto w-[1705px] max-w-none -translate-x-1/2 opacity-[0.55] [mix-blend-mode:luminosity]"
         />
       </div>
 
       <div className="relative z-10 mx-auto max-w-[1200px]">
         <Reveal className="text-center">
-          <h2 className="font-display uppercase leading-[1.08]">
+          <h2 className="font-display uppercase leading-[1.18]">
             <span className="block font-semibold text-wine-500 text-[clamp(36px,5.4vw,77px)]">
               {data.headingAccent}
             </span>
