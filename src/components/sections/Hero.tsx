@@ -54,11 +54,11 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
           <div
             className="absolute isolate overflow-hidden bg-black shadow-[inset_0_0_20px_rgba(0,0,0,0.75)]"
             style={{
-              left: "40.7%",
-              top: "53.6%",
-              width: "19.6%",
-              height: "15.9%",
-              borderRadius: "7% / 11%",
+              left: "42.3%",
+              top: "54.6%",
+              width: "15.6%",
+              height: "15.2%",
+              borderRadius: "2% / 11%",
             }}
           >
             <video
@@ -79,7 +79,7 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
               aria-hidden
               className="pointer-events-none absolute inset-0 z-10"
               style={{
-                borderRadius: "7% / 11%",
+                borderRadius: "2% / 11%",
                 boxShadow:
                   "inset 0 0 16px rgba(0,0,0,0.8), inset 0 0 3px rgba(255,255,255,0.28)",
                 background:
