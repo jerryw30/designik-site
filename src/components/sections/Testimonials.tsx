@@ -6,6 +6,7 @@ import { assets } from "@/lib/assets";
 import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/utils";
 import { sectionContent } from "@/cms/section-defaults";
+import PendulumSwing from "@/components/ui/PendulumSwing";
 
 /**
  * Pixel-exact port of the Figma testimonials section ("Meet Our team" #2,
@@ -200,7 +201,9 @@ export default function Testimonials({ content }: { content?: unknown } = {}) {
           transition={{ type: "spring", stiffness: 70, damping: 9 }}
           className="pointer-events-none absolute left-[32.2487cqw] top-[-0.6739cqw] z-20 hidden w-[22.7143cqw] md:block"
         >
-          <Image src={assets.testiTag} alt="" width={324} height={315} className="h-auto w-full" sizes="230px" />
+          <PendulumSwing duration={4.5} angle={3.4}>
+            <Image src={assets.testiTag} alt="" width={324} height={315} className="h-auto w-full" sizes="230px" />
+          </PendulumSwing>
         </motion.div>
 
         {/* header: heading left (x116), description right (x788) */}

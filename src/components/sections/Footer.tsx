@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import FigmaNewsletterForm from "@/components/ui/FigmaNewsletterForm";
 import { sectionContent } from "@/cms/section-defaults";
+import PendulumSwing from "@/components/ui/PendulumSwing";
 
 /**
  * Pixel-exact port of the Figma footer (1440 canvas, 1cqw = 14.4px,
@@ -75,7 +76,9 @@ export default function Footer({ content }: { content?: unknown } = {}) {
             transition={{ type: "spring", stiffness: 70, damping: 9 }}
             className="pointer-events-none absolute left-[34.4931cqw] top-[-12px] z-[5] w-[22.7143cqw]"
           >
-            <Image src={assets.footerTag} alt="" width={324} height={315} className="h-auto w-full" sizes="330px" />
+            <PendulumSwing duration={5.1} angle={3}>
+              <Image src={assets.footerTag} alt="" width={324} height={315} className="h-auto w-full" sizes="330px" />
+            </PendulumSwing>
           </motion.div>
 
           {/* logo + DESIGNIK (y121) */}

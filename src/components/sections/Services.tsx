@@ -1,36 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { assets } from "@/lib/assets";
+import PendulumSwing from "@/components/ui/PendulumSwing";
 import { sectionContent } from "@/cms/section-defaults";
-
-/**
- * Continuous crane-pendulum swing for the hanging tags. Pivots at the top
- * (where the claw grips), sinusoidal ease like a real pendulum, slow.
- */
-export function PendulumSwing({
-  className,
-  children,
-  angle = 3.2,
-  duration = 4.2,
-}: {
-  className?: string;
-  children: React.ReactNode;
-  angle?: number;
-  duration?: number;
-}) {
-  return (
-    <motion.div
-      className={className}
-      animate={{ rotate: [angle, -angle, angle] }}
-      transition={{ duration, repeat: Infinity, ease: "easeInOut" }}
-      style={{ transformOrigin: "50% 0%" }}
-    >
-      {children}
-    </motion.div>
-  );
-}
 
 function Lines({ text }: { text: string }) {
   return text.split("\n").map((line) => <span className="block" key={line}>{line}</span>);
@@ -118,7 +91,9 @@ export default function Services({ content }: { content?: unknown } = {}) {
             <Lines text={data.cards.brand.title} />
           </h3>
           <Image src={data.cards.brand.image || assets.brandIdentity} alt="" width={767} height={129} className="absolute bottom-0 left-[35px] h-[129px] w-[767px] max-w-none transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.018]" />
-          <Image src={assets.hangingTag} alt="" width={360} height={360} className="absolute left-[240px] top-[-12px] h-[360px] w-[360px] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-[3px] group-hover:rotate-[1deg]" />
+          <PendulumSwing className="absolute left-[240px] top-[-12px] h-[360px] w-[360px]" duration={4.8} angle={2.8}>
+            <Image src={assets.hangingTag} alt="" width={360} height={360} className="h-full w-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-[3px]" />
+          </PendulumSwing>
         </article>
 
         <PendulumSwing className="pointer-events-none absolute left-[984px] top-[-10px] z-20 h-[306px] w-[304px]">

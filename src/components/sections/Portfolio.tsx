@@ -7,6 +7,7 @@ import { assets } from "@/lib/assets";
 import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/utils";
 import { sectionContent } from "@/cms/section-defaults";
+import PendulumSwing from "@/components/ui/PendulumSwing";
 
 /**
  * Pixel-exact port of the Figma "Designik Design Portfolio" section.
@@ -220,7 +221,9 @@ export default function Portfolio({ content }: { content?: unknown } = {}) {
           transition={{ type: "spring", stiffness: 70, damping: 9 }}
           className="pointer-events-none absolute left-[7.7222cqw] top-[-0.5417cqw] z-[5] hidden w-[18.028cqw] md:block"
         >
-          <Image src={assets.pfTag} alt="" width={366} height={365} className="h-auto w-full" sizes="260px" />
+          <PendulumSwing duration={3.9} angle={3}>
+            <Image src={assets.pfTag} alt="" width={366} height={365} className="h-auto w-full" sizes="260px" />
+          </PendulumSwing>
         </motion.div>
 
         {/* cloud (right of heading) */}
