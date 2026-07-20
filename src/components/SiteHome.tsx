@@ -60,12 +60,20 @@ export default function SiteHome({
   forms?: WidgetForm[];
 }) {
   if (!sections) return <LegacyHome hero={hero} />;
+  const visible = sections.filter((section) => section.visible);
+  const footerIdx = visible.findIndex((s) => s.type === "footer");
+  // The design ends at the footer — drop any marquee ordered after it.
+  const ordered =
+    footerIdx === -1
+      ? visible
+      : visible.filter(
+          (s, i) => !(s.type === "agency-marquee" && i > footerIdx),
+        );
   return (
     <main className="relative overflow-x-clip">
       {builder && <BuilderBridge />}
       {!builder && <GlobalPopup design={popup} />}
-      {sections
-        .filter((section) => section.visible)
+      {ordered
         .map((section, sectionIndex, visibleSections) => {
           const prevType = visibleSections[sectionIndex - 1]?.type;
           const followsAbout = prevType === "about" || prevType === "interactive";
