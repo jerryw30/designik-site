@@ -125,14 +125,27 @@ export default function BrandHeights({ content }: { content?: unknown } = {}) {
         </Reveal>
       </div>
 
-      {/* logo strip */}
-      <div className="mt-14 w-screen overflow-hidden">
+      {/* logo marquee band */}
+      <div className="relative z-10 mt-16 -mx-5 overflow-hidden border-y border-[#f1eded] py-6 md:mt-20">
         <div className="flex w-max animate-marquee" style={{ ["--marquee-duration" as string]: `${data.marqueeDuration}s` }}>
           {Array.from({ length: 2 }).map((_, u) => (
             <div key={u} className="flex items-center">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="flex h-12 w-12 items-center justify-center px-10">
-                  <Image src={data.logo || assets.logo} alt="" width={32} height={32} className="h-8 w-8 opacity-90" />
+              {Array.from({ length: 16 }).map((_, i) => (
+                <div key={i} className="mx-[30px] flex h-[68px] w-[62px] shrink-0 items-center justify-center rounded-[10px] bg-blush-100">
+                  <span
+                    aria-hidden
+                    className="h-9 w-9 bg-wine-500"
+                    style={{
+                      WebkitMaskImage: `url(${logoSrc})`,
+                      maskImage: `url(${logoSrc})`,
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                      WebkitMaskSize: "contain",
+                      maskSize: "contain",
+                    }}
+                  />
                 </div>
               ))}
             </div>
