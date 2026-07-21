@@ -231,14 +231,16 @@ export default function Experience({ content }: { content?: unknown } = {}) {
               </h2>
             </div>
 
-            {/* hand-drawn arrows — each bridges the gap between its pill and the statue, at pill height */}
+            {/* hand-drawn arrows — exact desktop relationships ported to mobile pill positions:
+                a0 above pill0's right end, a1 above pill1's left start, swirl above-right of pill2,
+                a3 above-left of pill3, a4 above-right of pill4, a5 above the button's left end */}
             {[
-              { l: "34%", t: "27%", w: "14%" }, // Scroll-Stopping → his hair-left
-              { l: "59%", t: "23%", w: "14%" }, // his hair-right → Creator Matchmaking
-              { l: "27%", t: "46%", w: "14%" }, // swirl: Influencer → his shoulder
-              { l: "61%", t: "43%", w: "16%" }, // his chest-right → Content That Travels
-              { l: "26%", t: "65%", w: "10%" }, // Numbers That Talk → his forearm
-              { l: "79%", t: "73%", w: "10%" }, // his right arm, above Go Social
+              { l: "35%", t: "17%", w: "11%" },
+              { l: "58%", t: "19%", w: "11%" },
+              { l: "32%", t: "36%", w: "9%" },
+              { l: "60%", t: "29%", w: "12%" },
+              { l: "27%", t: "57%", w: "6%" },
+              { l: "65%", t: "80%", w: "6%" },
             ].map((pos, i) => (
               <div key={i} aria-hidden className="pointer-events-none absolute z-[15]" style={{ left: pos.l, top: pos.t, width: pos.w }}>
                 <Image src={ARROWS[i].src} alt="" width={125} height={123} className="h-auto w-full" />
