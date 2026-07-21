@@ -154,6 +154,32 @@ export const adminResources = pgTable(
   ],
 );
 
+export const chatConversations = pgTable("chat_conversations", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name"),
+  email: text("email"),
+  status: text("status").default("OPEN").notNull(),
+  unreadAdmin: integer("unread_admin").default(0).notNull(),
+  lastMessageAt: timestamp("last_message_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const chatMessages = pgTable("chat_messages", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  conversationId: uuid("conversation_id")
+    .references(() => chatConversations.id, { onDelete: "cascade" })
+    .notNull(),
+  sender: text("sender").notNull(), // 'visitor' | 'admin'
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 export const leads = pgTable("leads", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name"),

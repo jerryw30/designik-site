@@ -3,6 +3,7 @@ import { usePathname } from "next/navigation";
 import SmoothScroll from "./SmoothScroll";
 import BackToTop from "./ui/BackToTop";
 import GetStartedModal from "./ui/GetStartedModal";
+import ChatWidget from "./ui/ChatWidget";
 import type { WebsiteSettings } from "@/cms/website-settings";
 export default function SiteShell({
   children,
@@ -37,6 +38,7 @@ export default function SiteShell({
     <SmoothScroll>
       {children}
       <BackToTop />
+      <ChatWidget />
       <GetStartedModal />
       {settings.custom.footerCode && (
         <script

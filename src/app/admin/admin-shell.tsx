@@ -13,6 +13,7 @@ const groups = [
   ["Popup Builder", "/admin/popups", "□"],
   ["Forms", "/admin/forms", "☷"],
   ["Leads", "/admin/leads", "◎"],
+  ["Chat", "/admin/chat", "✉"],
   ["Menus", "/admin/menus", "☰"],
   ["Global Styles", "/admin/styles", "◉"],
   ["SEO", "/admin/seo", "⌕"],
