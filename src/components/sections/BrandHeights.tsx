@@ -15,7 +15,7 @@ export default function BrandHeights({ content }: { content?: unknown } = {}) {
   const logoSrc = data.logo || assets.logo;
 
   return (
-    <section className="relative isolate overflow-hidden bg-white px-5 py-16 md:py-24">
+    <section className="relative isolate overflow-hidden bg-white px-5 pb-0 pt-16 md:pt-24">
       {/* Background texture at the top of the section (Figma: cloud mist + grid) */}
       <div
         aria-hidden
