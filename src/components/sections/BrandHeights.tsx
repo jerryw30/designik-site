@@ -17,23 +17,14 @@ export default function BrandHeights({ content }: { content?: unknown } = {}) {
   return (
     <section className="relative isolate overflow-hidden bg-white px-5 py-16 md:py-24">
       {/* Background texture at the top of the section (Figma: cloud mist + grid) */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[1100px] overflow-hidden">
-        <div className="absolute inset-x-0 top-0 h-[540px]">
-          <Image
-            src={assets.gridTexture}
-            alt=""
-            fill
-            sizes="100vw"
-            className="object-cover object-bottom opacity-[0.25]"
-          />
-        </div>
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0">
         <Image
-          src={assets.brandMist}
+          src={assets.bgBrandBaked}
           alt=""
-          width={1200}
-          height={838}
-          sizes="1705px"
-          className="absolute left-1/2 top-0 h-auto w-[1705px] max-w-none -translate-x-1/2 opacity-[0.05] [mix-blend-mode:luminosity]"
+          width={1440}
+          height={1191}
+          sizes="100vw"
+          className="h-auto w-full"
         />
       </div>
 

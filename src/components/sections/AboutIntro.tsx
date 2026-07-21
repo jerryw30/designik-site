@@ -10,6 +10,10 @@ export default function AboutIntro({ content }: { content?: unknown } = {}) {
   const data = sectionContent("about",content);
   return (
     <section id="about" className="relative min-h-[650px] overflow-hidden bg-white md:h-[756px] md:min-h-0">
+      {/* grid texture (baked at Figma's 60%) */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0">
+        <Image src={assets.bgAboutBaked} alt="" width={1440} height={734} sizes="100vw" className="h-auto w-full" />
+      </div>
       {/* red mountains rising behind the heading */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0">
         <Image

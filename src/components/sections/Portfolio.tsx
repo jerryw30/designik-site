@@ -200,22 +200,14 @@ export default function Portfolio({ content }: { content?: unknown } = {}) {
     <section id="portfolio" className="relative bg-white">
       <div className="@container relative mx-auto max-w-[1440px]">
         {/* background texture: grid + sky mist (Figma treatment) */}
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[82.71cqw] overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0">
           <Image
-            src={assets.pfGrid}
-            alt=""
-            width={1440}
-            height={539}
-            sizes="100vw"
-            className="absolute top-0 h-auto w-full opacity-[0.6]"
-          />
-          <Image
-            src={assets.pfSky}
+            src={assets.bgPortfolioBaked}
             alt=""
             width={1440}
             height={1191}
             sizes="100vw"
-            className="absolute top-0 h-auto w-full opacity-[0.09] [mix-blend-mode:luminosity]"
+            className="h-auto w-full"
           />
         </div>
 

@@ -55,6 +55,12 @@ export const assets = {
   teamA: A("rectangle39532.png"),
   teamB: A("rectangle39535.png"),
 
+  // Baked section backgrounds (grid + mist flattened over white, exact Figma values)
+  bgAboutBaked: A("individual/bg-about-baked.png"),
+  bgBrandBaked: A("individual/bg-brand-baked.png"),
+  bgPortfolioBaked: A("individual/bg-portfolio-baked.png"),
+  bgTeamBaked: A("individual/bg-team-baked.png"),
+
   // Team (exact per-node Figma exports)
   teamPhoto1: A("individual/image-243--275-49.png"),
   teamPhoto2: A("individual/image-248--275-50.png"),

@@ -100,22 +100,14 @@ export default function Team({ content }: { content?: unknown } = {}) {
     <section className="relative bg-white">
       <div className="@container relative mx-auto max-w-[1440px] pb-[6cqw]">
         {/* background texture: grid + sky mist (Figma treatment) */}
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[65cqw] overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0">
           <Image
-            src={assets.teamGrid}
+            src={assets.bgTeamBaked}
             alt=""
             width={1440}
-            height={679}
-            sizes="100vw"
-            className="absolute top-0 h-auto w-full opacity-[0.6]"
-          />
-          <Image
-            src={assets.teamSky}
-            alt=""
-            width={1439}
             height={937}
             sizes="100vw"
-            className="absolute top-0 h-auto w-full opacity-[0.05] [mix-blend-mode:luminosity]"
+            className="h-auto w-full"
           />
         </div>
 
