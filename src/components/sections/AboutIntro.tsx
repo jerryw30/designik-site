@@ -14,8 +14,19 @@ export default function AboutIntro({ content }: { content?: unknown } = {}) {
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0">
         <Image src={assets.bgAboutBaked} alt="" width={1440} height={734} sizes="100vw" className="h-auto w-full" />
       </div>
-      {/* red mountains rising behind the heading */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0">
+      {/* red mountains rising behind the heading — mobile: big cover crop */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[520px] md:hidden">
+        <Image
+          src={data.backgroundImage || assets.aboutMountains}
+          alt=""
+          fill
+          sizes="100vw"
+          className="select-none object-cover object-bottom"
+          priority={false}
+        />
+      </div>
+      {/* desktop: natural aspect anchored to the bottom (unchanged) */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 hidden md:block">
         <Image
           src={data.backgroundImage || assets.aboutMountains}
           alt=""
