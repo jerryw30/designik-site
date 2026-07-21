@@ -231,16 +231,16 @@ export default function Experience({ content }: { content?: unknown } = {}) {
               </h2>
             </div>
 
-            {/* hand-drawn arrows — pill → arrow → statue, tuned to the 400px statue */}
+            {/* hand-drawn arrows — each bridges the gap between its pill and the statue, at pill height */}
             {[
-              { l: "33%", t: "30%" }, // below Scroll-Stopping, curling at his face-left
-              { l: "61%", t: "28%" }, // below Creator Matchmaking, at his hair-right
-              { l: "19%", t: "52%" }, // swirl below Influencer, at his chest-left
-              { l: "66%", t: "50%" }, // below Content That Travels, at his chest-right
-              { l: "12%", t: "72%" }, // below Numbers That Talk, at his forearm
-              { l: "79%", t: "74%" }, // at his right arm, above Go Social
+              { l: "34%", t: "27%", w: "14%" }, // Scroll-Stopping → his hair-left
+              { l: "59%", t: "23%", w: "14%" }, // his hair-right → Creator Matchmaking
+              { l: "27%", t: "46%", w: "14%" }, // swirl: Influencer → his shoulder
+              { l: "61%", t: "43%", w: "16%" }, // his chest-right → Content That Travels
+              { l: "26%", t: "65%", w: "10%" }, // Numbers That Talk → his forearm
+              { l: "79%", t: "73%", w: "10%" }, // his right arm, above Go Social
             ].map((pos, i) => (
-              <div key={i} aria-hidden className="pointer-events-none absolute z-[15] w-[10%]" style={{ left: pos.l, top: pos.t }}>
+              <div key={i} aria-hidden className="pointer-events-none absolute z-[15]" style={{ left: pos.l, top: pos.t, width: pos.w }}>
                 <Image src={ARROWS[i].src} alt="" width={125} height={123} className="h-auto w-full" />
               </div>
             ))}
