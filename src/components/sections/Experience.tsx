@@ -231,27 +231,27 @@ export default function Experience({ content }: { content?: unknown } = {}) {
               </h2>
             </div>
 
-            {/* hand-drawn arrows — same pill/button relationships as desktop */}
+            {/* hand-drawn arrows — hugging the statue like desktop */}
             {[
-              { l: "38%", t: "24%" }, // curls off Scroll-Stopping's right, toward center
-              { l: "56%", t: "23%" }, // left-above Creator Matchmaking
-              { l: "24%", t: "42%" }, // swirl between the left pills
-              { l: "61%", t: "44%" }, // left-above Content That Travels
-              { l: "32%", t: "61%" }, // above Numbers That Talk
-              { l: "72%", t: "78%" }, // pointing down at Go Social
+              { l: "30%", t: "30%" }, // above his head, left
+              { l: "58%", t: "31%" }, // above his head, right
+              { l: "20%", t: "43%" }, // swirl beside his head, left shoulder
+              { l: "64%", t: "45%" }, // beside his head, right shoulder
+              { l: "10%", t: "78%" }, // at his left forearm
+              { l: "80%", t: "77%" }, // at his right arm, above Go Social
             ].map((pos, i) => (
               <div key={i} aria-hidden className="pointer-events-none absolute z-[15] w-[10%]" style={{ left: pos.l, top: pos.t }}>
                 <Image src={ARROWS[i].src} alt="" width={125} height={123} className="h-auto w-full" />
               </div>
             ))}
 
-            {/* statue stuck to the card bottom (fade only — no y-slide so it never detaches) */}
+            {/* statue stuck to the card bottom, full card width like desktop prominence */}
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute bottom-0 left-1/2 z-10 w-[86%] -translate-x-1/2"
+              className="absolute bottom-0 left-1/2 z-10 w-full -translate-x-1/2"
             >
               <Image src={data.statueImage || assets.expStatue} alt="Designik — experience your brand" width={646} height={586} className="h-auto w-full" sizes="100vw" />
             </motion.div>
