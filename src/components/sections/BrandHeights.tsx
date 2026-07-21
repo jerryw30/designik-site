@@ -17,7 +17,10 @@ export default function BrandHeights({ content }: { content?: unknown } = {}) {
   return (
     <section className="relative isolate overflow-hidden bg-white px-5 py-16 md:py-24">
       {/* Background texture at the top of the section (Figma: cloud mist + grid) */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 [mask-image:linear-gradient(to_bottom,transparent,black_140px)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_140px)]"
+      >
         <Image
           src={assets.bgBrandBaked}
           alt=""
