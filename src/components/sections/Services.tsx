@@ -105,24 +105,58 @@ export default function Services({ content }: { content?: unknown } = {}) {
         </PendulumSwing>
       </div>
 
+      {/* ---------- mobile / tablet layout (per-card compositions) ---------- */}
       <div className="grid gap-4 px-5 py-12 min-[1200px]:hidden sm:grid-cols-2">
-        {[
-          [data.cards.product, "bg-cream-100"],
-          [data.cards.digital, "bg-wine-500 text-white"],
-          [data.cards.mobile, "bg-blush-100"],
-          [data.cards.seo, "bg-blush-100"],
-          [data.cards.website, "bg-cream-100"],
-          [data.cards.brand, "bg-wine-500 text-white"],
-        ].map(([item, tone]) => {
-          const card = item as { title: string; image?: string };
-          return (
-            <article key={card.title} className={`group relative min-h-[280px] overflow-hidden rounded-[20px] p-6 transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)] ${tone}`}>
-              <span className="font-display text-xs uppercase text-wine-500">{data.eyebrow}</span>
-              <h3 className="relative z-10 mt-3 font-display text-3xl font-medium uppercase leading-tight"><Lines text={card.title} /></h3>
-              {card.image && <Image src={card.image} alt="" fill className="object-contain object-bottom pt-20 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.018]" sizes="50vw" />}
-            </article>
-          );
-        })}
+        {/* Product Design — full scene fills the card */}
+        <article className="group relative min-h-[320px] overflow-hidden rounded-[20px] bg-cream-100 shadow-sm sm:col-span-2">
+          <Image src="/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="object-cover object-bottom opacity-60" sizes="100vw" />
+          <Image src={data.cards.product.image || assets.productDesign} alt="Product design" fill className="object-cover object-bottom" sizes="100vw" />
+          <div className="relative z-10 p-6">
+            <span className="font-display text-xs uppercase tracking-wide text-wine-500">{data.eyebrow}</span>
+            <h3 className="mt-2 font-display text-[28px] font-medium uppercase leading-tight text-black"><Lines text={data.cards.product.title} /></h3>
+          </div>
+        </article>
+
+        {/* Digital Marketing — wine, image anchored bottom */}
+        <article className="group relative min-h-[320px] overflow-hidden rounded-[20px] bg-wine-500 text-white shadow-sm">
+          <Image src="/figma/rectangle39529.png" alt="" fill className="object-cover mix-blend-multiply" sizes="50vw" />
+          <h3 className="relative z-10 px-6 pt-7 text-center font-display text-[26px] font-medium uppercase leading-tight"><Lines text={data.cards.digital.title} /></h3>
+          <Image src={data.cards.digital.image || assets.digitalMarketing} alt="" width={287} height={250} className="absolute inset-x-0 bottom-0 mx-auto h-[58%] w-auto max-w-none object-contain object-bottom" />
+        </article>
+
+        {/* SEO — image bottom-center */}
+        <article className="group relative min-h-[320px] overflow-hidden rounded-[20px] bg-blush-100 shadow-sm">
+          <h3 className="relative z-10 px-6 pt-7 text-center font-display text-[26px] font-medium uppercase leading-tight text-black">{data.cards.seo.title}</h3>
+          <Image src={data.cards.seo.image || assets.seo} alt="SEO" width={155} height={98} className="absolute inset-x-0 bottom-10 mx-auto w-[68%] object-contain" />
+        </article>
+
+        {/* Mobile App — hand overflowing from the bottom-right */}
+        <article className="group relative min-h-[320px] overflow-hidden rounded-[20px] bg-blush-100 shadow-sm">
+          <h3 className="relative z-10 p-6 font-display text-[26px] font-medium uppercase leading-tight text-black"><Lines text={data.cards.mobile.title} /></h3>
+          <Image src={data.cards.mobile.image || assets.mobileAppHand} alt="" width={257} height={254} className="absolute -bottom-2 right-0 h-[64%] w-auto max-w-none object-contain object-bottom" />
+        </article>
+
+        {/* Website Development — the three service icons */}
+        <article className="group relative flex min-h-[320px] flex-col items-center justify-center gap-6 overflow-hidden rounded-[20px] bg-cream-100 p-6 shadow-sm">
+          <span className="font-display text-xs uppercase tracking-wide text-wine-500">{data.eyebrow}</span>
+          <div className="flex items-center gap-3">
+            {data.cards.website.icons.map((src, index) => (
+              <span key={src} className={`flex items-center justify-center rounded-full bg-white shadow-sm ${index === 1 ? "h-[76px] w-[76px]" : "h-[54px] w-[54px]"}`}>
+                <Image src={src} alt="" width={32} height={32} className={`object-contain ${index === 0 ? "h-5 w-5" : index === 1 ? "h-8 w-8" : "h-6 w-6"}`} />
+              </span>
+            ))}
+          </div>
+          <h3 className="text-center font-display text-[26px] font-medium uppercase leading-tight text-black"><Lines text={data.cards.website.title} /></h3>
+        </article>
+
+        {/* Brand Identity — wine gradient, brand strip at the bottom */}
+        <article className="group relative min-h-[300px] overflow-hidden rounded-[20px] text-white shadow-sm sm:col-span-2" style={{ backgroundImage: "linear-gradient(176.4deg,#a10140 10%,#db2f73 137%)" }}>
+          <div className="relative z-10 p-6">
+            <span className="font-display text-xs uppercase tracking-wide">{data.eyebrow}</span>
+            <h3 className="mt-2 font-display text-[28px] font-medium uppercase leading-tight"><Lines text={data.cards.brand.title} /></h3>
+          </div>
+          <Image src={data.cards.brand.image || assets.brandIdentity} alt="" width={767} height={129} className="pointer-events-none absolute inset-x-0 bottom-0 h-auto w-full object-contain object-bottom" />
+        </article>
       </div>
     </section>
   );
