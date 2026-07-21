@@ -44,7 +44,6 @@ export const sectionDefaults = {
     buttonLabel: "Meet Everyone",
     buttonLink: "#contact",
     members: [
-      // management
       {
         name: "Luke Carter",
         role: "Founder",
@@ -52,37 +51,35 @@ export const sectionDefaults = {
         background: "#ffc226",
       },
       {
-        name: "Brian Hernandez",
-        role: "Head of Marketing & Strategy",
-        photo: "/figma/team/team-brian.png",
-        background: "#a10140",
+        name: "Lucas Scott",
+        role: "Head of Business Development",
+        photo: "/figma/team/team-lucas.png",
+        background: "#2fc6a0",
       },
-      // production
-      {
-        name: "Leo Nelson",
-        role: "Creative Head",
-        photo: "/figma/team/team-leo.png",
-        background: "#d1b7ff",
-      },
+      // Ray Davidson (Head of Marketing & Strategy) goes here once his image file is provided
       {
         name: "Mike Kohler",
         role: "Sr. Design/Dev Strategist",
         photo: "/figma/team/team-mike.png",
         background: "#fe503f",
       },
-      // sales
-      {
-        name: "Lucas Scott",
-        role: "Head of Business Development",
-        photo: "/figma/team/team-lucas.png",
-        background: "#2fc6a0",
-      },
-      // dev — Jerry first
       {
         name: "Jerry Wayne",
         role: "Lead Developer",
         photo: "/figma/team/team-jerry.png",
         background: "#ff8e22",
+      },
+      {
+        name: "Brian Hernandez",
+        role: "Head of Marketing & Strategy",
+        photo: "/figma/team/team-brian.png",
+        background: "#a10140",
+      },
+      {
+        name: "Leo Nelson",
+        role: "Creative Head",
+        photo: "/figma/team/team-leo.png",
+        background: "#d1b7ff",
       },
       {
         name: "Phill Smith",

@@ -185,14 +185,13 @@ export default function Team({ content }: { content?: unknown } = {}) {
                         maskSize: "100% 100%",
                       }}
                     />
-                    {/* member photo, flush to card bottom */}
-                    <div className="absolute bottom-0" style={{ left: art.photoLeft, width: art.photoWidth }}>
+                    {/* member photo — uniform height, bottom-anchored and centered so every card aligns */}
+                    <div className="absolute inset-x-0 bottom-0 h-[88%]">
                       <Image
                         src={m.photo}
                         alt={m.name}
-                        width={art.photoW}
-                        height={art.photoH}
-                        className="h-auto w-full"
+                        fill
+                        className="object-contain object-bottom"
                         sizes="(max-width:768px) 68vw, 340px"
                       />
                     </div>
