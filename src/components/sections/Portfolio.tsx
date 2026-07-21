@@ -103,7 +103,7 @@ function StackCard({
   const description = banner.description || data.description;
 
   return (
-    <div ref={ref} className="static md:sticky" style={{ top: `calc(100px + ${index * 1.6}rem)` }}>
+    <div ref={ref} className="sticky" style={{ top: `calc(100px + ${index * 1.6}rem)` }}>
       <motion.div
         initial={{ opacity: 0, y: 48 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -113,11 +113,11 @@ function StackCard({
       >
         <motion.article
           style={{ scale: isLast ? 1 : scale }}
-          className="relative aspect-[1300/535] w-full overflow-hidden rounded-[1.3889cqw] max-md:[transform:none!important]"
+          className="relative aspect-[3/4] w-full overflow-hidden rounded-[14px] md:aspect-[1300/535] md:rounded-[1.3889cqw]"
         >
           <motion.div
             style={{ filter: isLast ? undefined : brightnessFilter }}
-            className="absolute inset-0 max-md:[filter:none!important]"
+            className="absolute inset-0"
           >
             {/* background scene (exact Figma crop) */}
             <Image src={banner.background} alt="" fill className="object-cover" sizes="100vw" priority={index === 0} />
@@ -126,15 +126,42 @@ function StackCard({
             {/* translucent inner frame (Figma: white 10% + soft shadow, inset 21/16) */}
             <div
               aria-hidden
-              className="absolute left-[1.4583cqw] top-[1.1111cqw] h-[34.931cqw] w-[87.361cqw] rounded-[1.2768cqw] border border-white/60 bg-white/10 shadow-[0_4px_4px_rgba(0,0,0,0.25)] [backdrop-filter:blur(0.5556cqw)]"
+              className="hidden md:block absolute left-[1.4583cqw] top-[1.1111cqw] h-[34.931cqw] w-[87.361cqw] rounded-[1.2768cqw] border border-white/60 bg-white/10 shadow-[0_4px_4px_rgba(0,0,0,0.25)] [backdrop-filter:blur(0.5556cqw)]"
+            />
+            {/* mobile inner frame */}
+            <div
+              aria-hidden
+              className="absolute inset-[10px] rounded-[12px] border border-white/60 bg-white/10 shadow-[0_4px_4px_rgba(0,0,0,0.25)] [backdrop-filter:blur(6px)] md:hidden"
             />
 
             {/* device image (pre-cropped Figma export) */}
             <div
-              className={cn("absolute", spec.deviceShadow && "shadow-[0_2px_4px_rgba(0,0,0,0.38)]")}
+              className={cn("hidden md:block absolute", spec.deviceShadow && "shadow-[0_2px_4px_rgba(0,0,0,0.38)]")}
               style={{ left: spec.device.left, top: spec.device.top, width: spec.device.w, height: spec.device.h }}
             >
               <Image src={banner.device} alt="Designik project" fill className="object-cover" sizes="720px" />
+            </div>
+            {/* mobile device image — lower half of the card */}
+            <div className={cn("absolute bottom-[4%] left-1/2 h-[46%] w-[86%] -translate-x-1/2 md:hidden", spec.deviceShadow && "shadow-[0_2px_4px_rgba(0,0,0,0.38)]")}>
+              <Image src={banner.device} alt="Designik project" fill className="object-contain object-bottom" sizes="100vw" />
+            </div>
+
+            {/* mobile text block — inside the card */}
+            <div className="absolute inset-x-0 top-0 z-10 p-6 md:hidden">
+              <h3 className={cn("font-display text-[26px] font-semibold uppercase leading-[1.15]", light ? "text-white" : "text-wine-500")}>{accent}</h3>
+              <p className={cn("font-display text-[18px] font-medium uppercase leading-[1.15]", light ? "text-white" : "text-black")}>{heading}</p>
+              <p className={cn("mt-2 max-w-[44ch] text-[12px] leading-[1.55]", light ? "text-white/90" : "text-black/80")}>{description}</p>
+              <a
+                href={data.buttonLink}
+                className="group mt-3 inline-flex h-9 items-center gap-2 rounded-full bg-white pl-4 pr-1.5 font-display text-[11px] font-semibold uppercase text-wine-500 shadow-sm"
+              >
+                {data.buttonLabel}
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-wine-500 text-white transition-transform group-hover:rotate-45">
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden>
+                    <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </a>
             </div>
 
             {/* text block — exact absolute layout (md+) */}
@@ -170,25 +197,6 @@ function StackCard({
           </motion.div>
         </motion.article>
 
-        {/* mobile text block (readable sizes, below the card) */}
-        <div className="mt-4 md:hidden">
-          <h3 className="font-display text-[28px] font-semibold uppercase leading-[1.18] text-wine-500">
-            {accent}
-          </h3>
-          <p className="font-display text-[20px] font-medium uppercase leading-[1.18] text-black">{heading}</p>
-          <p className="mt-2 max-w-[46ch] text-[13px] leading-relaxed text-black/80">{description}</p>
-          <a
-            href={data.buttonLink}
-            className="group mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-wine-500 px-5 font-display text-[12px] font-semibold uppercase text-white"
-          >
-            {data.buttonLabel}
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-wine-500 transition-transform group-hover:rotate-45">
-              <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden>
-                <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </span>
-          </a>
-        </div>
       </motion.div>
     </div>
   );
