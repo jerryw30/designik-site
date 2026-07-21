@@ -238,7 +238,7 @@ export default function Team({ content }: { content?: unknown } = {}) {
         <Reveal className="relative z-10 mt-[4.909cqw] flex justify-center">
           <a
             href={data.buttonLink}
-            className="group inline-flex h-11 w-[160px] items-center justify-between rounded-full bg-wine-500 pl-6 pr-2.5 md:h-[3.8194cqw] md:w-[12.7083cqw] md:pl-[2.3764cqw] md:pr-[1.0806cqw]"
+            className="group inline-flex h-11 items-center gap-3 whitespace-nowrap rounded-full bg-wine-500 pl-6 pr-2.5 md:h-[3.8194cqw] md:gap-[0.9236cqw] md:pl-[2.3764cqw] md:pr-[1.0806cqw]"
           >
             <span className="font-display font-semibold uppercase leading-none text-white text-[13px] md:text-[1.2928cqw]">
               {data.buttonLabel}

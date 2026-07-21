@@ -23,7 +23,7 @@ export function PillButton({
   className?: string;
 }) {
   const base =
-    "group inline-flex items-center gap-2 rounded-full py-2 pl-6 pr-2 font-display text-[13px] font-semibold uppercase tracking-wide transition-transform duration-300 hover:scale-[1.04] active:scale-95";
+    "group inline-flex items-center gap-2 whitespace-nowrap rounded-full py-2 pl-6 pr-2 font-display text-[13px] font-semibold uppercase tracking-wide transition-transform duration-300 hover:scale-[1.04] active:scale-95";
   const styles = {
     wine: "bg-wine-500 text-white shadow-[0_8px_24px_rgba(161,1,64,0.3)]",
     white: "bg-white text-wine-500 shadow-lg",

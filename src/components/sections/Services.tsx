@@ -40,7 +40,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
           </div>
         </article>
 
-        <h2 className="absolute left-[853.6px] top-[131.278px] w-[439.37px] whitespace-nowrap font-display text-[77.031px] uppercase leading-[90.652px]">
+        <h2 className="absolute left-[853.6px] top-[140px] whitespace-nowrap font-display text-[60px] uppercase leading-[74px]">
           <span className="font-normal text-black">{data.headingPrefix} </span>
           <span className="font-semibold text-wine-500">{data.headingAccent}</span>
         </h2>

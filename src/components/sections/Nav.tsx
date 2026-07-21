@@ -34,7 +34,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
       className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 md:top-5"
     >
       <motion.nav
-        initial={{ maxWidth: 236 }}
+        initial={{ maxWidth: 306 }}
         animate={{ maxWidth: 719 }}
         transition={{ duration: 1.0, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
         style={
@@ -56,7 +56,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
                   "linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1)), linear-gradient(rgba(145,9,57,0.55), rgba(145,9,57,0.55))",
               }
         }
-        className="isolate relative z-50 flex h-[60px] w-full max-w-[236px] items-center justify-between overflow-hidden rounded-full pl-5 pr-2 shadow-[0_4px_4px_rgba(0,0,0,0.25)] backdrop-blur-xl md:h-[70px] md:pl-[31px] md:pr-[18px]"
+        className="isolate relative z-50 flex h-[60px] w-full max-w-[306px] items-center justify-between overflow-hidden rounded-full pl-5 pr-2 shadow-[0_4px_4px_rgba(0,0,0,0.25)] backdrop-blur-xl md:h-[70px] md:pl-[31px] md:pr-[18px]"
       >
         <a
           href={links[0]?.href || "#home"}

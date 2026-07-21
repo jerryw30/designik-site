@@ -59,8 +59,8 @@ function ReadMoreButton({ label, href, className }: { label: string; href: strin
     <a
       href={href}
       className={cn(
-        "group inline-flex items-center justify-between rounded-full bg-white pl-[2.3764cqw] pr-[1.0806cqw] shadow-sm",
-        "h-[3.8194cqw] w-[12.7778cqw]",
+        "group inline-flex items-center gap-[0.9236cqw] whitespace-nowrap rounded-full bg-white pl-[2.3764cqw] pr-[1.0806cqw] shadow-sm",
+        "h-[3.8194cqw]",
         className
       )}
     >
