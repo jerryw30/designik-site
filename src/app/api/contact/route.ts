@@ -26,6 +26,9 @@ export async function POST(request: Request) {
     name?: string;
     message?: string;
     source?: string;
+    phone?: string;
+    budget?: string;
+    service?: string;
   };
   try {
     body = await request.json();
@@ -33,7 +36,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { email, name, message, source } = body;
+  const { email, name, message, source, phone, budget, service } = body;
   if (!isEmail(email)) {
     return NextResponse.json(
       { error: "Please enter a valid email address." },
@@ -50,6 +53,9 @@ export async function POST(request: Request) {
     `Source: ${source || "contact"}`,
     `Email: ${email}`,
     name ? `Name: ${name}` : null,
+    phone ? `Phone: ${phone}` : null,
+    service ? `Service: ${service}` : null,
+    budget ? `Budget: ${budget}` : null,
     message ? `Message: ${message}` : null,
     `Received: ${new Date().toISOString()}`,
   ]

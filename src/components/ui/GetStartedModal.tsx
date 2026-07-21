@@ -15,7 +15,7 @@ export default function GetStartedModal() {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", budget: "", service: "", message: "" });
 
   useEffect(() => {
     const openHandler = () => {
@@ -53,7 +53,7 @@ export default function GetStartedModal() {
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error || "Something went wrong");
         setStatus("success");
-        setForm({ name: "", email: "", message: "" });
+        setForm({ name: "", email: "", phone: "", budget: "", service: "", message: "" });
       } catch (err) {
         setStatus("error");
         setError(err instanceof Error ? err.message : "Please try again.");
@@ -81,7 +81,7 @@ export default function GetStartedModal() {
             exit={{ opacity: 0, y: 24, scale: 0.95 }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[440px] overflow-hidden rounded-[28px] bg-white shadow-[0_40px_90px_rgba(0,0,0,0.4)]"
+            className="relative max-h-[92vh] w-full max-w-[440px] overflow-y-auto rounded-[28px] bg-white shadow-[0_40px_90px_rgba(0,0,0,0.4)]"
           >
             {/* header band */}
             <div
@@ -172,13 +172,64 @@ export default function GetStartedModal() {
                       onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                       className={input}
                     />
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        type="tel"
+                        required
+                        placeholder="Phone number"
+                        value={form.phone}
+                        onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                        className={input}
+                      />
+                      <div className="relative">
+                        <select
+                          required
+                          value={form.budget}
+                          onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))}
+                          className={`${input} appearance-none pr-9 ${form.budget ? "text-ink" : "text-neutral-400"}`}
+                        >
+                          <option value="" disabled>
+                            Budget
+                          </option>
+                          <option>Under $1,000</option>
+                          <option>$1,000 – $5,000</option>
+                          <option>$5,000 – $10,000</option>
+                          <option>$10,000+</option>
+                        </select>
+                        <svg viewBox="0 0 16 16" fill="none" className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" aria-hidden>
+                          <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="relative">
+                      <select
+                        required
+                        value={form.service}
+                        onChange={(e) => setForm((f) => ({ ...f, service: e.target.value }))}
+                        className={`${input} appearance-none pr-9 ${form.service ? "text-ink" : "text-neutral-400"}`}
+                      >
+                        <option value="" disabled>
+                          What do you need?
+                        </option>
+                        <option>Product Design</option>
+                        <option>Website Development</option>
+                        <option>Mobile App Development</option>
+                        <option>Brand Identity &amp; Design</option>
+                        <option>Digital Marketing</option>
+                        <option>SEO</option>
+                        <option>Something else</option>
+                      </select>
+                      <svg viewBox="0 0 16 16" fill="none" className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" aria-hidden>
+                        <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
                     <textarea
                       rows={4}
                       required
                       placeholder="Tell us about your project…"
                       value={form.message}
                       onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-                      className={`${input} resize-none`}
+                      className={`${input} min-h-[96px] resize-y`}
                     />
                     {error && <p className="text-[13px] text-red-500">{error}</p>}
                     <button
