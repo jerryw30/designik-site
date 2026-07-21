@@ -198,18 +198,18 @@ export default function Portfolio({ content }: { content?: unknown } = {}) {
   const data = sectionContent("portfolio", content);
   return (
     <section id="portfolio" className="relative bg-white">
+      {/* background texture: grid + sky mist (Figma treatment), full-bleed */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0">
+        <Image
+          src={assets.bgPortfolioBaked}
+          alt=""
+          width={1440}
+          height={1191}
+          sizes="100vw"
+          className="h-auto w-full"
+        />
+      </div>
       <div className="@container relative mx-auto max-w-[1440px]">
-        {/* background texture: grid + sky mist (Figma treatment) */}
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0">
-          <Image
-            src={assets.bgPortfolioBaked}
-            alt=""
-            width={1440}
-            height={1191}
-            sizes="100vw"
-            className="h-auto w-full"
-          />
-        </div>
 
         {/* hanging Designik tag (top left) */}
         <motion.div

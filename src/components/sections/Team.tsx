@@ -98,18 +98,18 @@ export default function Team({ content }: { content?: unknown } = {}) {
 
   return (
     <section className="relative bg-white">
+      {/* background texture: grid + sky mist (Figma treatment), full-bleed */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0">
+        <Image
+          src={assets.bgTeamBaked}
+          alt=""
+          width={1440}
+          height={937}
+          sizes="100vw"
+          className="h-auto w-full"
+        />
+      </div>
       <div className="@container relative mx-auto max-w-[1440px] pb-[6cqw]">
-        {/* background texture: grid + sky mist (Figma treatment) */}
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0">
-          <Image
-            src={assets.bgTeamBaked}
-            alt=""
-            width={1440}
-            height={937}
-            sizes="100vw"
-            className="h-auto w-full"
-          />
-        </div>
 
         {/* header: heading left, description right (Figma: y77 / y88) */}
         <Reveal className="relative z-10 px-5 pt-[5.3472cqw] md:px-[4.8611cqw]">
