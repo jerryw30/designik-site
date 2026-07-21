@@ -231,14 +231,14 @@ export default function Experience({ content }: { content?: unknown } = {}) {
               </h2>
             </div>
 
-            {/* hand-drawn arrows — hugging the statue like desktop */}
+            {/* hand-drawn arrows — pill → arrow → statue, tuned to the 400px statue */}
             {[
-              { l: "30%", t: "30%" }, // above his head, left
-              { l: "58%", t: "31%" }, // above his head, right
-              { l: "20%", t: "43%" }, // swirl beside his head, left shoulder
-              { l: "64%", t: "45%" }, // beside his head, right shoulder
-              { l: "10%", t: "78%" }, // at his left forearm
-              { l: "80%", t: "77%" }, // at his right arm, above Go Social
+              { l: "33%", t: "30%" }, // below Scroll-Stopping, curling at his face-left
+              { l: "61%", t: "28%" }, // below Creator Matchmaking, at his hair-right
+              { l: "19%", t: "52%" }, // swirl below Influencer, at his chest-left
+              { l: "66%", t: "50%" }, // below Content That Travels, at his chest-right
+              { l: "12%", t: "72%" }, // below Numbers That Talk, at his forearm
+              { l: "79%", t: "74%" }, // at his right arm, above Go Social
             ].map((pos, i) => (
               <div key={i} aria-hidden className="pointer-events-none absolute z-[15] w-[10%]" style={{ left: pos.l, top: pos.t }}>
                 <Image src={ARROWS[i].src} alt="" width={125} height={123} className="h-auto w-full" />
@@ -256,17 +256,18 @@ export default function Experience({ content }: { content?: unknown } = {}) {
               <Image src={data.statueImage || assets.expStatue} alt="Designik — experience your brand" width={646} height={586} className="h-[400px] w-full object-cover" sizes="100vw" />
             </motion.div>
 
-            {/* floating pills inside the card (positions from CMS) */}
+            {/* floating pills flanking the big statue (positions tuned to the 400px statue) */}
             {data.pills.map((p, i) => {
               const spec = PILLS[i % PILLS.length];
               const words = p.label.split(" ");
               const lines = words.length > 1 ? [words[0], words.slice(1).join(" ")] : [p.label];
+              const mobilePos = ["left-[4%] top-[22%]", "right-[4%] top-[20%]", "left-[2%] top-[44%]", "right-[2%] top-[42%]", "left-[4%] top-[64%]"][i] || p.position;
               return (
                 <motion.div
                   key={i}
                   animate={{ y: [0, -7, 0] }}
                   transition={{ duration: 3.6 + i * 0.3, repeat: Infinity, ease: "easeInOut" }}
-                  className={cn("absolute z-20 flex items-center gap-1.5 rounded-full bg-blush-100 py-1.5 pl-2.5 pr-3 shadow-[0_4px_4px_rgba(0,0,0,0.25)]", p.position)}
+                  className={cn("absolute z-20 flex items-center gap-1.5 rounded-full bg-blush-100 py-1.5 pl-2.5 pr-3 shadow-[0_4px_4px_rgba(0,0,0,0.25)]", mobilePos)}
                 >
                   <Image src={spec.icon} alt="" width={22} height={22} className="h-4 w-4 object-contain" />
                   <span className="flex flex-col font-display text-[9px] font-semibold uppercase leading-[11px] text-black">
