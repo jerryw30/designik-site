@@ -149,13 +149,17 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <h3 className="text-center font-display text-[26px] font-medium uppercase leading-tight text-black"><Lines text={data.cards.website.title} /></h3>
         </article>
 
-        {/* Brand Identity — wine gradient, brand strip at the bottom */}
+        {/* Brand Identity — wine gradient, hanging tag + big brand strip like desktop */}
         <article className="group relative min-h-[300px] overflow-hidden rounded-[20px] text-white shadow-sm sm:col-span-2" style={{ backgroundImage: "linear-gradient(176.4deg,#a10140 10%,#db2f73 137%)" }}>
           <div className="relative z-10 p-6">
             <span className="font-display text-xs uppercase tracking-wide">{data.eyebrow}</span>
             <h3 className="mt-2 font-display text-[28px] font-medium uppercase leading-tight"><Lines text={data.cards.brand.title} /></h3>
           </div>
-          <Image src={data.cards.brand.image || assets.brandIdentity} alt="" width={767} height={129} className="pointer-events-none absolute inset-x-0 bottom-0 h-auto w-full object-contain object-bottom" />
+          {/* strip height matches desktop's proportion (129/279 of card height) so the packets read the same size */}
+          <Image src={data.cards.brand.image || assets.brandIdentity} alt="" width={767} height={129} className="pointer-events-none absolute inset-x-0 bottom-0 h-[130px] w-full max-w-none object-cover object-center sm:object-contain" />
+          <PendulumSwing className="pointer-events-none absolute left-[25%] top-[-10px] h-[230px] w-[230px]" duration={4.8} angle={2.8}>
+            <Image src={assets.hangingTag} alt="" width={230} height={230} className="h-full w-full" />
+          </PendulumSwing>
         </article>
       </div>
     </section>
