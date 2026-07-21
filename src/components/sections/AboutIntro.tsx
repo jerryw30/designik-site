@@ -46,11 +46,7 @@ export default function AboutIntro({ content }: { content?: unknown } = {}) {
         </Reveal>
         <Reveal delay={0.18}>
           <div className="mt-[35px] flex justify-center">
-            <PillButton
-              href={data.buttonLink}
-              variant="wine"
-              className="h-[55px] w-[180px] justify-between gap-[12.833px] py-[17.11px] pl-[34.22px] pr-[22.5px] text-[18.616px] leading-[25.665px] tracking-normal shadow-none [&>span]:h-[34.22px] [&>span]:w-[34.22px]"
-            >
+            <PillButton href={data.buttonLink} variant="wine">
               {data.buttonLabel}
             </PillButton>
           </div>

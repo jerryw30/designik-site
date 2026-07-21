@@ -4,13 +4,13 @@ import { cn } from "@/lib/utils";
 
 function Arrow({ className }: { className?: string }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className={className} aria-hidden>
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" className={className} aria-hidden>
       <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
-/** Filled wine pill with circular arrow — primary CTA */
+/** Figma-exact pill CTA: h55, 34.22 left pad, 12px gap, Oswald 18.62, 34.22 circle */
 export function PillButton({
   children,
   href = "#contact",
@@ -23,14 +23,14 @@ export function PillButton({
   className?: string;
 }) {
   const base =
-    "group inline-flex items-center gap-2 whitespace-nowrap rounded-full py-2 pl-6 pr-2 font-display text-[13px] font-semibold uppercase tracking-wide transition-transform duration-300 hover:scale-[1.04] active:scale-95";
+    "group inline-flex h-[55px] items-center gap-[12px] whitespace-nowrap rounded-full pl-[34px] pr-[15px] font-display text-[18.616px] font-semibold uppercase leading-none transition-transform duration-300 hover:scale-[1.04] active:scale-95";
   const styles = {
-    wine: "bg-wine-500 text-white shadow-[0_8px_24px_rgba(161,1,64,0.3)]",
-    white: "bg-white text-wine-500 shadow-lg",
+    wine: "bg-wine-500 text-white",
+    white: "bg-white text-wine-500 shadow-md",
     outline: "border border-wine-500 text-wine-500",
   }[variant];
   const dot = {
-    wine: "bg-white text-wine-500",
+    wine: "bg-blush-300 text-wine-500",
     white: "bg-wine-500 text-white",
     outline: "bg-wine-500 text-white",
   }[variant];
@@ -38,7 +38,7 @@ export function PillButton({
   return (
     <a href={href} className={cn(base, styles, className)}>
       {children}
-      <span className={cn("flex h-7 w-7 items-center justify-center rounded-full transition-transform duration-300 group-hover:rotate-45", dot)}>
+      <span className={cn("flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full transition-transform duration-300 group-hover:rotate-45", dot)}>
         <Arrow />
       </span>
     </a>
