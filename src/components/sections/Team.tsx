@@ -17,10 +17,10 @@ import { sectionContent } from "@/cms/section-defaults";
 
 // Per-card art defaults from Figma (photo box + watermark tint), by index
 const CARD_ART = [
-  { photoLeft: "10.609%", photoWidth: "70.732%", photoW: 240, photoH: 389, watermark: "#94013B" },
-  { photoLeft: "2.829%", photoWidth: "84.285%", photoW: 286, photoH: 382, watermark: "#CCAEFF" },
-  { photoLeft: "8.841%", photoWidth: "78.096%", photoW: 265, photoH: 389, watermark: "#F0841D" },
-  { photoLeft: "5.894%", photoWidth: "88.115%", photoW: 299, photoH: 389, watermark: "#E04637" },
+  { photoLeft: "6%", photoWidth: "88%", photoW: 794, photoH: 1010, watermark: "#94013B" },
+  { photoLeft: "6%", photoWidth: "88%", photoW: 801, photoH: 982, watermark: "#CCAEFF" },
+  { photoLeft: "5%", photoWidth: "90%", photoW: 820, photoH: 1013, watermark: "#F0841D" },
+  { photoLeft: "6%", photoWidth: "88%", photoW: 792, photoH: 1006, watermark: "#E04637" },
 ];
 
 function CarouselArrow({ dir, onClick, disabled }: { dir: "prev" | "next"; onClick: () => void; disabled: boolean }) {
