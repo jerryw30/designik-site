@@ -109,7 +109,7 @@ function SmallQuoteCard({
         className="absolute left-[0.6944cqw] top-[0.6806cqw] h-[19.0601cqw] w-[19.5139cqw] rounded-[1.0373cqw] bg-white/20 shadow-[0_0_5px_rgba(0,0,0,0.42)]"
       />
       <p className="absolute left-[2.0833cqw] top-[1.875cqw] w-[16.7361cqw] text-[1.25cqw] leading-[1.8611cqw] text-white">
-        {data.quote.split(" ").slice(0, 13).join(" ")}
+        {data.quote.split(" ").slice(0, 18).join(" ")}
       </p>
       <h4 className="absolute left-[2.0833cqw] top-[15cqw] font-display text-[1.3145cqw] font-semibold uppercase leading-[1.5469cqw] text-white">
         {data.author}
@@ -188,7 +188,13 @@ function ImageTile({
 
 export default function Testimonials({ content }: { content?: unknown } = {}) {
   const data = sectionContent("testimonials", content);
-  const q: QuoteData = { quote: data.quote, author: data.author, role: data.role, rating: data.rating };
+  const quoteAt = (i: number): QuoteData => ({
+    quote: (data as { quotes?: readonly string[] }).quotes?.[i] || data.quote,
+    author: data.author,
+    role: data.role,
+    rating: data.rating,
+  });
+  const q = quoteAt(0);
 
   return (
     <section className="relative bg-white">
@@ -223,14 +229,14 @@ export default function Testimonials({ content }: { content?: unknown } = {}) {
         {/* exact two-row card mosaic (desktop) */}
         <div className="relative z-10 mt-[5.2778cqw] hidden h-[43.4028cqw] md:block">
           {/* row 1 */}
-          <CreamCard data={q} className="left-[7.9167cqw] top-0" />
-          <SmallQuoteCard data={q} tone="wine" className="left-[51.25cqw] top-0" delay={0.12} />
+          <CreamCard data={quoteAt(0)} className="left-[7.9167cqw] top-0" />
+          <SmallQuoteCard data={quoteAt(1)} tone="wine" className="left-[51.25cqw] top-0" delay={0.12} />
           <ImageTile variant="phone" className="left-[73.8194cqw] top-0" delay={0.24} />
 
           {/* row 2 */}
-          <SmallQuoteCard data={q} tone="orange" className="left-[7.9167cqw] top-[22.9861cqw]" delay={0.1} />
+          <SmallQuoteCard data={quoteAt(2)} tone="orange" className="left-[7.9167cqw] top-[22.9861cqw]" delay={0.1} />
           <ImageTile variant="traffic" className="left-[30.4167cqw] top-[22.9861cqw]" delay={0.2} />
-          <CreamCard data={q} className="left-[49.4444cqw] top-[22.9861cqw]" delay={0.3} />
+          <CreamCard data={quoteAt(3)} className="left-[49.4444cqw] top-[22.9861cqw]" delay={0.3} />
         </div>
 
         {/* mobile stack */}

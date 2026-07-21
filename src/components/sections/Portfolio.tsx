@@ -21,6 +21,9 @@ type Banner = {
   device: string;
   deviceSide: "left" | "right";
   light?: boolean; // white text (card 2)
+  accent?: string;
+  heading?: string;
+  description?: string;
 };
 
 // Per-card geometry from Figma (card-local px / 14.4 = cqw)
@@ -95,6 +98,9 @@ function StackCard({
   const isLast = index === total - 1;
   const spec = CARD_SPECS[index % CARD_SPECS.length];
   const light = banner.light;
+  const accent = banner.accent || data.projectAccent;
+  const heading = banner.heading || data.projectHeading;
+  const description = banner.description || data.description;
 
   return (
     <div ref={ref} className="static md:sticky" style={{ top: `calc(100px + ${index * 1.6}rem)` }}>
@@ -140,7 +146,7 @@ function StackCard({
                 )}
                 style={{ left: spec.textLeft, top: "5.1389cqw" }}
               >
-                {data.projectAccent}
+                {accent}
               </h3>
               <p
                 className={cn(
@@ -149,13 +155,13 @@ function StackCard({
                 )}
                 style={{ left: spec.textLeft, top: "12.478cqw" }}
               >
-                {data.projectHeading}
+                {heading}
               </p>
               <p
                 className={cn("absolute w-[31.736cqw] text-[1.1111cqw] leading-[1.5799cqw]", light ? "text-white" : "text-black")}
                 style={{ left: spec.descLeft, top: "20cqw" }}
               >
-                {data.description}
+                {description}
               </p>
               <div className="absolute" style={{ left: spec.descLeft, top: "28.194cqw" }}>
                 <ReadMoreButton label={data.buttonLabel} href={data.buttonLink} />
@@ -167,10 +173,10 @@ function StackCard({
         {/* mobile text block (readable sizes, below the card) */}
         <div className="mt-4 md:hidden">
           <h3 className="font-display text-[28px] font-semibold uppercase leading-[1.18] text-wine-500">
-            {data.projectAccent}
+            {accent}
           </h3>
-          <p className="font-display text-[20px] font-medium uppercase leading-[1.18] text-black">{data.projectHeading}</p>
-          <p className="mt-2 max-w-[46ch] text-[13px] leading-relaxed text-black/80">{data.description}</p>
+          <p className="font-display text-[20px] font-medium uppercase leading-[1.18] text-black">{heading}</p>
+          <p className="mt-2 max-w-[46ch] text-[13px] leading-relaxed text-black/80">{description}</p>
           <a
             href={data.buttonLink}
             className="group mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-wine-500 px-5 font-display text-[12px] font-semibold uppercase text-white"

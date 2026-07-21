@@ -99,7 +99,7 @@ export default function BrandHeights({ content }: { content?: unknown } = {}) {
                       isActive ? "text-white/85" : "text-neutral-600"
                     )}
                   >
-                    {data.description}
+                    {data.rowDescriptions?.[i] || data.description}
                   </p>
 
                   <span

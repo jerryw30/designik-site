@@ -113,7 +113,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute left-[63.9583cqw] top-[7.7778cqw] z-10 uppercase"
+            className="absolute right-[4.8611cqw] top-[7.7778cqw] z-10 text-right uppercase"
           >
             <p className="whitespace-nowrap font-display text-[4.3433cqw] font-normal leading-[5.1114cqw]">
               {data.heading.split("\n")[0]}

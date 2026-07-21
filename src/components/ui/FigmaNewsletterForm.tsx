@@ -46,7 +46,7 @@ export default function FigmaNewsletterForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email*"
+          placeholder="Your email, please"
           aria-label="Email address"
           className="h-11 w-[190px] rounded-[7px] bg-mint px-3 text-[14px] text-black outline-none placeholder:text-black md:h-[3.0556cqw] md:w-[20.1389cqw] md:rounded-[0.4861cqw] md:px-[0.9722cqw] md:text-[1.0417cqw]"
           style={{ fontFamily: "var(--font-raleway), sans-serif" }}

@@ -17,11 +17,11 @@ import { sectionContent } from "@/cms/section-defaults";
 
 // Pill geometry from the Figma render (card-local design px)
 const PILLS = [
-  { x: 182, y: 283, w: 301, icon: assets.expIconStrategy, ix: 22, iy: 17.8, iw: 39, ih: 38, tx: 70, split: false },
+  { x: 182, y: 283, w: 301, icon: assets.expIconStrategy, ix: 22, iy: 17.8, iw: 39, ih: 38, tx: 70, split: true },
   { x: 913, y: 283, w: 272, icon: assets.expIconCreator, ix: 24, iy: 18, iw: 35.7, ih: 35.5, tx: 78, split: true },
   { x: 47, y: 486, w: 295, icon: assets.expIconInfluencer, ix: 28, iy: 17.9, iw: 36.1, ih: 32.5, tx: 86, split: true },
   { x: 1023, y: 486, w: 274, icon: assets.expIconPublishing, ix: 29.5, iy: 12, iw: 50, ih: 47, tx: 94, split: true },
-  { x: 142, y: 678, w: 268, icon: assets.expIconInsight, ix: 23.9, iy: 16.9, iw: 39, ih: 39, tx: 75, split: false },
+  { x: 142, y: 678, w: 268, icon: assets.expIconInsight, ix: 23.9, iy: 16.9, iw: 39, ih: 39, tx: 75, split: true },
 ];
 
 // Hand-drawn arrows — positions measured from the Figma render
