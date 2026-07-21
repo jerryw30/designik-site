@@ -2,9 +2,9 @@ export const sectionDefaults = {
   "agency-marquee": {
     text: "Designik Agency",
     duration: 26,
-    backgroundColor: "#ff5a1f",
+    backgroundColor: "#f16f04",
     textColor: "#000000",
-    fontSizeDesktop: 42,
+    fontSizeDesktop: 43.968,
     fontSizeMobile: 26,
   },
   stats: {
