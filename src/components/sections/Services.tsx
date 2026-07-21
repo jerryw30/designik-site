@@ -133,7 +133,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
         {/* Mobile App — hand overflowing from the bottom-right */}
         <article className="group relative min-h-[320px] overflow-hidden rounded-[20px] bg-blush-100 shadow-sm">
           <h3 className="relative z-10 p-6 font-display text-[26px] font-medium uppercase leading-tight text-black"><Lines text={data.cards.mobile.title} /></h3>
-          <Image src={data.cards.mobile.image || assets.mobileAppHand} alt="" width={257} height={254} className="absolute bottom-0 left-1/2 h-[80%] w-auto max-w-none -translate-x-1/2 object-contain object-bottom" />
+          <Image src={data.cards.mobile.image || assets.mobileAppHand} alt="" width={257} height={254} className="absolute bottom-0 left-0 h-[96%] w-auto max-w-none object-contain object-left-bottom" />
         </article>
 
         {/* Website Development — the three service icons */}
