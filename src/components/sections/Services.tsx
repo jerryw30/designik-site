@@ -121,7 +121,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
         <article className="group relative min-h-[320px] overflow-hidden rounded-[20px] bg-wine-500 text-white shadow-sm">
           <Image src="/figma/rectangle39529.png" alt="" fill className="object-cover mix-blend-multiply" sizes="50vw" />
           <h3 className="relative z-10 px-6 pt-7 text-center font-display text-[26px] font-medium uppercase leading-tight"><Lines text={data.cards.digital.title} /></h3>
-          <Image src={data.cards.digital.image || assets.digitalMarketing} alt="" width={287} height={250} className="absolute left-1/2 top-[20%] h-[90%] w-auto max-w-none -translate-x-1/2 object-contain object-bottom" />
+          <Image src={data.cards.digital.image || assets.digitalMarketing} alt="" width={287} height={250} className="absolute left-1/2 top-1/2 h-[90%] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 object-contain object-center" />
         </article>
 
         {/* SEO — image bottom-center */}
