@@ -136,13 +136,13 @@ function StackCard({
 
             {/* device image (pre-cropped Figma export) */}
             <div
-              className={cn("hidden md:block absolute", spec.deviceShadow && "shadow-[0_2px_4px_rgba(0,0,0,0.38)]")}
+              className="hidden md:block absolute"
               style={{ left: spec.device.left, top: spec.device.top, width: spec.device.w, height: spec.device.h }}
             >
               <Image src={banner.device} alt="Designik project" fill className="object-cover" sizes="720px" />
             </div>
             {/* mobile device image — flush to the card bottom (card 3's collage keeps a small inset) */}
-            <div className={cn("absolute left-1/2 -translate-x-1/2 md:hidden", spec.deviceShadow ? "bottom-[4%] h-[44%] w-[86%] shadow-[0_2px_4px_rgba(0,0,0,0.38)]" : "bottom-0 h-[50%] w-[92%]")}>
+            <div className={cn("absolute left-1/2 -translate-x-1/2 md:hidden", spec.deviceShadow ? "bottom-[4%] h-[44%] w-[86%]" : "bottom-0 h-[50%] w-[92%]")}>
               <Image src={banner.device} alt="Designik project" fill className="object-contain object-bottom" sizes="100vw" />
             </div>
 
