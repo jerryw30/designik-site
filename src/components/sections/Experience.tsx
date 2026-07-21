@@ -196,32 +196,92 @@ export default function Experience({ content }: { content?: unknown } = {}) {
           </div>
         </div>
 
-        {/* ===================== mobile (stacked) ===================== */}
+        {/* ===================== mobile — same card composition as desktop, portrait ===================== */}
         <div className="px-4 pb-12 pt-8 md:hidden">
-          <div className="relative overflow-hidden rounded-3xl">
-            <Image src={data.backgroundImage || assets.expCard} alt="" width={1396} height={818} className="h-auto w-full" sizes="100vw" />
-            <div className="absolute inset-x-0 top-[6%] z-10 text-center">
+          <div className="relative h-[540px] overflow-hidden rounded-3xl">
+            {/* red hills background */}
+            <Image src={data.backgroundImage || assets.expCard} alt="" fill className="object-cover" sizes="100vw" />
+
+            {/* corner logo shapes */}
+            <div aria-hidden className="absolute left-1 top-0 w-[34%]">
+              <Image src={assets.expCornerL} alt="" width={244} height={247} className="h-auto w-full" />
+            </div>
+            <div aria-hidden className="absolute right-1 top-0 w-[34%]">
+              <Image src={assets.expCornerR} alt="" width={244} height={247} className="h-auto w-full" />
+            </div>
+
+            {/* giant Akshar wordmark behind the statue */}
+            <span aria-hidden className="pointer-events-none absolute left-[-2%] top-[50%] z-[1] select-none whitespace-nowrap font-marquee text-[25vw] font-bold uppercase leading-none tracking-[-0.0368em] text-[#840135] opacity-[0.34]">
+              {data.wordmark}
+            </span>
+
+            {/* clouds */}
+            <div aria-hidden className="pointer-events-none absolute left-[-6%] top-[14%] z-[2] w-[52%]">
+              <Image src={data.cloudImage || assets.expCloudL} alt="" width={361} height={183} className="h-auto w-full" />
+            </div>
+            <div aria-hidden className="pointer-events-none absolute right-[-6%] top-[17%] z-[2] w-[52%]">
+              <Image src={assets.expCloudR} alt="" width={361} height={183} className="h-auto w-full" />
+            </div>
+
+            {/* heading */}
+            <div className="absolute inset-x-0 top-[5%] z-10 text-center">
               <h2 className="font-display uppercase text-white">
                 <span className="block text-[7vw] font-semibold leading-[1.18]">{headingLines[0]}</span>
                 <span className="block text-[5vw] font-medium leading-[1.18]">{headingLines[1] || ""}</span>
               </h2>
             </div>
-            <div className="absolute bottom-0 left-[25%] z-10 w-[44.9%]">
-              <Image src={data.statueImage || assets.expStatue} alt="" width={646} height={586} className="h-auto w-full" sizes="100vw" />
-            </div>
-          </div>
-          <div className="mt-5 flex flex-wrap justify-center gap-2.5">
-            {data.pills.map((p, i) => (
-              <div key={i} className="flex items-center gap-2 rounded-full bg-blush-100 py-2 pl-3 pr-4 shadow-md">
-                <Image src={PILLS[i % PILLS.length].icon} alt="" width={22} height={22} className="h-5 w-5 object-contain" />
-                <span className="font-display text-xs font-semibold uppercase text-black">{p.label}</span>
+
+            {/* hand-drawn arrows */}
+            {[
+              { l: "30%", t: "26%" },
+              { l: "58%", t: "28%" },
+              { l: "20%", t: "44%" },
+              { l: "66%", t: "41%" },
+              { l: "22%", t: "72%" },
+              { l: "70%", t: "72%" },
+            ].map((pos, i) => (
+              <div key={i} aria-hidden className="pointer-events-none absolute z-[15] w-[10%]" style={{ left: pos.l, top: pos.t }}>
+                <Image src={ARROWS[i].src} alt="" width={125} height={123} className="h-auto w-full" />
               </div>
             ))}
-          </div>
-          <div className="mt-5 flex justify-center">
-            <a href={data.buttonLink} className={cn("group inline-flex h-10 items-center gap-2 rounded-full bg-white px-5 font-display text-[12px] font-semibold uppercase text-wine-500 shadow")}>
+
+            {/* statue anchored to the card bottom */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute bottom-0 left-1/2 z-10 w-[80%] -translate-x-1/2"
+            >
+              <Image src={data.statueImage || assets.expStatue} alt="Designik — experience your brand" width={646} height={586} className="h-auto w-full" sizes="100vw" />
+            </motion.div>
+
+            {/* floating pills inside the card (positions from CMS) */}
+            {data.pills.map((p, i) => {
+              const spec = PILLS[i % PILLS.length];
+              const words = p.label.split(" ");
+              const lines = words.length > 1 ? [words[0], words.slice(1).join(" ")] : [p.label];
+              return (
+                <motion.div
+                  key={i}
+                  animate={{ y: [0, -7, 0] }}
+                  transition={{ duration: 3.6 + i * 0.3, repeat: Infinity, ease: "easeInOut" }}
+                  className={cn("absolute z-20 flex items-center gap-1.5 rounded-full bg-blush-100 py-1.5 pl-2.5 pr-3 shadow-[0_4px_4px_rgba(0,0,0,0.25)]", p.position)}
+                >
+                  <Image src={spec.icon} alt="" width={22} height={22} className="h-4 w-4 object-contain" />
+                  <span className="flex flex-col font-display text-[9px] font-semibold uppercase leading-[11px] text-black">
+                    {lines.map((l, j) => (
+                      <span key={j} className="whitespace-nowrap">{l}</span>
+                    ))}
+                  </span>
+                </motion.div>
+              );
+            })}
+
+            {/* Go Social button inside the card, bottom-right like desktop */}
+            <a href={data.buttonLink} className="group absolute bottom-[3.5%] right-[4%] z-20 inline-flex h-10 items-center gap-2 rounded-full bg-white pl-4 pr-1.5 font-display text-[12px] font-semibold uppercase text-wine-500 shadow">
               {data.buttonLabel}
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-wine-500 text-white transition-transform group-hover:rotate-45">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-wine-500 text-white transition-transform group-hover:rotate-45">
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden>
                   <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
