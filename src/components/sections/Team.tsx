@@ -99,7 +99,10 @@ export default function Team({ content }: { content?: unknown } = {}) {
   return (
     <section className="relative bg-white">
       {/* background texture: grid + sky mist (Figma treatment), full-bleed */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 [mask-image:linear-gradient(to_bottom,transparent,black_140px)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_140px)]"
+      >
         <Image
           src={assets.bgTeamBaked}
           alt=""
