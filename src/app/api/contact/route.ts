@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { siteSettings } from "@/db/schema";
+import { leads, siteSettings } from "@/db/schema";
 import { websiteSettings } from "@/cms/website-settings";
 
 function isEmail(v: unknown): v is string {
@@ -48,6 +48,21 @@ export async function POST(request: Request) {
     source === "newsletter"
       ? `New Designik newsletter subscriber: ${email}`
       : `New Designik enquiry from ${name || email}`;
+
+  // Store the lead for the admin panel (best-effort; never blocks the reply)
+  try {
+    await db.insert(leads).values({
+      name: name || null,
+      email,
+      phone: phone || null,
+      budget: budget || null,
+      service: service || null,
+      message: message || null,
+      source: source || "contact",
+    });
+  } catch (err) {
+    console.error("lead insert failed", err);
+  }
 
   const text = [
     `Source: ${source || "contact"}`,

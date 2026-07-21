@@ -12,6 +12,7 @@ const groups = [
   ["Footer Builder", "/admin/footers", "▁"],
   ["Popup Builder", "/admin/popups", "□"],
   ["Forms", "/admin/forms", "☷"],
+  ["Leads", "/admin/leads", "◎"],
   ["Menus", "/admin/menus", "☰"],
   ["Global Styles", "/admin/styles", "◉"],
   ["SEO", "/admin/seo", "⌕"],

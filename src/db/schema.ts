@@ -154,6 +154,21 @@ export const adminResources = pgTable(
   ],
 );
 
+export const leads = pgTable("leads", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name"),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  budget: text("budget"),
+  service: text("service"),
+  message: text("message"),
+  source: text("source").default("contact").notNull(),
+  status: text("status").default("NEW").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 export const formSubmissions = pgTable(
   "form_submissions",
   {
