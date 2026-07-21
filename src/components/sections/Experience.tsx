@@ -253,7 +253,7 @@ export default function Experience({ content }: { content?: unknown } = {}) {
               transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
               className="absolute bottom-0 left-1/2 z-10 w-full -translate-x-1/2"
             >
-              <Image src={data.statueImage || assets.expStatue} alt="Designik — experience your brand" width={646} height={586} className="h-auto w-full" sizes="100vw" />
+              <Image src={data.statueImage || assets.expStatue} alt="Designik — experience your brand" width={646} height={586} className="h-[400px] w-full object-cover" sizes="100vw" />
             </motion.div>
 
             {/* floating pills inside the card (positions from CMS) */}
