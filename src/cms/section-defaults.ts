@@ -44,12 +44,20 @@ export const sectionDefaults = {
     buttonLabel: "Meet Everyone",
     buttonLink: "#contact",
     members: [
+      // management
+      {
+        name: "Luke Carter",
+        role: "Founder",
+        photo: "/figma/team/team-luke.png",
+        background: "#ffc226",
+      },
       {
         name: "Brian Hernandez",
         role: "Head of Marketing & Strategy",
         photo: "/figma/team/team-brian.png",
         background: "#a10140",
       },
+      // production
       {
         name: "Leo Nelson",
         role: "Creative Head",
@@ -57,16 +65,30 @@ export const sectionDefaults = {
         background: "#d1b7ff",
       },
       {
+        name: "Mike Kohler",
+        role: "Sr. Design/Dev Strategist",
+        photo: "/figma/team/team-mike.png",
+        background: "#fe503f",
+      },
+      // sales
+      {
+        name: "Lucas Scott",
+        role: "Head of Business Development",
+        photo: "/figma/team/team-lucas.png",
+        background: "#2fc6a0",
+      },
+      // dev — Jerry first
+      {
         name: "Jerry Wayne",
         role: "Lead Developer",
         photo: "/figma/team/team-jerry.png",
         background: "#ff8e22",
       },
       {
-        name: "Mike Kohler",
-        role: "Sr. Design/Dev Strategist",
-        photo: "/figma/team/team-mike.png",
-        background: "#fe503f",
+        name: "Phill Smith",
+        role: "Sr Software Architect",
+        photo: "/figma/team/team-phill.png",
+        background: "#8d5bff",
       },
     ],
   },
