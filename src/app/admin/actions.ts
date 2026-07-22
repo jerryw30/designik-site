@@ -289,6 +289,31 @@ export async function deletePageForever(id: string) {
   revalidatePath("/admin/pages");
 }
 
+/** WordPress-style bulk actions from the Pages list table. */
+export async function bulkPages(form: FormData) {
+  await requireUser();
+  const action = String(form.get("bulk") || "");
+  const ids = form.getAll("ids").map(String).filter(Boolean);
+  if (!action || action === "-1" || ids.length === 0) return;
+  for (const id of ids) {
+    const [row] = await db.select().from(pages).where(eq(pages.id, id));
+    if (!row) continue;
+    if (action === "trash" && row.slug !== "home") {
+      await db.update(pages).set({ deletedAt: new Date(), status: "ARCHIVED", updatedAt: new Date() }).where(eq(pages.id, id));
+    } else if (action === "restore") {
+      await db.update(pages).set({ deletedAt: null, status: "DRAFT", updatedAt: new Date() }).where(eq(pages.id, id));
+    } else if (action === "delete" && row.slug !== "home" && row.deletedAt) {
+      await db.delete(pages).where(eq(pages.id, id));
+    } else if (action === "publish") {
+      await db.update(pages).set({ status: "PUBLISHED", publishedAt: new Date(), updatedAt: new Date() }).where(eq(pages.id, id));
+    } else if (action === "draft") {
+      await db.update(pages).set({ status: "DRAFT", updatedAt: new Date() }).where(eq(pages.id, id));
+    }
+  }
+  revalidatePath("/admin/pages");
+  revalidatePath("/");
+}
+
 export async function getHomepageSections(pageId: string) {
   return db
     .select()

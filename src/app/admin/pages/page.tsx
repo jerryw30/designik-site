@@ -1,21 +1,261 @@
 import Link from "next/link";
-import { asc, isNotNull, isNull } from "drizzle-orm";
+import { and, count, desc, eq, ilike, isNotNull, isNull, type SQL } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { pages } from "@/db/schema";
+import { pages, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../admin-shell";
-import { createPage, deletePageForever, duplicatePage, restorePage, setPageStatus, trashPage } from "../actions";
+import { SelectAllBox } from "../wp-ui";
+import { bulkPages, createPage, deletePageForever, duplicatePage, restorePage, setPageStatus, trashPage } from "../actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function Pages({ searchParams }: { searchParams: Promise<{ trash?: string; new?: string }> }) {
-  const user = await currentUser(); if (!user) redirect("/admin/login");
-  const query = await searchParams; const trash = query.trash === "1";
-  const list = await db.select().from(pages).where(trash ? isNotNull(pages.deletedAt) : isNull(pages.deletedAt)).orderBy(asc(pages.title));
-  return <AdminShell user={user} title="Pages">
-    <div className="flex items-center justify-between"><div><h2 className="text-2xl font-semibold">All pages</h2><p className="mt-1 text-sm text-neutral-500">Create, preview, visually edit, publish, duplicate, or safely trash pages.</p></div><div className="flex gap-2"><Link href={trash ? "/admin/pages" : "/admin/pages?trash=1"} className="rounded-lg border bg-white px-4 py-2 text-sm">{trash ? "All pages" : "Trash"}</Link><Link href="/admin/pages?new=1" className="rounded-lg bg-pink-600 px-4 py-2 text-sm font-semibold text-white">Add new page</Link></div></div>
-    {query.new === "1" && <form action={createPage} className="mt-6 flex gap-3 rounded-2xl border bg-white p-5"><input name="title" required autoFocus placeholder="New page title" className="flex-1 rounded-lg border px-4 py-2 outline-none focus:border-pink-500" /><button className="rounded-lg bg-pink-600 px-5 py-2 font-semibold text-white">Create and edit visually</button><Link href="/admin/pages" className="px-3 py-2 text-neutral-500">Cancel</Link></form>}
-    <section className="mt-6 overflow-hidden rounded-2xl border bg-white"><table className="w-full text-left text-sm"><thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500"><tr><th className="p-4">Page</th><th>Status</th><th>URL</th><th>Modified</th><th className="p-4 text-right">Actions</th></tr></thead><tbody className="divide-y">{list.map((page) => <tr key={page.id}><td className="p-4"><div className="font-semibold">{page.title}</div><div className="mt-1 text-xs text-neutral-400">{page.slug === "home" ? "Homepage" : "Standard page"}</div></td><td><span className={`rounded-full px-2.5 py-1 text-xs font-medium ${page.status === "PUBLISHED" ? "bg-emerald-100 text-emerald-700" : page.status === "DRAFT" ? "bg-amber-100 text-amber-700" : "bg-neutral-100"}`}>{page.status}</span></td><td className="text-neutral-500">/{page.slug === "home" ? "" : page.slug}</td><td className="text-neutral-500">{page.updatedAt.toLocaleDateString()}</td><td className="p-4"><div className="flex flex-wrap justify-end gap-2">{trash ? <><form action={restorePage.bind(null,page.id)}><button className="rounded border px-3 py-1.5">Restore</button></form>{page.slug !== "home" && <form action={deletePageForever.bind(null,page.id)}><button className="rounded border border-red-200 px-3 py-1.5 text-red-600">Delete forever</button></form>}</> : <><Link href={`/admin/pages/${page.id}/edit`} className="rounded border px-3 py-1.5">Edit</Link><Link href={`/admin/pages/${page.id}/builder`} className="rounded bg-pink-600 px-3 py-1.5 font-medium text-white">Edit visually</Link><a href={`/admin/pages/${page.id}/preview`} target="_blank" className="rounded border px-3 py-1.5">Preview</a><form action={duplicatePage.bind(null,page.id)}><button className="rounded border px-3 py-1.5">Duplicate</button></form><form action={setPageStatus.bind(null,page.id,page.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED")}><button className="rounded border px-3 py-1.5">{page.status === "PUBLISHED" ? "Unpublish" : "Publish"}</button></form>{page.slug !== "home" && <form action={trashPage.bind(null,page.id)}><button className="rounded border border-red-200 px-3 py-1.5 text-red-600">Trash</button></form>}</>}</div></td></tr>)}</tbody></table>{!list.length && <div className="p-12 text-center text-neutral-400">No pages found.</div>}</section>
-  </AdminShell>;
+const wpLink = "text-[#2271b1] hover:text-[#135e96] hover:underline";
+
+function wpDate(d: Date) {
+  const date = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
+  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }).toLowerCase();
+  return `${date} at ${time}`;
+}
+
+export default async function Pages({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; s?: string; new?: string; trash?: string }>;
+}) {
+  const user = await currentUser();
+  if (!user) redirect("/admin/login");
+  const query = await searchParams;
+  const status = query.trash === "1" ? "trash" : query.status || "all";
+  const search = (query.s || "").trim();
+
+  const notTrashed = isNull(pages.deletedAt);
+  const filters: Record<string, SQL | undefined> = {
+    all: notTrashed,
+    published: and(notTrashed, eq(pages.status, "PUBLISHED")),
+    draft: and(notTrashed, eq(pages.status, "DRAFT")),
+    trash: isNotNull(pages.deletedAt),
+  };
+  let where = filters[status] || filters.all;
+  if (search) where = and(where, ilike(pages.title, `%${search}%`));
+
+  const [rows, [allC], [pubC], [draftC], [trashC]] = await Promise.all([
+    db
+      .select({ page: pages, authorName: users.name })
+      .from(pages)
+      .leftJoin(users, eq(pages.authorId, users.id))
+      .where(where)
+      .orderBy(desc(pages.updatedAt)),
+    db.select({ value: count() }).from(pages).where(filters.all),
+    db.select({ value: count() }).from(pages).where(filters.published),
+    db.select({ value: count() }).from(pages).where(filters.draft),
+    db.select({ value: count() }).from(pages).where(filters.trash),
+  ]);
+
+  const views = [
+    { key: "all", label: "All", count: allC.value, href: "/admin/pages" },
+    { key: "published", label: "Published", count: pubC.value, href: "/admin/pages?status=published" },
+    { key: "draft", label: "Draft", count: draftC.value, href: "/admin/pages?status=draft" },
+    { key: "trash", label: "Trash", count: trashC.value, href: "/admin/pages?status=trash" },
+  ].filter((v) => v.key === "all" || v.count > 0);
+
+  const inTrash = status === "trash";
+
+  return (
+    <AdminShell user={user} title="Pages">
+      {/* screen heading — WP style */}
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 className="text-[23px] font-normal text-[#1d2327]">Pages</h2>
+        <Link
+          href="/admin/pages?new=1"
+          className="rounded-[3px] border border-[#2271b1] bg-white px-2.5 py-1 text-[13px] font-medium text-[#2271b1] hover:bg-[#f0f6fc]"
+        >
+          Add New Page
+        </Link>
+        {search && <span className="text-[13px] text-[#50575e]">Search results for: <strong>&ldquo;{search}&rdquo;</strong></span>}
+      </div>
+
+      {/* inline create (Add New) */}
+      {query.new === "1" && (
+        <form action={createPage} className="mt-4 flex flex-wrap gap-2 rounded-[4px] border border-[#c3c4c7] bg-white p-4 shadow-sm">
+          <input
+            name="title"
+            required
+            autoFocus
+            placeholder="Page title"
+            className="min-w-0 flex-1 rounded-[4px] border border-[#8c8f94] px-3 py-1.5 text-[14px] outline-none focus:border-[#2271b1] focus:shadow-[0_0_0_1px_#2271b1]"
+          />
+          <button className="rounded-[3px] bg-[#2271b1] px-4 py-1.5 text-[13px] font-medium text-white hover:bg-[#135e96]">
+            Create &amp; edit visually
+          </button>
+          <Link href="/admin/pages" className="px-2 py-1.5 text-[13px] text-[#50575e] hover:text-[#135e96]">
+            Cancel
+          </Link>
+        </form>
+      )}
+
+      {/* subsubsub status links */}
+      <ul className="mt-4 flex flex-wrap items-center gap-1.5 text-[13px]">
+        {views.map((v, i) => (
+          <li key={v.key} className="flex items-center gap-1.5">
+            {i > 0 && <span className="text-[#c3c4c7]">|</span>}
+            <Link
+              href={v.href}
+              className={status === v.key ? "font-semibold text-black" : wpLink}
+            >
+              {v.label} <span className="text-[#50575e]">({v.count})</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+
+      <form action={bulkPages}>
+        {/* tablenav top */}
+        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <select name="bulk" defaultValue="-1" className="rounded-[4px] border border-[#8c8f94] bg-white px-2 py-1.5 text-[13px]">
+              <option value="-1">Bulk actions</option>
+              {inTrash ? (
+                <>
+                  <option value="restore">Restore</option>
+                  <option value="delete">Delete permanently</option>
+                </>
+              ) : (
+                <>
+                  <option value="publish">Publish</option>
+                  <option value="draft">Move to Draft</option>
+                  <option value="trash">Move to Trash</option>
+                </>
+              )}
+            </select>
+            <button className="rounded-[3px] border border-[#2271b1] bg-white px-2.5 py-1 text-[13px] font-medium text-[#2271b1] hover:bg-[#f0f6fc]">
+              Apply
+            </button>
+          </div>
+          {/* search box (separate GET form is invalid inside a form — use inputs targeting this form via formmethod) */}
+          <div className="flex items-center gap-2">
+            <input
+              name="s"
+              defaultValue={search}
+              placeholder="Search pages…"
+              form="pages-search"
+              className="rounded-[4px] border border-[#8c8f94] bg-white px-3 py-1.5 text-[13px] outline-none focus:border-[#2271b1] focus:shadow-[0_0_0_1px_#2271b1]"
+            />
+            <button form="pages-search" className="rounded-[3px] border border-[#2271b1] bg-white px-2.5 py-1 text-[13px] font-medium text-[#2271b1] hover:bg-[#f0f6fc]">
+              Search Pages
+            </button>
+          </div>
+        </div>
+
+        {/* list table */}
+        <table className="mt-2.5 w-full border-collapse border border-[#c3c4c7] bg-white text-[13px] shadow-sm">
+          <thead>
+            <tr className="border-b border-[#c3c4c7] text-left text-[#1d2327]">
+              <th className="w-10 px-3 py-2.5"><SelectAllBox /></th>
+              <th className="px-3 py-2.5 font-normal">Title</th>
+              <th className="hidden px-3 py-2.5 font-normal md:table-cell">Author</th>
+              <th className="hidden px-3 py-2.5 font-normal sm:table-cell">URL</th>
+              <th className="w-44 px-3 py-2.5 font-normal">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-3 py-8 text-center text-[#50575e]">
+                  No pages found.
+                </td>
+              </tr>
+            )}
+            {rows.map(({ page, authorName }) => (
+              <tr key={page.id} className="group border-b border-[#f0f0f1] align-top hover:bg-[#f6f7f7]">
+                <td className="px-3 py-3">
+                  <input type="checkbox" name="ids" value={page.id} aria-label={`Select ${page.title}`} className="h-4 w-4 accent-[#2271b1]" />
+                </td>
+                <td className="px-3 py-2.5">
+                  <div className="font-semibold">
+                    <Link href={`/admin/pages/${page.id}/edit`} className={`${wpLink} text-[14px]`}>
+                      {page.title}
+                    </Link>
+                    {page.slug === "home" && <span className="ml-1.5 text-[#1d2327]">— Front Page</span>}
+                    {page.status === "DRAFT" && !inTrash && <span className="ml-1.5 text-[#1d2327]">— Draft</span>}
+                  </div>
+                  {/* row actions — visible on hover like WP */}
+                  <div className="mt-1 flex flex-wrap gap-1 text-[12.5px] opacity-100 lg:opacity-0 lg:transition-opacity lg:group-hover:opacity-100">
+                    {inTrash ? (
+                      <>
+                        <button formAction={restorePage.bind(null, page.id)} className={wpLink}>Restore</button>
+                        {page.slug !== "home" && (
+                          <>
+                            <span className="text-[#c3c4c7]">|</span>
+                            <button formAction={deletePageForever.bind(null, page.id)} className="text-[#b32d2e] hover:underline">Delete Permanently</button>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <Link href={`/admin/pages/${page.id}/edit`} className={wpLink}>Edit</Link>
+                        <span className="text-[#c3c4c7]">|</span>
+                        <Link href={`/admin/pages/${page.id}/builder`} className={wpLink}>Edit visually</Link>
+                        <span className="text-[#c3c4c7]">|</span>
+                        <button formAction={duplicatePage.bind(null, page.id)} className={wpLink}>Duplicate</button>
+                        <span className="text-[#c3c4c7]">|</span>
+                        <a href={`/admin/pages/${page.id}/preview`} target="_blank" className={wpLink}>Preview</a>
+                        <span className="text-[#c3c4c7]">|</span>
+                        <button formAction={setPageStatus.bind(null, page.id, page.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED")} className={wpLink}>
+                          {page.status === "PUBLISHED" ? "Unpublish" : "Publish"}
+                        </button>
+                        {page.slug !== "home" && (
+                          <>
+                            <span className="text-[#c3c4c7]">|</span>
+                            <button formAction={trashPage.bind(null, page.id)} className="text-[#b32d2e] hover:underline">Trash</button>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </td>
+                <td className="hidden px-3 py-2.5 md:table-cell">
+                  <span className={wpLink}>{authorName || "—"}</span>
+                </td>
+                <td className="hidden px-3 py-2.5 text-[#50575e] sm:table-cell">/{page.slug === "home" ? "" : page.slug}</td>
+                <td className="px-3 py-2.5 text-[#50575e]">
+                  {page.status === "PUBLISHED" ? "Published" : "Last Modified"}
+                  <br />
+                  {wpDate(page.updatedAt)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="text-left text-[#1d2327]">
+              <th className="px-3 py-2.5"><SelectAllBox /></th>
+              <th className="px-3 py-2.5 font-normal">Title</th>
+              <th className="hidden px-3 py-2.5 font-normal md:table-cell">Author</th>
+              <th className="hidden px-3 py-2.5 font-normal sm:table-cell">URL</th>
+              <th className="px-3 py-2.5 font-normal">Date</th>
+            </tr>
+          </tfoot>
+        </table>
+
+        {/* tablenav bottom */}
+        <div className="mt-2.5 flex items-center justify-between text-[13px] text-[#50575e]">
+          <div className="flex items-center gap-2">
+            <select name="bulk2" defaultValue="-1" className="rounded-[4px] border border-[#8c8f94] bg-white px-2 py-1.5 text-[13px]">
+              <option value="-1">Bulk actions</option>
+            </select>
+            <button className="rounded-[3px] border border-[#2271b1] bg-white px-2.5 py-1 text-[13px] font-medium text-[#2271b1] hover:bg-[#f0f6fc]">
+              Apply
+            </button>
+          </div>
+          <span>{rows.length} item{rows.length === 1 ? "" : "s"}</span>
+        </div>
+      </form>
+
+      {/* separate GET form for search (submit target of the inputs above) */}
+      <form id="pages-search" method="get" action="/admin/pages">
+        {status !== "all" && status !== "trash" && <input type="hidden" name="status" value={status} />}
+        {status === "trash" && <input type="hidden" name="status" value="trash" />}
+      </form>
+    </AdminShell>
+  );
 }

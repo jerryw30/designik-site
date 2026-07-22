@@ -13,6 +13,11 @@ export default function SiteShell({
   settings: WebsiteSettings;
 }) {
   const pathname = usePathname();
+  // Admin runs without the site chrome: no Lenis scroll hijack (it breaks
+  // nested scroll areas like the sidebar) and no floating site widgets.
+  if (pathname.startsWith("/admin")) {
+    return <>{children}</>;
+  }
   if (settings.behavior.maintenance && !pathname.startsWith("/admin")) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-wine-900 px-6 text-center text-white">

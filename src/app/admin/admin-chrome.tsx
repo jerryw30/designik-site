@@ -97,7 +97,7 @@ function NavList({ badges, onNavigate }: { badges: Partial<Record<BadgeKey, numb
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(href + "/");
   return (
-    <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-6 pt-4 [scrollbar-width:thin]">
+    <nav className="min-h-0 flex-1 space-y-5 overflow-y-auto px-3 pb-6 pt-4 [scrollbar-width:thin]">
       {NAV.map((g) => (
         <div key={g.group}>
           <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/35">{g.group}</p>

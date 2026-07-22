@@ -153,6 +153,29 @@ export async function deletePostForever(id: string) {
   revalidatePath("/admin/posts");
 }
 
+/** WordPress-style bulk actions from the Posts list table. */
+export async function bulkPosts(form: FormData) {
+  await authorize();
+  const action = String(form.get("bulk") || "");
+  const ids = form.getAll("ids").map(String).filter(Boolean);
+  if (!action || action === "-1" || ids.length === 0) return;
+  for (const id of ids) {
+    if (action === "publish" || action === "draft" || action === "trash" || action === "restore") {
+      const status = action === "publish" ? "PUBLISHED" : action === "trash" ? "TRASH" : "DRAFT";
+      await db
+        .update(adminResources)
+        .set({ status, deletedAt: status === "TRASH" ? new Date() : null, updatedAt: new Date() })
+        .where(and(eq(adminResources.id, id), eq(adminResources.module, "posts")));
+    } else if (action === "delete") {
+      await db
+        .delete(adminResources)
+        .where(and(eq(adminResources.id, id), eq(adminResources.module, "posts"), eq(adminResources.status, "TRASH")));
+    }
+  }
+  revalidatePath("/admin/posts");
+  revalidatePath("/blog");
+}
+
 export async function createTaxonomy(
   kind: "categories" | "tags",
   form: FormData,
