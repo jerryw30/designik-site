@@ -270,13 +270,8 @@ try {
       (item) => item.textContent?.trim() === "Tab two",
     );
     if (secondTab instanceof HTMLButtonElement) secondTab.click();
-    const secondQuestion = [...document.querySelectorAll("button")].find(
-      (item) => item.textContent?.includes("Second question"),
-    );
-    if (secondQuestion instanceof HTMLButtonElement) secondQuestion.click();
     return {
       tabs: Boolean(secondTab),
-      accordion: Boolean(secondQuestion),
       socialLink: Boolean(
         document.querySelector('a[href="https://designik.agency"]'),
       ),
@@ -289,11 +284,21 @@ try {
     };
   });
   await previewFrame.waitForFunction(
-    () =>
-      document.body.innerText.includes("Second content") &&
-      document.body.innerText.includes("Second answer"),
+    () => document.body.innerText.includes("Second content"),
     { timeout: 10000 },
   );
+  const accordion = await previewFrame.evaluate(() => {
+    const secondQuestion = [...document.querySelectorAll("button")].find(
+      (item) => item.textContent?.includes("Second question"),
+    );
+    if (secondQuestion instanceof HTMLButtonElement) secondQuestion.click();
+    return Boolean(secondQuestion);
+  });
+  await previewFrame.waitForFunction(
+    () => document.body.innerText.includes("Second answer"),
+    { timeout: 10000 },
+  );
+  specializedWidgets.accordion = accordion;
   if (Object.values(specializedWidgets).some((value) => !value))
     throw new Error(
       `Specialized widgets failed: ${JSON.stringify(specializedWidgets)}`,

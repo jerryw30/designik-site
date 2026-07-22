@@ -71,7 +71,7 @@ export const sectionDefaults = {
       {
         name: "Jerry Wayne",
         role: "Lead Developer",
-        photo: "/figma/team/team-jerry.png",
+        photo: "/figma/team/team-jerry-v3.png",
         background: "#ff8e22",
       },
       {
