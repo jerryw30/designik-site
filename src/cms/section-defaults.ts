@@ -58,7 +58,7 @@ export const sectionDefaults = {
       },
       {
         name: "Ray Davidson",
-        role: "Head of Marketing & Strategy",
+        role: "Head of Development and Support",
         photo: "/figma/team/team-ray.png",
         background: "#4f8ef7",
       },
