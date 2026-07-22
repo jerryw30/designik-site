@@ -57,7 +57,7 @@ export default function Interactive({ content }: { content?: unknown } = {}) {
             <div aria-hidden className="pointer-events-none absolute left-[68.2639cqw] top-[11.1111cqw] w-[25.0694cqw]">
               <Image src={assets.interactiveCloudR} alt="" width={361} height={183} className="h-auto w-full" sizes="361px" />
             </div>
-            <div className="absolute left-[42.56cqw] top-[52.76cqw] h-[11.19cqw] w-[14.81cqw] overflow-hidden rounded-[1.25cqw]">
+            <div className="absolute left-[42.56cqw] top-[57.5cqw] h-[11.19cqw] w-[14.81cqw] overflow-hidden rounded-[1.25cqw]">
               <Image src={assets.interactiveScreen} alt="" fill sizes="270px" className="object-cover" />
             </div>
             <div className="absolute inset-x-0 top-[16.3889cqw]">
@@ -110,7 +110,7 @@ export default function Interactive({ content }: { content?: unknown } = {}) {
           </motion.div>
 
           {/* TV screen content — sits behind the scene's transparent window */}
-          <div className="absolute left-[42.56cqw] top-[52.76cqw] h-[11.19cqw] w-[14.81cqw] overflow-hidden rounded-[1.25cqw]">
+          <div className="absolute left-[42.56cqw] top-[57.5cqw] h-[11.19cqw] w-[14.81cqw] overflow-hidden rounded-[1.25cqw]">
             <Image src={assets.interactiveScreen} alt="" fill sizes="270px" className="object-cover" />
           </div>
 
