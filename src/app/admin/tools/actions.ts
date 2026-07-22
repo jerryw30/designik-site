@@ -3,6 +3,7 @@
 import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { logActivity } from "@/lib/activity";
 import { requirePermission } from "@/lib/permissions";
 
 type Backup = {
@@ -19,7 +20,7 @@ const recordArray = (value: unknown) =>
   value.every((item) => item && typeof item === "object");
 const text = (value: unknown) => String(value ?? "");
 export async function importBackup(form: FormData) {
-  await requirePermission("manage_settings");
+  const user = await requirePermission("manage_settings");
   const file = form.get("backup");
   if (!(file instanceof File) || !file.size)
     redirect("/admin/tools?error=missing");
@@ -155,6 +156,7 @@ export async function importBackup(form: FormData) {
       ],
     );
   }
+  await logActivity(user, "tools", "imported backup", file.name);
   revalidatePath("/", "layout");
   revalidatePath("/admin", "layout");
   redirect(`/admin/tools?imported=1&pages=${pageMap.size}`);

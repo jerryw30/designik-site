@@ -11,6 +11,7 @@ import {
 } from "@/cms/design-resources";
 import { db } from "@/db";
 import { adminResources } from "@/db/schema";
+import { logActivity } from "@/lib/activity";
 import { requirePermission } from "@/lib/permissions";
 
 const modules = new Set<DesignModule>([
@@ -53,6 +54,7 @@ export async function createDesign(form: FormData) {
       data: { draft: value, published: null },
     })
     .returning({ id: adminResources.id });
+  await logActivity(user, designModule, "created", title, created.id);
   redirect(`/admin/${designModule}/${created.id}/edit`);
 }
 
@@ -62,7 +64,7 @@ export async function saveDesignDraft(
   title: string,
   draft: GlobalDesign,
 ) {
-  await authorize();
+  const user = await authorize();
   const designModule = moduleOf(moduleInput);
   const [row] = await db
     .select({ data: adminResources.data })
@@ -85,6 +87,7 @@ export async function saveDesignDraft(
       updatedAt: new Date(),
     })
     .where(eq(adminResources.id, id));
+  await logActivity(user, designModule, "updated", title.trim() || "Untitled", id);
   revalidatePath(`/admin/${designModule}`);
   revalidatePath(`/admin/${designModule}/${id}/edit`);
   revalidatePath(`/admin/${designModule}/${id}/preview`);
@@ -96,7 +99,7 @@ export async function publishDesign(
   title: string,
   draft: GlobalDesign,
 ) {
-  await authorize();
+  const user = await authorize();
   const designModule = moduleOf(moduleInput);
   if (["headers", "footers"].includes(designModule)) {
     const active = await db
@@ -136,13 +139,14 @@ export async function publishDesign(
         isNull(adminResources.deletedAt),
       ),
     );
+  await logActivity(user, designModule, "published", title.trim() || "Untitled", id);
   revalidatePath("/");
   revalidatePath(`/admin/${designModule}`);
   revalidatePath(`/admin/${designModule}/${id}/edit`);
 }
 
 export async function unpublishDesign(id: string, moduleInput: string) {
-  await authorize();
+  const user = await authorize();
   const designModule = moduleOf(moduleInput);
   await db
     .update(adminResources)
@@ -154,6 +158,7 @@ export async function unpublishDesign(id: string, moduleInput: string) {
         isNull(adminResources.deletedAt),
       ),
     );
+  await logActivity(user, designModule, "unpublished", id, id);
   revalidatePath("/");
   revalidatePath(`/admin/${designModule}`);
   revalidatePath(`/admin/${designModule}/${id}/edit`);
@@ -179,11 +184,12 @@ export async function duplicateDesign(form: FormData) {
     data: { ...designValue(designModule, source.data), published: null },
     createdBy: user.id,
   });
+  await logActivity(user, designModule, "duplicated", source.title, id);
   revalidatePath(`/admin/${designModule}`);
 }
 
 export async function trashDesign(form: FormData) {
-  await authorize();
+  const user = await authorize();
   const id = String(form.get("id"));
   const designModule = moduleOf(String(form.get("module")));
   await db
@@ -196,13 +202,14 @@ export async function trashDesign(form: FormData) {
         isNull(adminResources.deletedAt),
       ),
     );
+  await logActivity(user, designModule, "trashed", id, id);
   revalidatePath("/");
   revalidatePath(`/admin/${designModule}`);
   redirect(`/admin/${designModule}`);
 }
 
 export async function restoreDesign(form: FormData) {
-  await authorize();
+  const user = await authorize();
   const id = String(form.get("id"));
   const designModule = moduleOf(String(form.get("module")));
   await db
@@ -215,11 +222,12 @@ export async function restoreDesign(form: FormData) {
         isNotNull(adminResources.deletedAt),
       ),
     );
+  await logActivity(user, designModule, "restored", id, id);
   revalidatePath(`/admin/${designModule}`);
 }
 
 export async function deleteDesignPermanently(form: FormData) {
-  await authorize();
+  const user = await authorize();
   const id = String(form.get("id"));
   const designModule = moduleOf(String(form.get("module")));
   await db
@@ -231,5 +239,6 @@ export async function deleteDesignPermanently(form: FormData) {
         isNotNull(adminResources.deletedAt),
       ),
     );
+  await logActivity(user, designModule, "deleted", id, id);
   revalidatePath(`/admin/${designModule}`);
 }

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { and, count, desc, eq, isNull } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { adminResources, chatConversations, leads, mediaAssets, pages, revisions, users } from "@/db/schema";
+import { activityLog, adminResources, chatConversations, leads, mediaAssets, pages, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { ensureHomepage } from "./actions";
 import { AdminShell } from "./admin-shell";
@@ -54,7 +54,7 @@ export default async function Dashboard() {
     [chatCount],
     [userCount],
     recentLeads,
-    recentRevisions,
+    recentActivity,
   ] = await Promise.all([
     db.select({ value: count() }).from(pages).where(isNull(pages.deletedAt)),
     db.select({ value: count() }).from(pages).where(eq(pages.status, "PUBLISHED")),
@@ -66,7 +66,7 @@ export default async function Dashboard() {
     db.select({ value: count() }).from(chatConversations),
     db.select({ value: count() }).from(users),
     db.select().from(leads).orderBy(desc(leads.createdAt)).limit(6),
-    db.select().from(revisions).orderBy(desc(revisions.createdAt)).limit(6),
+    db.select().from(activityLog).orderBy(desc(activityLog.createdAt)).limit(6),
   ]);
 
   const stats = [
@@ -212,20 +212,25 @@ export default async function Dashboard() {
           <section className="rounded-2xl border border-black/[0.05] bg-white shadow-[0_1px_3px_rgba(16,17,22,0.05)]">
             <div className="flex items-center justify-between border-b border-black/[0.05] px-5 py-4">
               <h3 className="text-[15px] font-semibold">Recent activity</h3>
-              <Link href="/admin/revisions" className="text-[13px] font-medium text-[#a10140] hover:underline">
-                All revisions →
+              <Link href="/admin/activity" className="text-[13px] font-medium text-[#a10140] hover:underline">
+                All activity →
               </Link>
             </div>
-            {recentRevisions.length === 0 ? (
-              <p className="px-5 py-8 text-center text-[13px] text-neutral-400">No activity recorded yet.</p>
+            {recentActivity.length === 0 ? (
+              <p className="px-5 py-8 text-center text-[13px] text-neutral-400">No activity recorded yet — team changes appear here.</p>
             ) : (
               <ul className="px-5 py-3">
-                {recentRevisions.map((r, i) => (
+                {recentActivity.map((r, i) => (
                   <li key={r.id} className="relative flex gap-3.5 pb-4 last:pb-1">
-                    {i < recentRevisions.length - 1 && <span aria-hidden className="absolute left-[5px] top-4 h-full w-px bg-neutral-200" />}
+                    {i < recentActivity.length - 1 && <span aria-hidden className="absolute left-[5px] top-4 h-full w-px bg-neutral-200" />}
                     <span className="mt-1.5 h-[11px] w-[11px] shrink-0 rounded-full border-2 border-[#a10140] bg-white" />
                     <div className="min-w-0">
-                      <p className="truncate text-[13px] font-medium">{r.label || "Content revision"}</p>
+                      <p className="truncate text-[13px]">
+                        <span className="font-semibold">{r.userName}</span>{" "}
+                        <span className="text-neutral-500">{r.action}</span>{" "}
+                        <span className="capitalize text-neutral-500">{r.module.replace(/s$/, "")}</span>
+                        {r.targetLabel && <span className="font-medium"> “{r.targetLabel}”</span>}
+                      </p>
                       <p className="text-[11.5px] text-neutral-400">{timeAgo(r.createdAt)}</p>
                     </div>
                   </li>

@@ -213,6 +213,24 @@ export const formSubmissions = pgTable(
   (t) => [index("form_submissions_form_created_idx").on(t.formId, t.createdAt)],
 );
 
+export const activityLog = pgTable(
+  "activity_log",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    userName: text("user_name").notNull(),
+    userRole: text("user_role").notNull(),
+    module: text("module").notNull(), // pages | posts | media | menus | users | settings | ...
+    action: text("action").notNull(), // created | updated | published | trashed | deleted | ...
+    targetLabel: text("target_label").default("").notNull(),
+    targetId: text("target_id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => [index("activity_log_created_idx").on(t.createdAt)],
+);
+
 export const mediaAssets = pgTable(
   "media_assets",
   {

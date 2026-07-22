@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
+import { logActivity } from "@/lib/activity";
 import { currentUser } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 
@@ -52,6 +53,7 @@ export async function POST(request: Request) {
       altText: file.type.startsWith("image/") ? title : "",
       uploadedBy: user.id,
     });
+    await logActivity(user, "media", "uploaded", filename);
   }
   return Response.redirect(
     new URL("/admin/media?uploaded=1", request.url),

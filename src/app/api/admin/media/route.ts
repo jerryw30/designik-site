@@ -1,6 +1,7 @@
 import { desc, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
+import { logActivity } from "@/lib/activity";
 import { currentUser } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 
@@ -60,6 +61,7 @@ export async function POST(request: Request) {
         uploadedBy: user.id,
       })
       .returning({ id: mediaAssets.id, title: mediaAssets.title, mimeType: mediaAssets.mimeType });
+    await logActivity(user, "media", "uploaded", filename, row.id);
     created.push({ id: row.id, url: `/api/media/${row.id}`, title: row.title, mimeType: row.mimeType });
   }
   return Response.json({ assets: created });

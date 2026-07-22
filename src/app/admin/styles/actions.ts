@@ -8,6 +8,7 @@ import {
   globalStyles,
   type GlobalStyles,
 } from "@/cms/global-styles";
+import { logActivity } from "@/lib/activity";
 import { requirePermission } from "@/lib/permissions";
 const KEY = "global_styles";
 async function current() {
@@ -43,6 +44,7 @@ export async function saveGlobalStylesDraft(value: GlobalStyles) {
         updatedAt: new Date(),
       },
     });
+  await logActivity(user, "styles", "updated", "global styles");
   revalidatePath("/admin/styles");
 }
 export async function publishGlobalStyles(value: GlobalStyles) {
@@ -63,6 +65,7 @@ export async function publishGlobalStyles(value: GlobalStyles) {
         updatedAt: new Date(),
       },
     });
+  await logActivity(user, "styles", "published", "global styles");
   revalidatePath("/admin/styles");
   revalidatePath("/", "layout");
 }
@@ -84,6 +87,7 @@ export async function resetGlobalStylesDraft() {
         updatedAt: new Date(),
       },
     });
+  await logActivity(user, "styles", "reset", "global styles");
   revalidatePath("/admin/styles");
   return globalStyleDefaults;
 }

@@ -8,6 +8,7 @@ import { db } from "@/db";
 import { adminResources, pages, revisions, sections, users } from "@/db/schema";
 import { createSession, destroySession } from "@/lib/auth";
 import { requirePermission } from "@/lib/permissions";
+import { logActivity } from "@/lib/activity";
 import { heroContent } from "@/cms/defaults";
 import {
   sectionContent,
@@ -163,18 +164,20 @@ export async function ensureHomepage() {
 }
 
 export async function updatePage(form: FormData) {
-  await requireUser();
+  const user = await requireUser();
   const id = String(form.get("id"));
   const title = String(form.get("title") || "").trim();
   const slug = String(form.get("slug") || "")
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, "-");
-  if (id && title && slug)
+  if (id && title && slug) {
     await db
       .update(pages)
       .set({ title, slug, updatedAt: new Date() })
       .where(eq(pages.id, id));
+    await logActivity(user, "pages", "updated", title, id);
+  }
   revalidatePath("/admin/pages");
 }
 
@@ -196,6 +199,7 @@ export async function createPage(form: FormData) {
     .insert(pages)
     .values({ title, slug, authorId: user.id })
     .returning({ id: pages.id });
+  await logActivity(user, "pages", "created", title, page.id);
   revalidatePath("/admin/pages");
   redirect(`/admin/pages/${page.id}/builder`);
 }
@@ -240,6 +244,7 @@ export async function duplicatePage(id: string) {
         locked: section.locked,
       })),
     );
+  await logActivity(user, "pages", "duplicated", source.title, copy.id);
   revalidatePath("/admin/pages");
 }
 
@@ -261,37 +266,47 @@ export async function setPageStatus(id: string, status: "DRAFT" | "PUBLISHED") {
       updatedAt: new Date(),
     })
     .where(eq(pages.id, id));
+  await logActivity(
+    user,
+    "pages",
+    status === "PUBLISHED" ? "published" : "drafted",
+    page.title,
+    id,
+  );
   revalidatePath("/admin/pages");
   revalidatePath("/");
 }
 
 export async function trashPage(id: string) {
-  await requireUser();
+  const user = await requireUser();
   await db
     .update(pages)
     .set({ deletedAt: new Date(), status: "ARCHIVED", updatedAt: new Date() })
     .where(eq(pages.id, id));
+  await logActivity(user, "pages", "trashed", id, id);
   revalidatePath("/admin/pages");
 }
 export async function restorePage(id: string) {
-  await requireUser();
+  const user = await requireUser();
   await db
     .update(pages)
     .set({ deletedAt: null, status: "DRAFT", updatedAt: new Date() })
     .where(eq(pages.id, id));
+  await logActivity(user, "pages", "restored", id, id);
   revalidatePath("/admin/pages");
 }
 export async function deletePageForever(id: string) {
-  await requireUser();
+  const user = await requireUser();
   await db
     .delete(pages)
     .where(and(eq(pages.id, id), isNotNull(pages.deletedAt)));
+  await logActivity(user, "pages", "deleted", id, id);
   revalidatePath("/admin/pages");
 }
 
 /** WordPress-style bulk actions from the Pages list table. */
 export async function bulkPages(form: FormData) {
-  await requireUser();
+  const user = await requireUser();
   const action = String(form.get("bulk") || "");
   const ids = form.getAll("ids").map(String).filter(Boolean);
   if (!action || action === "-1" || ids.length === 0) return;
@@ -300,14 +315,19 @@ export async function bulkPages(form: FormData) {
     if (!row) continue;
     if (action === "trash" && row.slug !== "home") {
       await db.update(pages).set({ deletedAt: new Date(), status: "ARCHIVED", updatedAt: new Date() }).where(eq(pages.id, id));
+      await logActivity(user, "pages", "trashed", row.title, id);
     } else if (action === "restore") {
       await db.update(pages).set({ deletedAt: null, status: "DRAFT", updatedAt: new Date() }).where(eq(pages.id, id));
+      await logActivity(user, "pages", "restored", row.title, id);
     } else if (action === "delete" && row.slug !== "home" && row.deletedAt) {
       await db.delete(pages).where(eq(pages.id, id));
+      await logActivity(user, "pages", "deleted", row.title, id);
     } else if (action === "publish") {
       await db.update(pages).set({ status: "PUBLISHED", publishedAt: new Date(), updatedAt: new Date() }).where(eq(pages.id, id));
+      await logActivity(user, "pages", "published", row.title, id);
     } else if (action === "draft") {
       await db.update(pages).set({ status: "DRAFT", updatedAt: new Date() }).where(eq(pages.id, id));
+      await logActivity(user, "pages", "drafted", row.title, id);
     }
   }
   revalidatePath("/admin/pages");
@@ -323,12 +343,13 @@ export async function getHomepageSections(pageId: string) {
 }
 
 export async function saveHeroDraft(sectionId: string, value: unknown) {
-  await requirePermission("edit_pages");
+  const user = await requirePermission("edit_pages");
   const content = heroContent(value);
   await db
     .update(sections)
     .set({ draftContent: content, updatedAt: new Date() })
     .where(eq(sections.id, sectionId));
+  await logActivity(user, "pages", "updated", "Hero draft", sectionId);
   return content;
 }
 
@@ -353,12 +374,13 @@ export async function publishHero(sectionId: string) {
     .update(sections)
     .set({ publishedContent: content, updatedAt: new Date() })
     .where(eq(sections.id, sectionId));
+  await logActivity(user, "pages", "published", section.name, sectionId);
   revalidatePath("/");
   return content;
 }
 
 export async function reorderSections(pageId: string, orderedIds: string[]) {
-  await requireUser();
+  const user = await requireUser();
   const owned = await db
     .select({ id: sections.id })
     .from(sections)
@@ -377,11 +399,18 @@ export async function reorderSections(pageId: string, orderedIds: string[]) {
         .where(and(eq(sections.id, id), eq(sections.pageId, pageId))),
     ),
   );
+  await logActivity(
+    user,
+    "pages",
+    "reordered",
+    `${orderedIds.length} sections`,
+    pageId,
+  );
   revalidatePath("/");
 }
 
 export async function addSection(pageId: string, type: string) {
-  await requireUser();
+  const user = await requireUser();
   const allowed = new Set([
     "agency-marquee",
     "stats",
@@ -412,11 +441,12 @@ export async function addSection(pageId: string, type: string) {
     draftContent,
     publishedContent: { _cmsPublished: false },
   });
+  await logActivity(user, "pages", "created", `${name} section`, pageId);
   revalidatePath(`/admin/pages/${pageId}/builder`);
 }
 
 export async function duplicateSection(sectionId: string) {
-  await requireUser();
+  const user = await requireUser();
   const [source] = await db
     .select()
     .from(sections)
@@ -441,11 +471,12 @@ export async function duplicateSection(sectionId: string) {
     visible: source.visible,
     locked: false,
   });
+  await logActivity(user, "pages", "duplicated", source.name, sectionId);
   revalidatePath(`/admin/pages/${source.pageId}/builder`);
 }
 
 export async function deleteSection(sectionId: string) {
-  await requireUser();
+  const user = await requireUser();
   const [source] = await db
     .select()
     .from(sections)
@@ -454,6 +485,7 @@ export async function deleteSection(sectionId: string) {
   if (!source || source.locked || ["header", "footer"].includes(source.type))
     return;
   await db.delete(sections).where(eq(sections.id, sectionId));
+  await logActivity(user, "pages", "deleted", source.name, sectionId);
   revalidatePath(`/admin/pages/${source.pageId}/builder`);
 }
 export async function setSectionState(
@@ -461,7 +493,7 @@ export async function setSectionState(
   field: "visible" | "locked",
   value: boolean,
 ) {
-  await requireUser();
+  const user = await requireUser();
   await db
     .update(sections)
     .set(
@@ -470,6 +502,7 @@ export async function setSectionState(
         : { locked: value, updatedAt: new Date() },
     )
     .where(eq(sections.id, sectionId));
+  await logActivity(user, "pages", "updated", sectionId, sectionId);
 }
 
 export async function saveSectionDraft(
@@ -477,12 +510,13 @@ export async function saveSectionDraft(
   type: EditableSectionType,
   value: unknown,
 ) {
-  await requireUser();
+  const user = await requireUser();
   const content = sectionContent(type, value);
   await db
     .update(sections)
     .set({ draftContent: content, updatedAt: new Date() })
     .where(and(eq(sections.id, sectionId), eq(sections.type, type)));
+  await logActivity(user, "pages", "updated", `${type} draft`, sectionId);
   return content;
 }
 export async function publishSection(
@@ -507,6 +541,7 @@ export async function publishSection(
     .update(sections)
     .set({ publishedContent: content, updatedAt: new Date() })
     .where(eq(sections.id, sectionId));
+  await logActivity(user, "pages", "published", section.name, sectionId);
   revalidatePath("/");
   return content;
 }
@@ -515,7 +550,7 @@ export async function copySectionToPage(
   sourceSectionId: string,
   pageId: string,
 ) {
-  await requireUser();
+  const user = await requireUser();
   const [source] = await db
     .select()
     .from(sections)
@@ -540,6 +575,7 @@ export async function copySectionToPage(
     visible: source.visible,
     locked: false,
   });
+  await logActivity(user, "pages", "duplicated", source.name, pageId);
   revalidatePath(`/admin/pages/${pageId}/builder`);
 }
 
@@ -569,6 +605,7 @@ export async function saveSectionAsTemplate(sectionId: string) {
       visible: source.visible,
     },
   });
+  await logActivity(user, "saved-sections", "created", source.name, sectionId);
   revalidatePath("/admin/saved-sections");
 }
 
@@ -576,7 +613,7 @@ export async function addSavedSectionToPage(
   templateId: string,
   pageId: string,
 ) {
-  await requireUser();
+  const user = await requireUser();
   const [template] = await db
     .select()
     .from(adminResources)
@@ -610,11 +647,12 @@ export async function addSavedSectionToPage(
     visible: data.visible !== false,
     locked: false,
   });
+  await logActivity(user, "pages", "created", template.title, pageId);
   revalidatePath(`/admin/pages/${pageId}/builder`);
 }
 
 export async function applyPageTemplate(templateId: string, pageId: string) {
-  await requireUser();
+  const user = await requireUser();
   const [template] = await db
     .select()
     .from(adminResources)
@@ -654,5 +692,6 @@ export async function applyPageTemplate(templateId: string, pageId: string) {
       locked: false,
     });
   }
+  await logActivity(user, "pages", "updated", template.title, pageId);
   revalidatePath(`/admin/pages/${pageId}/builder`);
 }

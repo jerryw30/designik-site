@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { pages, revisions, sections } from "@/db/schema";
+import { logActivity } from "@/lib/activity";
 import { requirePermission } from "@/lib/permissions";
 type Snapshot = Record<string, unknown>;
 export async function restoreRevision(id: string) {
@@ -92,6 +93,7 @@ export async function restoreRevision(id: string) {
       })
       .where(eq(pages.id, page.id));
   } else throw new Error("Unsupported legacy revision format");
+  await logActivity(user, "pages", "restored revision", revision.label || id, id);
   revalidatePath("/admin/revisions");
   revalidatePath(`/admin/pages/${revision.pageId}/builder`);
   revalidatePath(`/admin/pages/${revision.pageId}/preview`);
@@ -99,7 +101,8 @@ export async function restoreRevision(id: string) {
   redirect(`/admin/revisions?restored=${id}`);
 }
 export async function deleteRevision(id: string) {
-  await requirePermission("edit_pages");
+  const user = await requirePermission("edit_pages");
   await db.delete(revisions).where(eq(revisions.id, id));
+  await logActivity(user, "pages", "deleted revision", id, id);
   revalidatePath("/admin/revisions");
 }

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources, users } from "@/db/schema";
+import { logActivity } from "@/lib/activity";
 import { currentUser } from "@/lib/auth";
 import { requirePermission, type Permission } from "@/lib/permissions";
 
@@ -71,12 +72,13 @@ export async function createResource(form: FormData) {
       createdBy: user.id,
       data: { description: String(form.get("description") || "") },
     });
+  await logActivity(user, resourceModule, "created", title);
   revalidatePath(`/admin/${resourceModule}`);
 }
 
 export async function updateResource(form: FormData) {
   const resourceModule = cleanModule(String(form.get("module")));
-  await authorize(resourceModule);
+  const user = await authorize(resourceModule);
   const id = String(form.get("id"));
   const title = String(form.get("title") || "Untitled").trim() || "Untitled";
   const status =
@@ -95,18 +97,20 @@ export async function updateResource(form: FormData) {
     .where(
       and(eq(adminResources.id, id), eq(adminResources.module, resourceModule)),
     );
+  await logActivity(user, resourceModule, "updated", title, id);
   revalidatePath(`/admin/${resourceModule}`);
 }
 
 export async function deleteResource(form: FormData) {
   const resourceModule = cleanModule(String(form.get("module")));
-  await authorize(resourceModule);
+  const user = await authorize(resourceModule);
   const id = String(form.get("id"));
   await db
     .delete(adminResources)
     .where(
       and(eq(adminResources.id, id), eq(adminResources.module, resourceModule)),
     );
+  await logActivity(user, resourceModule, "deleted", id, id);
   revalidatePath(`/admin/${resourceModule}`);
 }
 
@@ -120,5 +124,12 @@ export async function toggleUser(form: FormData) {
     .update(users)
     .set({ active, updatedAt: new Date() })
     .where(eq(users.id, id));
+  await logActivity(
+    actor,
+    "users",
+    active ? "activated" : "deactivated",
+    id,
+    id,
+  );
   revalidatePath("/admin/users");
 }

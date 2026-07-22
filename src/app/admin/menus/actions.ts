@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources, pages, revisions, sections } from "@/db/schema";
+import { logActivity } from "@/lib/activity";
 import { requirePermission } from "@/lib/permissions";
 
 export type MenuItem = {
@@ -40,10 +41,11 @@ export async function createMenu(form: FormData) {
       data: { items: [] },
     })
     .returning({ id: adminResources.id });
+  await logActivity(user, "menus", "created", title, menu.id);
   redirect(`/admin/menus/${menu.id}/edit`);
 }
 export async function saveMenu(id: string, title: string, items: MenuItem[]) {
-  await authorize();
+  const user = await authorize();
   const clean = items.slice(0, 100).map((item) => ({
     id: String(item.id),
     label: String(item.label).slice(0, 100),
@@ -63,6 +65,13 @@ export async function saveMenu(id: string, title: string, items: MenuItem[]) {
       updatedAt: new Date(),
     })
     .where(and(eq(adminResources.id, id), eq(adminResources.module, "menus")));
+  await logActivity(
+    user,
+    "menus",
+    "updated",
+    title.trim() || "Untitled Menu",
+    id,
+  );
   revalidatePath(`/admin/menus/${id}/edit`);
 }
 export async function setMenuStatus(
@@ -132,6 +141,17 @@ export async function setMenuStatus(
       updatedAt: new Date(),
     })
     .where(eq(adminResources.id, id));
+  await logActivity(
+    user,
+    "menus",
+    status === "PUBLISHED"
+      ? "published"
+      : status === "TRASH"
+        ? "trashed"
+        : "drafted",
+    menu.title,
+    id,
+  );
   revalidatePath("/admin/menus");
   revalidatePath("/");
 }
@@ -151,10 +171,11 @@ export async function duplicateMenu(id: string) {
     data: menu.data,
     createdBy: user.id,
   });
+  await logActivity(user, "menus", "duplicated", menu.title, id);
   revalidatePath("/admin/menus");
 }
 export async function deleteMenuForever(id: string) {
-  await authorize();
+  const user = await authorize();
   await db
     .delete(adminResources)
     .where(
@@ -164,5 +185,6 @@ export async function deleteMenuForever(id: string) {
         eq(adminResources.status, "TRASH"),
       ),
     );
+  await logActivity(user, "menus", "deleted", id, id);
   revalidatePath("/admin/menus");
 }

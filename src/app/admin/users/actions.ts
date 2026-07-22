@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { sessions, users } from "@/db/schema";
+import { logActivity } from "@/lib/activity";
 import { requirePermission } from "@/lib/permissions";
 const roles = [
   "SUPER_ADMIN",
@@ -40,6 +41,7 @@ export async function createUser(form: FormData) {
   await db
     .insert(users)
     .values({ name, email, passwordHash: await hash(password, 12), role });
+  await logActivity(actor, "users", "created", name || email);
   revalidatePath("/admin/users");
 }
 export async function updateUser(form: FormData) {
@@ -64,10 +66,11 @@ export async function updateUser(form: FormData) {
     .where(eq(users.id, id));
   if (!active && !self)
     await db.delete(sessions).where(eq(sessions.userId, id));
+  await logActivity(actor, "users", "updated", name || email, id);
   revalidatePath("/admin/users");
 }
 export async function resetUserPassword(form: FormData) {
-  await requirePermission("manage_users");
+  const actor = await requirePermission("manage_users");
   const id = String(form.get("id")),
     password = String(form.get("password") || "");
   if (password.length < 10)
@@ -77,11 +80,13 @@ export async function resetUserPassword(form: FormData) {
     .set({ passwordHash: await hash(password, 12), updatedAt: new Date() })
     .where(eq(users.id, id));
   await db.delete(sessions).where(eq(sessions.userId, id));
+  await logActivity(actor, "users", "reset password", id, id);
   revalidatePath("/admin/users");
 }
 export async function deleteUser(id: string) {
   const actor = await requirePermission("manage_users");
   if (id === actor.id) throw new Error("You cannot delete your own account");
   await db.delete(users).where(and(eq(users.id, id), eq(users.active, false)));
+  await logActivity(actor, "users", "deleted", id, id);
   revalidatePath("/admin/users");
 }

@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { adminResources, pages, siteSettings } from "@/db/schema";
+import { logActivity } from "@/lib/activity";
 import { requirePermission } from "@/lib/permissions";
 import { seoDefaults, seoSettings } from "@/cms/seo";
 const KEY = "seo_settings";
@@ -53,6 +54,7 @@ export async function saveSeoDraft(form: FormData) {
         updatedAt: new Date(),
       },
     });
+  await logActivity(user, "seo", "updated", "global SEO");
   revalidatePath("/admin/seo");
 }
 export async function publishSeo(form: FormData) {
@@ -73,6 +75,7 @@ export async function publishSeo(form: FormData) {
         updatedAt: new Date(),
       },
     });
+  await logActivity(user, "seo", "published", "global SEO");
   revalidatePath("/admin/seo");
   revalidatePath("/", "layout");
   revalidatePath("/sitemap.xml");
@@ -96,10 +99,11 @@ export async function resetSeoDraft() {
         updatedAt: new Date(),
       },
     });
+  await logActivity(user, "seo", "reset", "global SEO");
   revalidatePath("/admin/seo");
 }
 export async function updatePageSeo(form: FormData) {
-  await requirePermission("manage_seo");
+  const user = await requirePermission("manage_seo");
   const id = String(form.get("id")),
     seo = {
       title: String(form.get("title") || ""),
@@ -112,11 +116,12 @@ export async function updatePageSeo(form: FormData) {
     .update(pages)
     .set({ seo, updatedAt: new Date() })
     .where(eq(pages.id, id));
+  await logActivity(user, "seo", "updated", id, id);
   revalidatePath("/admin/seo");
   revalidatePath("/", "layout");
 }
 export async function updatePostSeo(form: FormData) {
-  await requirePermission("manage_seo");
+  const user = await requirePermission("manage_seo");
   const id = String(form.get("id"));
   const [post] = await db
     .select()
@@ -136,6 +141,7 @@ export async function updatePostSeo(form: FormData) {
     .update(adminResources)
     .set({ data, updatedAt: new Date() })
     .where(eq(adminResources.id, id));
+  await logActivity(user, "seo", "updated", post.slug, id);
   revalidatePath("/admin/seo");
   revalidatePath(`/blog/${post.slug}`);
 }

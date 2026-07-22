@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources } from "@/db/schema";
 import { requirePermission } from "@/lib/permissions";
+import { logActivity } from "@/lib/activity";
 
 async function authorize() {
   return requirePermission("edit_posts");
@@ -51,11 +52,12 @@ export async function createPost(form: FormData) {
       data: postData(form),
     })
     .returning({ id: adminResources.id });
+  await logActivity(user, "posts", "created", title, post.id);
   redirect(`/admin/posts/${post.id}/edit`);
 }
 
 export async function savePost(form: FormData) {
-  await authorize();
+  const user = await authorize();
   const id = String(form.get("id"));
   const title =
     String(form.get("title") || "Untitled post").trim() || "Untitled post";
@@ -70,6 +72,7 @@ export async function savePost(form: FormData) {
       updatedAt: new Date(),
     })
     .where(and(eq(adminResources.id, id), eq(adminResources.module, "posts")));
+  await logActivity(user, "posts", "updated", title, id);
   revalidatePath("/admin/posts");
   revalidatePath(`/admin/posts/${id}/edit`);
   revalidatePath("/blog");
@@ -80,7 +83,7 @@ export async function savePostWithStatus(
   status: "DRAFT" | "PUBLISHED",
   form: FormData,
 ) {
-  await authorize();
+  const user = await authorize();
   const id = String(form.get("id"));
   const title =
     String(form.get("title") || "Untitled post").trim() || "Untitled post";
@@ -97,6 +100,13 @@ export async function savePostWithStatus(
       updatedAt: new Date(),
     })
     .where(and(eq(adminResources.id, id), eq(adminResources.module, "posts")));
+  await logActivity(
+    user,
+    "posts",
+    status === "PUBLISHED" ? "published" : "drafted",
+    title,
+    id,
+  );
   revalidatePath("/admin/posts");
   revalidatePath(`/admin/posts/${id}/edit`);
   revalidatePath("/blog");
@@ -107,7 +117,7 @@ export async function setPostStatus(
   id: string,
   status: "DRAFT" | "PUBLISHED" | "TRASH",
 ) {
-  await authorize();
+  const user = await authorize();
   await db
     .update(adminResources)
     .set({
@@ -116,6 +126,17 @@ export async function setPostStatus(
       updatedAt: new Date(),
     })
     .where(and(eq(adminResources.id, id), eq(adminResources.module, "posts")));
+  await logActivity(
+    user,
+    "posts",
+    status === "PUBLISHED"
+      ? "published"
+      : status === "TRASH"
+        ? "trashed"
+        : "drafted",
+    id,
+    id,
+  );
   revalidatePath("/admin/posts");
   revalidatePath("/blog");
 }
@@ -136,11 +157,12 @@ export async function duplicatePost(id: string) {
     data: source.data,
     createdBy: user.id,
   });
+  await logActivity(user, "posts", "duplicated", source.title, id);
   revalidatePath("/admin/posts");
 }
 
 export async function deletePostForever(id: string) {
-  await authorize();
+  const user = await authorize();
   await db
     .delete(adminResources)
     .where(
@@ -150,12 +172,13 @@ export async function deletePostForever(id: string) {
         eq(adminResources.status, "TRASH"),
       ),
     );
+  await logActivity(user, "posts", "deleted", id, id);
   revalidatePath("/admin/posts");
 }
 
 /** WordPress-style bulk actions from the Posts list table. */
 export async function bulkPosts(form: FormData) {
-  await authorize();
+  const user = await authorize();
   const action = String(form.get("bulk") || "");
   const ids = form.getAll("ids").map(String).filter(Boolean);
   if (!action || action === "-1" || ids.length === 0) return;
@@ -172,6 +195,15 @@ export async function bulkPosts(form: FormData) {
         .where(and(eq(adminResources.id, id), eq(adminResources.module, "posts"), eq(adminResources.status, "TRASH")));
     }
   }
+  const verbs: Record<string, string> = {
+    publish: "published",
+    draft: "drafted",
+    trash: "trashed",
+    restore: "restored",
+    delete: "deleted",
+  };
+  if (verbs[action])
+    await logActivity(user, "posts", verbs[action], `${ids.length} posts`);
   revalidatePath("/admin/posts");
   revalidatePath("/blog");
 }
@@ -189,7 +221,7 @@ export async function createTaxonomy(
     .from(adminResources)
     .where(and(eq(adminResources.module, kind), eq(adminResources.slug, slug)))
     .limit(1);
-  if (!existing.length)
+  if (!existing.length) {
     await db.insert(adminResources).values({
       module: kind,
       title,
@@ -198,13 +230,27 @@ export async function createTaxonomy(
       createdBy: user.id,
       data: { description: String(form.get("description") || "") },
     });
+    await logActivity(
+      user,
+      "posts",
+      "created",
+      `${kind === "categories" ? "category" : "tag"} "${title}"`,
+    );
+  }
   revalidatePath(`/admin/posts/${kind}`);
 }
 
 export async function deleteTaxonomy(kind: "categories" | "tags", id: string) {
-  await authorize();
+  const user = await authorize();
   await db
     .delete(adminResources)
     .where(and(eq(adminResources.id, id), eq(adminResources.module, kind)));
+  await logActivity(
+    user,
+    "posts",
+    "deleted",
+    `${kind === "categories" ? "category" : "tag"} "${id}"`,
+    id,
+  );
   revalidatePath(`/admin/posts/${kind}`);
 }

@@ -85,6 +85,7 @@ const NAV: { group: string; items: { label: string; href: string; icon: keyof ty
     items: [
       { label: "SEO", href: "/admin/seo", icon: "seo" },
       { label: "Users", href: "/admin/users", icon: "users" },
+      { label: "Activity", href: "/admin/activity", icon: "revisions" },
       { label: "Revisions", href: "/admin/revisions", icon: "revisions" },
       { label: "Settings", href: "/admin/settings", icon: "settings" },
       { label: "Tools", href: "/admin/tools", icon: "tools" },

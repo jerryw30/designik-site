@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { siteSettings } from "@/db/schema";
+import { logActivity } from "@/lib/activity";
 import { requirePermission } from "@/lib/permissions";
 import {
   websiteSettings,
@@ -84,6 +85,7 @@ export async function saveSettingsDraft(form: FormData) {
         updatedAt: new Date(),
       },
     });
+  await logActivity(user, "settings", "updated", "website settings");
   revalidatePath("/admin/settings");
 }
 export async function publishSettings(form: FormData) {
@@ -104,6 +106,7 @@ export async function publishSettings(form: FormData) {
         updatedAt: new Date(),
       },
     });
+  await logActivity(user, "settings", "published", "website settings");
   revalidatePath("/admin/settings");
   revalidatePath("/", "layout");
 }
@@ -125,5 +128,6 @@ export async function resetSettingsDraft() {
         updatedAt: new Date(),
       },
     });
+  await logActivity(user, "settings", "reset", "website settings");
   revalidatePath("/admin/settings");
 }

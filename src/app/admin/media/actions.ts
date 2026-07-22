@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
+import { logActivity } from "@/lib/activity";
 import { requirePermission } from "@/lib/permissions";
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024;
@@ -43,13 +44,14 @@ export async function uploadMedia(form: FormData) {
       altText: file.type.startsWith("image/") ? title : "",
       uploadedBy: user.id,
     });
+    await logActivity(user, "media", "uploaded", filename);
   }
   revalidatePath("/admin/media");
   redirect("/admin/media?uploaded=1");
 }
 
 export async function updateMedia(form: FormData) {
-  await requirePermission("manage_media");
+  const user = await requirePermission("manage_media");
   const id = text(form, "id");
   const tags = text(form, "tags")
     .split(",")
@@ -67,37 +69,47 @@ export async function updateMedia(form: FormData) {
       updatedAt: new Date(),
     })
     .where(and(eq(mediaAssets.id, id), isNull(mediaAssets.deletedAt)));
+  await logActivity(
+    user,
+    "media",
+    "updated",
+    text(form, "title") || "Untitled asset",
+    id,
+  );
   revalidatePath("/admin/media");
   revalidatePath(`/admin/media/${id}/edit`);
 }
 
 export async function trashMedia(form: FormData) {
-  await requirePermission("manage_media");
+  const user = await requirePermission("manage_media");
   const id = text(form, "id");
   await db
     .update(mediaAssets)
     .set({ deletedAt: new Date(), updatedAt: new Date() })
     .where(and(eq(mediaAssets.id, id), isNull(mediaAssets.deletedAt)));
+  await logActivity(user, "media", "trashed", id, id);
   revalidatePath("/admin/media");
   redirect("/admin/media");
 }
 
 export async function restoreMedia(form: FormData) {
-  await requirePermission("manage_media");
+  const user = await requirePermission("manage_media");
   const id = text(form, "id");
   await db
     .update(mediaAssets)
     .set({ deletedAt: null, updatedAt: new Date() })
     .where(and(eq(mediaAssets.id, id), isNotNull(mediaAssets.deletedAt)));
+  await logActivity(user, "media", "restored", id, id);
   revalidatePath("/admin/media");
 }
 
 export async function deleteMediaPermanently(form: FormData) {
-  await requirePermission("manage_media");
+  const user = await requirePermission("manage_media");
   const id = text(form, "id");
   await db
     .delete(mediaAssets)
     .where(and(eq(mediaAssets.id, id), isNotNull(mediaAssets.deletedAt)));
+  await logActivity(user, "media", "deleted", id, id);
   revalidatePath("/admin/media");
   redirect("/admin/media?trash=1");
 }

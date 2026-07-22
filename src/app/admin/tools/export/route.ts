@@ -6,6 +6,7 @@ import {
   sections,
   siteSettings,
 } from "@/db/schema";
+import { logActivity } from "@/lib/activity";
 import { currentUser } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 
@@ -33,6 +34,7 @@ export async function GET() {
     settings: settingRows,
     media: mediaRows,
   };
+  await logActivity(user, "tools", "exported backup");
   return new Response(JSON.stringify(backup), {
     headers: {
       "content-type": "application/json; charset=utf-8",
