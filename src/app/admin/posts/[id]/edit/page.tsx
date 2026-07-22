@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { adminResources, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../../../admin-shell";
+import { MediaPicker } from "../../../media-picker";
 import { T, statusPill, wpDate } from "../../../theme";
 import { savePost, savePostWithStatus } from "../../actions";
 
@@ -212,16 +213,7 @@ export default async function EditPostPage({
                 <h2 className={cardTitle}>Featured image</h2>
               </div>
               <div className="p-5">
-                <label htmlFor="post-featured-image" className={T.label}>
-                  Image URL
-                </label>
-                <input
-                  id="post-featured-image"
-                  name="featuredImage"
-                  defaultValue={data.featuredImage}
-                  placeholder="https://…"
-                  className={T.input}
-                />
+                <MediaPicker name="featuredImage" defaultValue={data.featuredImage} />
               </div>
             </section>
 
