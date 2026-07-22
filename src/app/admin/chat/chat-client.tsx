@@ -8,10 +8,13 @@ type Conversation = {
   name: string | null;
   email: string | null;
   status: string;
+  important: boolean;
   unreadAdmin: number;
   lastMessageAt: string;
   createdAt: string;
 };
+
+type Filter = "all" | "unread" | "read" | "important";
 type Msg = { id: string; sender: "visitor" | "admin"; body: string; createdAt: string };
 
 function timeAgo(iso: string) {
@@ -34,6 +37,7 @@ export default function ChatClient({ adminName }: { adminName: string }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
+  const [filter, setFilter] = useState<Filter>("all");
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<string | null>(null);
   activeRef.current = activeId;
@@ -128,23 +132,90 @@ export default function ChatClient({ adminName }: { adminName: string }) {
     [reply, activeId, sending, loadConversations],
   );
 
+  const toggleImportant = useCallback(async (id: string, value: boolean) => {
+    setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, important: value } : c)));
+    try {
+      await fetch(`/api/admin/chat/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ important: value }),
+      });
+    } catch {
+      /* optimistic */
+    }
+  }, []);
+
+  const deleteConversation = useCallback(async (id: string) => {
+    if (!window.confirm("Delete this conversation permanently? This cannot be undone.")) return;
+    setConversations((prev) => prev.filter((c) => c.id !== id));
+    if (activeRef.current === id) {
+      setActiveId(null);
+      setMessages([]);
+    }
+    try {
+      await fetch(`/api/admin/chat/${id}`, { method: "DELETE" });
+    } catch {
+      /* refetch will restore if it failed */
+    }
+  }, []);
+
   const active = conversations.find((c) => c.id === activeId);
+  const visible = conversations.filter((c) =>
+    filter === "unread" ? c.unreadAdmin > 0 : filter === "read" ? c.unreadAdmin === 0 : filter === "important" ? c.important : true,
+  );
+  const filterCounts: Record<Filter, number> = {
+    all: conversations.length,
+    unread: conversations.filter((c) => c.unreadAdmin > 0).length,
+    read: conversations.filter((c) => c.unreadAdmin === 0).length,
+    important: conversations.filter((c) => c.important).length,
+  };
 
   return (
     <div className="m-4 grid h-[calc(100dvh-96px)] grid-cols-[320px_1fr] grid-rows-[100%] overflow-hidden rounded-2xl border bg-white">
       {/* conversation list */}
       <div className="flex min-h-0 flex-col border-r">
-        <div className="flex items-center justify-between border-b px-5 py-4">
-          <h2 className="font-semibold">Conversations</h2>
-          <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500">
-            {conversations.length}
-          </span>
+        <div className="border-b">
+          <div className="flex items-center justify-between px-5 pb-2 pt-4">
+            <h2 className="font-semibold">Conversations</h2>
+            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500">
+              {conversations.length}
+            </span>
+          </div>
+          {/* filter tabs */}
+          <div className="flex gap-1 px-3 pb-2.5">
+            {(
+              [
+                ["all", "All"],
+                ["unread", "New"],
+                ["read", "Read"],
+                ["important", "★"],
+              ] as [Filter, string][]
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setFilter(key)}
+                title={key === "important" ? "Important" : label}
+                className={`rounded-full px-3 py-1 text-[12px] font-medium transition ${
+                  filter === key
+                    ? "bg-gradient-to-r from-[#a10140] to-[#c81a5e] text-white"
+                    : "text-neutral-500 hover:bg-neutral-100"
+                }`}
+              >
+                {label}
+                {filterCounts[key] > 0 && key !== "all" && (
+                  <span className="ml-1 opacity-70">{filterCounts[key]}</span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          {conversations.length === 0 ? (
-            <p className="px-5 py-10 text-center text-sm text-neutral-400">No conversations yet.</p>
+          {visible.length === 0 ? (
+            <p className="px-5 py-10 text-center text-sm text-neutral-400">
+              {conversations.length === 0 ? "No conversations yet." : "Nothing in this filter."}
+            </p>
           ) : (
-            conversations.map((c) => (
+            visible.map((c) => (
               <button
                 key={c.id}
                 onClick={() => openConversation(c.id)}
@@ -157,7 +228,10 @@ export default function ChatClient({ adminName }: { adminName: string }) {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center justify-between gap-2">
-                    <span className="truncate font-medium text-[#202126]">{label(c)}</span>
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      {c.important && <span className="shrink-0 text-[13px] leading-none text-amber-500">★</span>}
+                      <span className="truncate font-medium text-[#202126]">{label(c)}</span>
+                    </span>
                     <span className="shrink-0 text-[11px] text-neutral-400">{timeAgo(c.lastMessageAt)}</span>
                   </span>
                   <span className="truncate text-xs text-neutral-500">{c.email || "No email provided"}</span>
@@ -181,13 +255,37 @@ export default function ChatClient({ adminName }: { adminName: string }) {
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#a10140] to-[#db2f73] text-sm font-semibold text-white">
                 {label(active).slice(0, 2).toUpperCase()}
               </span>
-              <div>
-                <p className="font-semibold text-[#202126]">{label(active)}</p>
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-[#202126]">{label(active)}</p>
                 {active.email && (
                   <a href={`mailto:${active.email}`} className="text-xs text-pink-600">
                     {active.email}
                   </a>
                 )}
+              </div>
+              <div className="ml-auto flex items-center gap-1">
+                <button
+                  onClick={() => toggleImportant(active.id, !active.important)}
+                  title={active.important ? "Remove from important" : "Mark as important"}
+                  className={`rounded-lg p-2 text-[18px] leading-none transition ${
+                    active.important ? "text-amber-500 hover:bg-amber-50" : "text-neutral-300 hover:bg-neutral-100 hover:text-amber-500"
+                  }`}
+                >
+                  ★
+                </button>
+                <button
+                  onClick={() => deleteConversation(active.id)}
+                  title="Delete conversation"
+                  aria-label="Delete conversation"
+                  className="rounded-lg p-2 text-neutral-400 transition hover:bg-red-50 hover:text-red-600"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-[17px] w-[17px]" aria-hidden>
+                    <path d="M3 6h18" />
+                    <path d="M8 6V4h8v2" />
+                    <path d="M19 6v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6" />
+                    <path d="M10 11v6M14 11v6" />
+                  </svg>
+                </button>
               </div>
             </div>
             <div ref={scrollRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-neutral-50 px-5 py-4">

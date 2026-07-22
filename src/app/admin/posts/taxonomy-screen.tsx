@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
 import { T } from "../theme";
 import { createTaxonomy, deleteTaxonomy } from "./actions";
@@ -14,6 +15,7 @@ export async function TaxonomyScreen({
 }) {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "posts")) redirect("/admin");
   const items = await db
     .select()
     .from(adminResources)

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
 import { SelectAllBox } from "../wp-ui";
 import { bulkPosts, createPost, deletePostForever, duplicatePost, setPostStatus } from "./actions";
@@ -28,6 +29,7 @@ export default async function PostsPage({
 }) {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "posts")) redirect("/admin");
   const query = await searchParams;
   const status = query.status || "all";
   const search = (query.s || "").trim();

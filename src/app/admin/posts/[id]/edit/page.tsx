@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../../../admin-shell";
 import { MediaPicker } from "../../../media-picker";
 import { SeoPanel } from "../../../seo-panel";
@@ -37,6 +38,7 @@ export default async function EditPostPage({
 }) {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "posts")) redirect("/admin");
   const { id } = await params;
   const [post] = await db
     .select()

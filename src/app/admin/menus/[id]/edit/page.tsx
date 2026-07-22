@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../../../admin-shell";
 import { T } from "../../../theme";
 import MenuEditor from "../../menu-editor";
@@ -15,6 +16,7 @@ export default async function EditMenu({
 }) {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "menus")) redirect("/admin");
   const { id } = await params;
   const [menu] = await db
     .select()

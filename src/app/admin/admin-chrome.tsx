@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { playChime } from "@/lib/chime";
+import { canViewArea } from "@/lib/roles";
 
 /* ------------------------------------------------------------------ */
 /* Icon set — small inline SVGs (lucide-style, 1.7px stroke)           */
@@ -98,13 +99,17 @@ const NAV: { group: string; items: { label: string; href: string; icon: keyof ty
   },
 ];
 
-function NavList({ badges, onNavigate }: { badges: Partial<Record<BadgeKey, number>>; onNavigate?: () => void }) {
+function NavList({ badges, role, onNavigate }: { badges: Partial<Record<BadgeKey, number>>; role: string; onNavigate?: () => void }) {
   const pathname = usePathname();
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(href + "/");
+  const groups = NAV.map((g) => ({
+    ...g,
+    items: g.items.filter((item) => canViewArea(role, item.href.split("/")[2] || "")),
+  })).filter((g) => g.items.length > 0);
   return (
     <nav className="min-h-0 flex-1 space-y-5 overflow-y-auto px-3 pb-6 pt-4 [scrollbar-width:thin]">
-      {NAV.map((g) => (
+      {groups.map((g) => (
         <div key={g.group}>
           <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/35">{g.group}</p>
           <div className="space-y-0.5">
@@ -234,7 +239,7 @@ export function AdminChrome({
       {/* desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[248px] flex-col bg-[#131318] lg:flex">
         <Brand />
-        <NavList badges={liveBadges} />
+        <NavList badges={liveBadges} role={user.role} />
       </aside>
 
       {/* mobile drawer */}
@@ -248,7 +253,7 @@ export function AdminChrome({
                 <Icon d={I.close} />
               </button>
             </div>
-            <NavList badges={liveBadges} onNavigate={() => setOpen(false)} />
+            <NavList badges={liveBadges} role={user.role} onNavigate={() => setOpen(false)} />
           </aside>
         </div>
       )}

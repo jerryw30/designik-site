@@ -86,7 +86,12 @@ export async function resetUserPassword(form: FormData) {
 export async function deleteUser(id: string) {
   const actor = await requirePermission("manage_users");
   if (id === actor.id) throw new Error("You cannot delete your own account");
-  await db.delete(users).where(and(eq(users.id, id), eq(users.active, false)));
-  await logActivity(actor, "users", "deleted", id, id);
+  const [target] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  if (!target) return;
+  if ((target.role === "SUPER_ADMIN" || target.role === "ADMIN") && actor.role !== "SUPER_ADMIN")
+    throw new Error("Only a super administrator can delete administrators");
+  await db.delete(sessions).where(eq(sessions.userId, id));
+  await db.delete(users).where(eq(users.id, id));
+  await logActivity(actor, "users", "deleted", target.name || target.email, id);
   revalidatePath("/admin/users");
 }

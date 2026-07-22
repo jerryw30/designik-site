@@ -9,6 +9,7 @@ import {
 import { db } from "@/db";
 import { adminResources, mediaAssets } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { DesignEditor } from "@/app/admin/design-editor";
 import { logout } from "@/app/admin/actions";
 
@@ -30,6 +31,7 @@ export default async function EditDesign({
   if (!user) redirect("/admin/login");
   const { module: moduleInput, id } = await params;
   if (!modules.has(moduleInput)) notFound();
+  if (!canViewArea(user.role, moduleInput)) redirect("/admin");
   const designModule = moduleInput as DesignModule;
   const [record] = await db
     .select()

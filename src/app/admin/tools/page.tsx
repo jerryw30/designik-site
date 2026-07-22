@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
 import { T } from "../theme";
 
@@ -11,6 +12,7 @@ export default async function Tools({
 }) {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "tools")) redirect("/admin");
   const query = await searchParams;
   const error = typeof query.error === "string" ? query.error : "";
   return (

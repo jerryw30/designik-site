@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { leads } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
 import { T, wpDate } from "../theme";
 import { deleteLead, markLeadNew, markLeadRead } from "./actions";
@@ -25,6 +26,7 @@ function initials(name: string | null, email: string) {
 export default async function LeadsPage() {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "leads")) redirect("/admin");
 
   const rows = await db.select().from(leads).orderBy(desc(leads.createdAt));
   const newCount = rows.filter((r) => r.status === "NEW").length;

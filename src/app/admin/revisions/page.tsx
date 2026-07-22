@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { pages, revisions } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
 import { T, wpDate } from "../theme";
 import { deleteRevision, restoreRevision } from "./actions";
@@ -14,6 +15,7 @@ export default async function RevisionsPage({
 }) {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "revisions")) redirect("/admin");
   const params = await searchParams;
   const list = await db
     .select({

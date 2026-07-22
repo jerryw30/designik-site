@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/db";
 import { pages } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "@/app/admin/admin-shell";
 import { updatePage } from "@/app/admin/actions";
 import { SeoPanel } from "../../../seo-panel";
@@ -29,6 +30,7 @@ const cardTitle = "text-[13px] font-semibold text-[#1b1c20]";
 export default async function EditPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "pages")) redirect("/admin");
   const { id } = await params;
   const [page] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
   if (!page) notFound();

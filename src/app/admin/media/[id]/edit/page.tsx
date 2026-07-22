@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../../../admin-shell";
 import { T, wpDate } from "../../../theme";
 import { trashMedia, updateMedia } from "../../actions";
@@ -22,6 +23,7 @@ export default async function EditMedia({
 }) {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "media")) redirect("/admin");
   const { id } = await params;
   const [asset] = await db
     .select({

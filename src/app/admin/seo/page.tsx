@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { adminResources, pages, siteSettings } from "@/db/schema";
 import { seoSettings } from "@/cms/seo";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
 import { T } from "../theme";
 import {
@@ -52,6 +53,7 @@ const Check = ({
 export default async function SeoPage() {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "seo")) redirect("/admin");
   const [[row], pageList, posts] = await Promise.all([
     db
       .select()

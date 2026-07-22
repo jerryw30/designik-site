@@ -4,12 +4,14 @@ import { db } from "@/db";
 import { siteSettings } from "@/db/schema";
 import { globalStyles } from "@/cms/global-styles";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
 import { T } from "../theme";
 import StyleEditor from "./style-editor";
 export default async function StylesPage() {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "styles")) redirect("/admin");
   const [row] = await db
       .select()
       .from(siteSettings)

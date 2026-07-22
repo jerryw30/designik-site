@@ -3,13 +3,16 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import type { MenuItem } from "../../actions";
 export default async function PreviewMenu({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  if (!(await currentUser())) redirect("/admin/login");
+  const user = await currentUser();
+  if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "menus")) redirect("/admin");
   const { id } = await params;
   const [menu] = await db
     .select()

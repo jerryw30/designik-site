@@ -159,6 +159,7 @@ export const chatConversations = pgTable("chat_conversations", {
   name: text("name"),
   email: text("email"),
   status: text("status").default("OPEN").notNull(),
+  important: boolean("important").default(false).notNull(),
   unreadAdmin: integer("unread_admin").default(0).notNull(),
   lastMessageAt: timestamp("last_message_at", { withTimezone: true })
     .defaultNow()

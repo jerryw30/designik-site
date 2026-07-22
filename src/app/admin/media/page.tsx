@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
 import { T } from "../theme";
 import { deleteMediaPermanently, restoreMedia } from "./actions";
@@ -22,6 +23,7 @@ export default async function MediaLibrary({
 }) {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "media")) redirect("/admin");
   const query = await searchParams;
   const search = typeof query.search === "string" ? query.search.trim() : "";
   const type = typeof query.type === "string" ? query.type : "all";

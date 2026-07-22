@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { can } from "@/lib/permissions";
 import { AdminShell } from "../admin-shell";
 import { T, wpDate } from "../theme";
@@ -40,6 +41,7 @@ function initials(name: string, email: string) {
 export default async function UsersPage() {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "users")) redirect("/admin");
   const list = await db.select().from(users).orderBy(desc(users.createdAt)),
     allowed = can(user.role, "manage_users");
   return (
@@ -189,15 +191,18 @@ export default async function UsersPage() {
                                   </button>
                                 </form>
                               </details>
-                              {item.id !== user.id && !item.active && (
+                              {item.id !== user.id && (
                                 <>
                                   <span className={T.dot}>·</span>
                                   <form action={deleteUser.bind(null, item.id)}>
                                     <button
-                                      disabled={!allowed}
+                                      disabled={
+                                        !allowed ||
+                                        ((item.role === "SUPER_ADMIN" || item.role === "ADMIN") && user.role !== "SUPER_ADMIN")
+                                      }
                                       className={`${T.dangerLink} disabled:opacity-40`}
                                     >
-                                      Delete inactive user
+                                      Delete user
                                     </button>
                                   </form>
                                 </>

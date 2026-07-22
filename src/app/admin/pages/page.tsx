@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { pages, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
 import { SelectAllBox } from "../wp-ui";
 import { bulkPages, createPage, deletePageForever, duplicatePage, restorePage, setPageStatus, trashPage } from "../actions";
@@ -25,6 +26,7 @@ export default async function Pages({
 }) {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "pages")) redirect("/admin");
   const query = await searchParams;
   const status = query.trash === "1" ? "trash" : query.status || "all";
   const search = (query.s || "").trim();

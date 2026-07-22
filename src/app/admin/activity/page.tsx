@@ -49,7 +49,7 @@ export default async function ActivityPage({
     .orderBy(desc(activityLog.createdAt))
     .limit(300);
 
-  const modules = ["pages", "posts", "media", "menus", "forms", "leads", "users", "settings", "seo", "styles", "design", "tools"];
+  const modules = ["pages", "posts", "media", "menus", "forms", "leads", "chat", "users", "settings", "seo", "styles", "design", "tools"];
 
   return (
     <AdminShell user={user} title="Activity">

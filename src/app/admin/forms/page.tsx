@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources, formSubmissions } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
 import { T, statusPill, wpDate } from "../theme";
 import {
@@ -20,6 +21,7 @@ function pretty(status: string) {
 export default async function FormsPage() {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "forms")) redirect("/admin");
   const [forms, submissions] = await Promise.all([
     db
       .select()

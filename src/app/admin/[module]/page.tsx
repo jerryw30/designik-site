@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources, revisions, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
 import {
   createResource,
@@ -90,6 +91,7 @@ export default async function ModulePage({
   const { module } = await params;
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, module)) redirect("/admin");
   if (
     ["headers", "footers", "popups", "templates", "saved-sections"].includes(
       module,

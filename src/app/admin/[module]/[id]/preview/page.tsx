@@ -8,6 +8,7 @@ import {
 import { db } from "@/db";
 import { adminResources } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import Nav from "@/components/sections/Nav";
 import Footer from "@/components/sections/Footer";
 import WidgetSection from "@/components/sections/WidgetSection";
@@ -25,9 +26,11 @@ export default async function DesignPreview({
 }: {
   params: Promise<{ module: string; id: string }>;
 }) {
-  if (!(await currentUser())) redirect("/admin/login");
+  const user = await currentUser();
+  if (!user) redirect("/admin/login");
   const { module: input, id } = await params;
   if (!modules.has(input)) notFound();
+  if (!canViewArea(user.role, input)) redirect("/admin");
   const designModule = input as DesignModule;
   const [record] = await db
     .select()

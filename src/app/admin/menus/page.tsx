@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
 import { statusPill, T, wpDate } from "../theme";
 import {
@@ -15,6 +16,7 @@ import {
 export default async function MenusPage() {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "menus")) redirect("/admin");
   const menus = await db
     .select()
     .from(adminResources)

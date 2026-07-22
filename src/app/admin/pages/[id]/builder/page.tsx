@@ -5,6 +5,7 @@ import { heroContent } from "@/cms/defaults";
 import { db } from "@/db";
 import { adminResources, mediaAssets, pages, sections } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { logout } from "@/app/admin/actions";
 import EditorClient from "@/app/admin/editor-client";
 
@@ -16,6 +17,7 @@ export default async function Builder({
 }) {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "pages")) redirect("/admin");
   const { id } = await params;
   const [page] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
   if (!page || page.deletedAt) notFound();

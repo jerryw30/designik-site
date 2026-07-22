@@ -5,6 +5,7 @@ import SiteHome from "@/components/SiteHome";
 import { db } from "@/db";
 import { adminResources, pages, sections } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 export default async function PagePreview({
@@ -12,7 +13,9 @@ export default async function PagePreview({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  if (!(await currentUser())) redirect("/admin/login");
+  const user = await currentUser();
+  if (!user) redirect("/admin/login");
+  if (!canViewArea(user.role, "pages")) redirect("/admin");
   const { id } = await params;
   const [page] = await db
     .select({ id: pages.id })
