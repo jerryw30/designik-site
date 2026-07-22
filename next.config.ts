@@ -5,10 +5,12 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: { bodySizeLimit: "10mb" },
   },
-  // Brand assets are pre-exported from Figma at final dimensions, so we serve
-  // them directly rather than re-encoding through the on-demand optimizer.
+  // Serve device-sized WebP through the optimizer — the raw Figma exports
+  // total 130MB+ of PNG, far too heavy to ship directly.
   images: {
-    unoptimized: true,
+    formats: ["image/webp"],
+    deviceSizes: [390, 640, 768, 1080, 1440, 1920],
+    minimumCacheTTL: 2678400,
   },
 };
 

@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { assets } from "@/lib/assets";
 import PendulumSwing from "@/components/ui/PendulumSwing";
 import { sectionContent } from "@/cms/section-defaults";
@@ -12,6 +13,8 @@ function Lines({ text }: { text: string }) {
 
 export default function Services({ content }: { content?: unknown } = {}) {
   const data = sectionContent("services", content);
+  const seoRef = useRef<HTMLElement>(null);
+  const seoInView = useInView(seoRef, { margin: "15% 0px 15% 0px" });
 
   return (
     <section id="services" className="relative bg-white">
@@ -62,8 +65,9 @@ export default function Services({ content }: { content?: unknown } = {}) {
         <Image src="/figma/group1261153735.svg" alt="View all services" width={81} height={81} className="absolute left-[1219px] top-[359px] h-[80.618px] w-[80.618px] [animation:spin360_14s_linear_infinite]" />
 
         <motion.article
-          animate={{ y: [0, 162, 0] }}
-          transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+          ref={seoRef}
+          animate={seoInView ? { y: [0, 162, 0] } : { y: 0 }}
+          transition={seoInView ? { duration: 5.5, repeat: Infinity, ease: "easeInOut" } : { duration: 0.3 }}
           className="group absolute left-[1px] top-[407px] h-[178px] w-[171px] overflow-hidden rounded-[20px] bg-[#ffefef] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <h3 className="absolute inset-x-0 top-[29px] z-10 text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-black">{data.cards.seo.title}</h3>
           <Image src={data.cards.seo.image || assets.seo} alt="SEO" width={155} height={98} className="absolute left-[16px] top-[73px] h-[98px] w-[155px] max-w-none transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.018]" />

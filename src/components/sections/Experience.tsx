@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { assets } from "@/lib/assets";
 import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/utils";
@@ -40,8 +41,11 @@ const q = (px: number) => `${(px / 14.4).toFixed(4)}cqw`;
 function Pill({ spec, label, delay }: { spec: (typeof PILLS)[number]; label: string; delay: number }) {
   const words = label.split(" ");
   const lines = spec.split && words.length > 1 ? [words[0], words.slice(1).join(" ")] : [label];
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { margin: "15% 0px 15% 0px" });
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, scale: 0.85 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
@@ -50,8 +54,8 @@ function Pill({ spec, label, delay }: { spec: (typeof PILLS)[number]; label: str
       style={{ left: q(spec.x), top: q(spec.y), width: q(spec.w), height: q(71) }}
     >
       <motion.div
-        animate={{ y: [0, -9, 0] }}
-        transition={{ duration: 3.6 + delay, repeat: Infinity, ease: "easeInOut" }}
+        animate={inView ? { y: [0, -9, 0] } : { y: 0 }}
+        transition={inView ? { duration: 3.6 + delay, repeat: Infinity, ease: "easeInOut" } : { duration: 0.3 }}
         className="relative h-full w-full rounded-full bg-blush-100 shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
       >
         <Image
@@ -80,6 +84,8 @@ function Pill({ spec, label, delay }: { spec: (typeof PILLS)[number]; label: str
 export default function Experience({ content }: { content?: unknown } = {}) {
   const data = sectionContent("experience", content);
   const headingLines = data.heading.split("\n");
+  const mobileCardRef = useRef<HTMLDivElement>(null);
+  const mobileCardInView = useInView(mobileCardRef, { margin: "15% 0px 15% 0px" });
 
   return (
     <section className="bg-white">
@@ -198,7 +204,7 @@ export default function Experience({ content }: { content?: unknown } = {}) {
 
         {/* ===================== mobile — same card composition as desktop, portrait ===================== */}
         <div className="px-4 pb-12 pt-8 md:hidden">
-          <div className="relative h-[540px] overflow-hidden rounded-3xl">
+          <div ref={mobileCardRef} className="relative h-[540px] overflow-hidden rounded-3xl">
             {/* red hills background */}
             <Image src={data.backgroundImage || assets.expCard} alt="" fill className="object-cover" sizes="100vw" />
 
@@ -267,8 +273,8 @@ export default function Experience({ content }: { content?: unknown } = {}) {
               return (
                 <motion.div
                   key={i}
-                  animate={{ y: [0, -7, 0] }}
-                  transition={{ duration: 3.6 + i * 0.3, repeat: Infinity, ease: "easeInOut" }}
+                  animate={mobileCardInView ? { y: [0, -7, 0] } : { y: 0 }}
+                  transition={mobileCardInView ? { duration: 3.6 + i * 0.3, repeat: Infinity, ease: "easeInOut" } : { duration: 0.3 }}
                   className={cn("absolute z-20 flex items-center gap-1.5 rounded-full bg-blush-100 py-1.5 pl-2.5 pr-3 shadow-[0_4px_4px_rgba(0,0,0,0.25)]", mobilePos)}
                 >
                   <Image src={spec.icon} alt="" width={22} height={22} className="h-4 w-4 object-contain" />

@@ -1,10 +1,12 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 
 /**
  * Continuous crane-pendulum swing for the hanging tags. Pivots at the top
  * (where the claw grips), sinusoidal ease like a real pendulum, slow.
+ * Pauses while scrolled out of view so it costs nothing off-screen.
  */
 export default function PendulumSwing({
   className,
@@ -17,11 +19,14 @@ export default function PendulumSwing({
   angle?: number;
   duration?: number;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { margin: "15% 0px 15% 0px" });
   return (
     <motion.div
+      ref={ref}
       className={className}
-      animate={{ rotate: [angle, -angle, angle] }}
-      transition={{ duration, repeat: Infinity, ease: "easeInOut" }}
+      animate={inView ? { rotate: [angle, -angle, angle] } : { rotate: angle }}
+      transition={inView ? { duration, repeat: Infinity, ease: "easeInOut" } : { duration: 0.3 }}
       style={{ transformOrigin: "50% 0%" }}
     >
       {children}
