@@ -53,7 +53,9 @@ export default function AgencyMarquee({
   return (
     <div
       className={cn(
-        "flex w-full items-center overflow-hidden py-3 md:h-[91px] md:py-0",
+        // Figma tilts the band -0.38deg; oversize it slightly so the rotated
+        // ends never reveal gaps at the viewport edges.
+        "flex w-[104%] -ml-[2%] -rotate-[0.38deg] items-center overflow-hidden py-3 md:h-[91px] md:py-0",
         className
       )}
       style={{ backgroundColor: figmaGray ? "#d9d9d9" : data.backgroundColor, color: data.textColor }}
