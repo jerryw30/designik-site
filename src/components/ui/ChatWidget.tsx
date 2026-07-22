@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { assets } from "@/lib/assets";
+import { playChime } from "@/lib/chime";
 
 type Msg = { id: string; sender: "visitor" | "admin"; body: string; createdAt: string };
 
@@ -24,6 +25,7 @@ export default function ChatWidget() {
   const convId = useRef<string | null>(null);
   const lastTs = useRef<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const knownIds = useRef<Set<string>>(new Set([GREETING.id]));
 
   // restore conversation id
   useEffect(() => {
@@ -39,13 +41,16 @@ export default function ChatWidget() {
       const incoming: Msg[] = data.messages || [];
       if (incoming.length) {
         lastTs.current = incoming[incoming.length - 1].createdAt;
-        setMessages((prev) => {
-          const known = new Set(prev.map((m) => m.id));
-          const fresh = incoming.filter((m) => !known.has(m.id));
-          if (!fresh.length) return prev;
-          if (!open) setUnread((u) => u + fresh.filter((m) => m.sender === "admin").length);
-          return [...prev, ...fresh];
-        });
+        const fresh = incoming.filter((m) => !knownIds.current.has(m.id));
+        if (fresh.length) {
+          fresh.forEach((m) => knownIds.current.add(m.id));
+          const adminMsgs = fresh.filter((m) => m.sender === "admin").length;
+          if (adminMsgs > 0) {
+            playChime();
+            if (!open) setUnread((u) => u + adminMsgs);
+          }
+          setMessages((prev) => [...prev, ...fresh]);
+        }
       }
     } catch {
       /* ignore poll errors */
@@ -91,6 +96,7 @@ export default function ChatWidget() {
         }
         if (data.message) {
           lastTs.current = data.message.createdAt;
+          knownIds.current.add(data.message.id);
           setMessages((prev) => prev.map((m) => (m.id === optimistic.id ? data.message : m)));
         }
       } catch {
@@ -158,7 +164,7 @@ export default function ChatWidget() {
             </div>
 
             {/* messages */}
-            <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-neutral-50 px-4 py-4">
+            <div ref={scrollRef} data-lenis-prevent className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-neutral-50 px-4 py-4">
               {messages.map((m) => (
                 <div key={m.id} className={m.sender === "visitor" ? "flex justify-end" : "flex justify-start"}>
                   <div

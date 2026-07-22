@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { playChime } from "@/lib/chime";
 
 /* ------------------------------------------------------------------ */
 /* Icon set — small inline SVGs (lucide-style, 1.7px stroke)           */
@@ -183,6 +184,44 @@ export function AdminChrome({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [liveBadges, setLiveBadges] = useState(badges);
+  const prevUnread = useRef<number | null>(null);
+  const baseTitle = useRef("");
+  const pathname = usePathname();
+  const onChatScreen = pathname.startsWith("/admin/chat");
+
+  useEffect(() => setLiveBadges(badges), [badges]);
+
+  // Live chat notifications everywhere in the admin: poll unread counts,
+  // update the sidebar badge, chime on new messages, count in the tab title.
+  useEffect(() => {
+    baseTitle.current = document.title.replace(/^\(\d+\)\s*/, "");
+    let stopped = false;
+    const tick = async () => {
+      try {
+        const res = await fetch("/api/admin/chat");
+        if (!res.ok) return;
+        const data = await res.json();
+        const convs: { unreadAdmin?: number }[] = data.conversations || [];
+        const unreadConvs = convs.filter((c) => (c.unreadAdmin || 0) > 0).length;
+        const totalUnread = convs.reduce((sum, c) => sum + (c.unreadAdmin || 0), 0);
+        if (stopped) return;
+        setLiveBadges((b) => ({ ...b, chat: unreadConvs }));
+        if (prevUnread.current !== null && totalUnread > prevUnread.current && !onChatScreen) playChime();
+        prevUnread.current = totalUnread;
+        document.title = totalUnread > 0 ? `(${totalUnread}) ${baseTitle.current}` : baseTitle.current;
+      } catch {
+        /* offline — ignore */
+      }
+    };
+    tick();
+    const id = setInterval(tick, 12000);
+    return () => {
+      stopped = true;
+      clearInterval(id);
+    };
+  }, [onChatScreen]);
+
   const initials = user.name
     .split(/\s+/)
     .map((w) => w[0])
@@ -195,7 +234,7 @@ export function AdminChrome({
       {/* desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[248px] flex-col bg-[#131318] lg:flex">
         <Brand />
-        <NavList badges={badges} />
+        <NavList badges={liveBadges} />
       </aside>
 
       {/* mobile drawer */}
@@ -209,7 +248,7 @@ export function AdminChrome({
                 <Icon d={I.close} />
               </button>
             </div>
-            <NavList badges={badges} onNavigate={() => setOpen(false)} />
+            <NavList badges={liveBadges} onNavigate={() => setOpen(false)} />
           </aside>
         </div>
       )}

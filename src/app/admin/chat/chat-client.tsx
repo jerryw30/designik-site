@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { playChime } from "@/lib/chime";
 
 type Conversation = {
   id: string;
@@ -37,11 +38,16 @@ export default function ChatClient({ adminName }: { adminName: string }) {
   const activeRef = useRef<string | null>(null);
   activeRef.current = activeId;
 
+  const prevUnread = useRef<number | null>(null);
   const loadConversations = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/chat");
       const data = await res.json();
-      setConversations(data.conversations || []);
+      const convs: Conversation[] = data.conversations || [];
+      const totalUnread = convs.reduce((sum, c) => sum + (c.id === activeRef.current ? 0 : c.unreadAdmin || 0), 0);
+      if (prevUnread.current !== null && totalUnread > prevUnread.current) playChime();
+      prevUnread.current = totalUnread;
+      setConversations(convs);
     } catch {
       /* ignore */
     }
@@ -119,7 +125,7 @@ export default function ChatClient({ adminName }: { adminName: string }) {
             {conversations.length}
           </span>
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {conversations.length === 0 ? (
             <p className="px-5 py-10 text-center text-sm text-neutral-400">No conversations yet.</p>
           ) : (
@@ -169,7 +175,7 @@ export default function ChatClient({ adminName }: { adminName: string }) {
                 )}
               </div>
             </div>
-            <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-neutral-50 px-5 py-4">
+            <div ref={scrollRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-neutral-50 px-5 py-4">
               {messages.map((m) => (
                 <div key={m.id} className={m.sender === "admin" ? "flex justify-end" : "flex justify-start"}>
                   <div
