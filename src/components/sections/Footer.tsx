@@ -61,13 +61,19 @@ export default function Footer({ content }: { content?: unknown } = {}) {
       >
         {/* ======================= desktop (exact) ======================= */}
         <div className="relative hidden h-[70.625cqw] md:block">
-          {/* giant faded wordmark */}
-          <span
-            aria-hidden
-            className="pointer-events-none absolute left-[0.6944cqw] top-[21.5278cqw] z-0 select-none whitespace-nowrap font-display text-[26.1277cqw] font-semibold uppercase leading-[30.7478cqw] text-[#8e0038] opacity-[0.51]"
-          >
-            Designik
-          </span>
+          {/* giant faded wordmark — marquee */}
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-[21.5278cqw] z-0 overflow-hidden">
+            <div className="flex w-max animate-marquee" style={{ ["--marquee-duration" as string]: "60s" }}>
+              {[0, 1].map((u) => (
+                <span
+                  key={u}
+                  className="select-none whitespace-nowrap pr-[6cqw] font-display text-[26.1277cqw] font-semibold uppercase leading-[30.7478cqw] text-[#8e0038] opacity-[0.51]"
+                >
+                  Designik Agency
+                </span>
+              ))}
+            </div>
+          </div>
 
           {/* red field scene at the bottom */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1]">
@@ -215,12 +221,18 @@ export default function Footer({ content }: { content?: unknown } = {}) {
 
         {/* ======================= mobile (stacked) ======================= */}
         <div className="relative overflow-hidden px-5 pb-56 pt-12 md:hidden">
-          <span
-            aria-hidden
-            className="pointer-events-none absolute left-0 top-[45%] z-0 select-none whitespace-nowrap font-display text-[38vw] font-semibold uppercase leading-none text-[#8e0038] opacity-[0.51]"
-          >
-            Designik
-          </span>
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-[45%] z-0 overflow-hidden">
+            <div className="flex w-max animate-marquee" style={{ ["--marquee-duration" as string]: "45s" }}>
+              {[0, 1].map((u) => (
+                <span
+                  key={u}
+                  className="select-none whitespace-nowrap pr-[9vw] font-display text-[38vw] font-semibold uppercase leading-none text-[#8e0038] opacity-[0.51]"
+                >
+                  Designik Agency
+                </span>
+              ))}
+            </div>
+          </div>
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1]">
             <Image src={data.backgroundImage || assets.footerField} alt="" width={1440} height={421} sizes="100vw" className="h-auto w-full" />
           </div>
