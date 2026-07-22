@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { pages, revisions, sections } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../../admin-shell";
+import { T, wpDate } from "../../theme";
 import { restoreRevision } from "../actions";
 const pretty = (value: unknown) => JSON.stringify(value, null, 2);
 export default async function RevisionDetail({
@@ -45,34 +46,44 @@ export default async function RevisionDetail({
   }
   return (
     <AdminShell user={user} title="Revision details">
-      <div className="mb-5 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold">
-            {revision.label || "Revision"}
-          </h2>
-          <p className="text-sm text-neutral-500">
-            {page?.title || "Deleted page"} ·{" "}
-            {revision.createdAt.toLocaleString()}
+          <h2 className={T.screenTitle}>{revision.label || "Revision"}</h2>
+          <p className="mt-1 text-[13px] text-neutral-500">
+            {page?.title || "Deleted page"} <span className={T.dot}>·</span>{" "}
+            {wpDate(revision.createdAt)}
           </p>
         </div>
         {page && (
           <form action={restoreRevision.bind(null, revision.id)}>
-            <button className="admin-button">Restore this revision</button>
+            <button className={T.btnPrimary}>Restore this revision</button>
           </form>
         )}
       </div>
       <div className="grid gap-6 xl:grid-cols-2">
-        <section className="min-w-0 rounded-2xl border bg-white p-5">
-          <h3 className="mb-3 font-semibold">Saved revision</h3>
-          <pre className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-xl bg-neutral-950 p-4 text-xs text-emerald-300">
-            {pretty(snapshot.content ?? snapshot)}
-          </pre>
+        <section className={`min-w-0 ${T.card}`}>
+          <div className={T.cardHeader}>
+            <h3 className="text-[15px] font-semibold text-[#1b1c20]">
+              Saved revision
+            </h3>
+          </div>
+          <div className="p-5">
+            <pre className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-lg bg-[#16171c] p-4 font-mono text-xs leading-relaxed text-emerald-300">
+              {pretty(snapshot.content ?? snapshot)}
+            </pre>
+          </div>
         </section>
-        <section className="min-w-0 rounded-2xl border bg-white p-5">
-          <h3 className="mb-3 font-semibold">Current published state</h3>
-          <pre className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-xl bg-neutral-950 p-4 text-xs text-sky-300">
-            {pretty(current)}
-          </pre>
+        <section className={`min-w-0 ${T.card}`}>
+          <div className={T.cardHeader}>
+            <h3 className="text-[15px] font-semibold text-[#1b1c20]">
+              Current published state
+            </h3>
+          </div>
+          <div className="p-5">
+            <pre className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-lg bg-[#16171c] p-4 font-mono text-xs leading-relaxed text-sky-300">
+              {pretty(current)}
+            </pre>
+          </div>
         </section>
       </div>
     </AdminShell>

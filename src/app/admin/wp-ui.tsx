@@ -13,7 +13,7 @@ export function SelectAllBox() {
       ref={ref}
       type="checkbox"
       aria-label="Select all"
-      className="h-4 w-4 accent-[#2271b1]"
+      className="h-4 w-4 accent-[#a10140]"
       onChange={() => {
         const form = ref.current?.closest("form");
         if (!form) return;

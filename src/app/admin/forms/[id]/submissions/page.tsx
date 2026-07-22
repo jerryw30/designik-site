@@ -4,7 +4,9 @@ import { db } from "@/db";
 import { adminResources, formSubmissions } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../../../admin-shell";
+import { T, wpDate } from "../../../theme";
 import { deleteSubmission, setSubmissionStatus } from "../../actions";
+
 export default async function SubmissionsPage({
   params,
 }: {
@@ -26,70 +28,94 @@ export default async function SubmissionsPage({
     .orderBy(desc(formSubmissions.createdAt));
   return (
     <AdminShell user={user} title={`Submissions · ${form.title}`}>
-      <div className="mb-5 flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-semibold">
+          <h2 className={T.screenTitle}>
             {submissions.length} submissions
           </h2>
-          <p className="text-sm text-neutral-500">
+          <p className="mt-1 text-[13px] text-neutral-500">
             Review and export saved form entries.
           </p>
         </div>
         <a
           href={`/admin/forms/${id}/submissions/export`}
-          className="admin-button"
+          className={T.btn}
         >
           Export CSV
         </a>
       </div>
-      <div className="space-y-3">
-        {submissions.map((submission) => (
-          <article
-            key={submission.id}
-            className={`rounded-2xl border bg-white p-5 ${submission.status === "UNREAD" ? "border-l-4 border-l-pink-500" : ""}`}
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <span className="text-xs font-semibold text-neutral-500">
-                {submission.status} · {submission.createdAt.toLocaleString()}
-              </span>
-              <div className="flex gap-3">
-                <form
-                  action={setSubmissionStatus.bind(
-                    null,
-                    submission.id,
-                    submission.status === "READ" ? "UNREAD" : "READ",
-                  )}
-                >
-                  <button className="text-sm text-pink-600">
-                    Mark {submission.status === "READ" ? "unread" : "read"}
-                  </button>
-                </form>
-                <form action={deleteSubmission.bind(null, submission.id)}>
-                  <button className="text-sm text-red-600">Delete</button>
-                </form>
-              </div>
-            </div>
-            <dl className="grid gap-3 md:grid-cols-2">
-              {Object.entries(submission.data as Record<string, unknown>).map(
-                ([key, value]) => (
-                  <div key={key}>
-                    <dt className="text-xs font-semibold uppercase text-neutral-400">
-                      {key}
-                    </dt>
-                    <dd className="whitespace-pre-wrap text-sm">
-                      {String(value)}
-                    </dd>
+      <div className={T.tableWrap}>
+        <table className={T.table}>
+          <thead>
+            <tr className={T.theadRow}>
+              <th className={T.th}>Submission</th>
+              <th className={T.th}>Status</th>
+              <th className={T.th}>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {submissions.map((submission) => (
+              <tr key={submission.id} className={T.row}>
+                <td className={T.td}>
+                  <dl className="grid gap-x-6 gap-y-2 md:grid-cols-2">
+                    {Object.entries(
+                      submission.data as Record<string, unknown>,
+                    ).map(([key, value]) => (
+                      <div key={key}>
+                        <dt className="text-[11px] font-semibold uppercase tracking-[0.06em] text-neutral-400">
+                          {key}
+                        </dt>
+                        <dd className="whitespace-pre-wrap text-[13px] text-[#1b1c20]">
+                          {String(value)}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <div className={T.rowActions}>
+                    <form
+                      action={setSubmissionStatus.bind(
+                        null,
+                        submission.id,
+                        submission.status === "READ" ? "UNREAD" : "READ",
+                      )}
+                    >
+                      <button className={T.link}>
+                        Mark {submission.status === "READ" ? "unread" : "read"}
+                      </button>
+                    </form>
+                    <span className={T.dot}>·</span>
+                    <form action={deleteSubmission.bind(null, submission.id)}>
+                      <button className={T.dangerLink}>Delete</button>
+                    </form>
                   </div>
-                ),
-              )}
-            </dl>
-          </article>
-        ))}
-        {!submissions.length && (
-          <p className="rounded-2xl border border-dashed bg-white p-12 text-center text-neutral-500">
-            No submissions yet.
-          </p>
-        )}
+                </td>
+                <td className={T.td}>
+                  <span
+                    className={
+                      submission.status === "UNREAD" ? T.pillNew : T.pillNeutral
+                    }
+                  >
+                    {submission.status.charAt(0) +
+                      submission.status.slice(1).toLowerCase()}
+                  </span>
+                </td>
+                <td className={`${T.td} whitespace-nowrap text-neutral-500`}>
+                  {wpDate(submission.createdAt)}
+                </td>
+              </tr>
+            ))}
+            {!submissions.length && (
+              <tr>
+                <td
+                  colSpan={3}
+                  className="px-4 py-14 text-center text-[13px] text-neutral-500"
+                >
+                  No submissions yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </AdminShell>
   );

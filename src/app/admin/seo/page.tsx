@@ -5,6 +5,7 @@ import { adminResources, pages, siteSettings } from "@/db/schema";
 import { seoSettings } from "@/cms/seo";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../admin-shell";
+import { T } from "../theme";
 import {
   publishSeo,
   resetSeoDraft,
@@ -16,18 +17,36 @@ const Field = ({
   label,
   name,
   value,
+  help,
 }: {
   label: string;
   name: string;
   value: string;
+  help?: string;
 }) => (
-  <label className="block text-sm">
-    {label}
+  <label className="block">
+    <span className={T.label}>{label}</span>
+    <input name={name} defaultValue={value} className={T.input} />
+    {help && <p className={T.help}>{help}</p>}
+  </label>
+);
+const Check = ({
+  label,
+  name,
+  checked,
+}: {
+  label: string;
+  name: string;
+  checked: boolean;
+}) => (
+  <label className="flex items-center gap-2 text-[13px] font-medium text-neutral-700">
     <input
+      type="checkbox"
       name={name}
-      defaultValue={value}
-      className="mt-1 block w-full rounded-lg border p-2"
+      defaultChecked={checked}
+      className={T.checkbox}
     />
+    {label}
   </label>
 );
 export default async function SeoPage() {
@@ -50,30 +69,47 @@ export default async function SeoPage() {
     value = seoSettings(stored?.draft);
   return (
     <AdminShell user={user} title="SEO Center">
+      <div className="mb-6">
+        <h2 className={T.screenTitle}>SEO Center</h2>
+        <p className="mt-1 text-[13px] text-neutral-500">
+          Global defaults plus per-page and per-post overrides for search
+          metadata.
+        </p>
+      </div>
       <div className="space-y-8">
-        <form className="rounded-2xl border bg-white p-6">
-          <h2 className="text-xl font-semibold">Global SEO</h2>
-          <p className="mb-5 text-sm text-neutral-500">
-            Draft changes do not affect search metadata until published.
-          </p>
-          <div className="grid gap-4 md:grid-cols-2">
+        <form className={T.card}>
+          <div className={T.cardHeader}>
+            <div>
+              <h2 className="text-[15px] font-semibold text-[#1b1c20]">
+                Global SEO
+              </h2>
+              <p className="mt-0.5 text-[12px] text-neutral-400">
+                Draft changes do not affect search metadata until published.
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-5 p-5 md:grid-cols-2">
             <Field
               label="Site title"
               name="siteTitle"
               value={value.siteTitle}
             />
             <Field
-              label="Title template (%s = page title)"
+              label="Title template"
               name="titleTemplate"
               value={value.titleTemplate}
+              help="%s is replaced with the page title."
             />
-            <label className="block text-sm md:col-span-2">
-              Default description
+            <label className="block md:col-span-2">
+              <span className={T.label}>Default description</span>
               <textarea
                 name="description"
                 defaultValue={value.description}
-                className="mt-1 block w-full rounded-lg border p-2"
+                className={`${T.input} min-h-20`}
               />
+              <p className={T.help}>
+                Used when a page has no description of its own.
+              </p>
             </label>
             <Field
               label="Canonical base URL"
@@ -95,53 +131,42 @@ export default async function SeoPage() {
               name="googleVerification"
               value={value.googleVerification}
             />
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="index"
-                defaultChecked={value.index}
-              />
-              Allow indexing
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="follow"
-                defaultChecked={value.follow}
-              />
-              Follow links
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 md:col-span-2">
+              <Check label="Allow indexing" name="index" checked={value.index} />
+              <Check label="Follow links" name="follow" checked={value.follow} />
+              <Check
+                label="Enable XML sitemap"
                 name="sitemapEnabled"
-                defaultChecked={value.sitemapEnabled}
+                checked={value.sitemapEnabled}
               />
-              Enable XML sitemap
-            </label>
+            </div>
           </div>
-          <div className="mt-5 flex gap-2">
-            <button
-              formAction={saveSeoDraft}
-              className="rounded-lg border px-4 py-2"
-            >
+          <div className="flex items-center gap-2 border-t border-black/[0.05] px-5 py-4">
+            <button formAction={saveSeoDraft} className={T.btn}>
               Save draft
             </button>
-            <button formAction={publishSeo} className="admin-button">
+            <button formAction={publishSeo} className={T.btnPrimary}>
               Publish SEO
             </button>
             <button
               formAction={resetSeoDraft}
               formNoValidate
-              className="ml-auto text-sm text-red-600"
+              className={`ml-auto text-[13px] ${T.dangerLink}`}
             >
               Reset draft
             </button>
           </div>
         </form>
         <section>
-          <h2 className="text-xl font-semibold">Page overrides</h2>
-          <div className="mt-4 space-y-3">
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-[17px] font-semibold text-[#1b1c20]">
+              Page overrides
+            </h2>
+            <span className="text-[12.5px] text-neutral-400">
+              {pageList.length} page{pageList.length === 1 ? "" : "s"}
+            </span>
+          </div>
+          <div className="space-y-4">
             {pageList.map((page) => {
               const seo = page.seo as {
                 title?: string;
@@ -151,19 +176,17 @@ export default async function SeoPage() {
                 noindex?: boolean;
               };
               return (
-                <form
-                  action={updatePageSeo}
-                  key={page.id}
-                  className="rounded-2xl border bg-white p-5"
-                >
+                <form action={updatePageSeo} key={page.id} className={T.card}>
                   <input type="hidden" name="id" value={page.id} />
-                  <h3 className="mb-3 font-semibold">
-                    {page.title}{" "}
-                    <span className="text-xs font-normal text-neutral-400">
-                      /{page.slug}
-                    </span>
-                  </h3>
-                  <div className="grid gap-3 md:grid-cols-2">
+                  <div className={T.cardHeader}>
+                    <h3 className="text-[14px] font-semibold text-[#1b1c20]">
+                      {page.title}{" "}
+                      <span className="text-[12px] font-normal text-neutral-400">
+                        /{page.slug}
+                      </span>
+                    </h3>
+                  </div>
+                  <div className="grid gap-5 p-5 md:grid-cols-2">
                     <Field
                       label="SEO title"
                       name="title"
@@ -174,12 +197,12 @@ export default async function SeoPage() {
                       name="canonical"
                       value={seo.canonical || ""}
                     />
-                    <label className="block text-sm md:col-span-2">
-                      Meta description
+                    <label className="block md:col-span-2">
+                      <span className={T.label}>Meta description</span>
                       <textarea
                         name="description"
                         defaultValue={seo.description}
-                        className="mt-1 block w-full rounded-lg border p-2"
+                        className={`${T.input} min-h-20`}
                       />
                     </label>
                     <Field
@@ -187,24 +210,30 @@ export default async function SeoPage() {
                       name="ogImage"
                       value={seo.ogImage || ""}
                     />
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        name="noindex"
-                        defaultChecked={seo.noindex}
-                      />
-                      Noindex this page
-                    </label>
+                    <Check
+                      label="Noindex this page"
+                      name="noindex"
+                      checked={!!seo.noindex}
+                    />
                   </div>
-                  <button className="admin-button mt-3">Save page SEO</button>
+                  <div className="border-t border-black/[0.05] px-5 py-3.5">
+                    <button className={T.btnPrimary}>Save page SEO</button>
+                  </div>
                 </form>
               );
             })}
           </div>
         </section>
         <section>
-          <h2 className="text-xl font-semibold">Post overrides</h2>
-          <div className="mt-4 space-y-3">
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-[17px] font-semibold text-[#1b1c20]">
+              Post overrides
+            </h2>
+            <span className="text-[12.5px] text-neutral-400">
+              {posts.length} post{posts.length === 1 ? "" : "s"}
+            </span>
+          </div>
+          <div className="space-y-4">
             {posts.map((post) => {
               const data = post.data as {
                 seoTitle?: string;
@@ -214,14 +243,14 @@ export default async function SeoPage() {
                 seoNoindex?: boolean;
               };
               return (
-                <form
-                  action={updatePostSeo}
-                  key={post.id}
-                  className="rounded-2xl border bg-white p-5"
-                >
+                <form action={updatePostSeo} key={post.id} className={T.card}>
                   <input type="hidden" name="id" value={post.id} />
-                  <h3 className="mb-3 font-semibold">{post.title}</h3>
-                  <div className="grid gap-3 md:grid-cols-2">
+                  <div className={T.cardHeader}>
+                    <h3 className="text-[14px] font-semibold text-[#1b1c20]">
+                      {post.title}
+                    </h3>
+                  </div>
+                  <div className="grid gap-5 p-5 md:grid-cols-2">
                     <Field
                       label="SEO title"
                       name="title"
@@ -232,12 +261,12 @@ export default async function SeoPage() {
                       name="canonical"
                       value={data.seoCanonical || ""}
                     />
-                    <label className="block text-sm md:col-span-2">
-                      Meta description
+                    <label className="block md:col-span-2">
+                      <span className={T.label}>Meta description</span>
                       <textarea
                         name="description"
                         defaultValue={data.seoDescription}
-                        className="mt-1 block w-full rounded-lg border p-2"
+                        className={`${T.input} min-h-20`}
                       />
                     </label>
                     <Field
@@ -245,16 +274,15 @@ export default async function SeoPage() {
                       name="ogImage"
                       value={data.seoOgImage || ""}
                     />
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        name="noindex"
-                        defaultChecked={data.seoNoindex}
-                      />
-                      Noindex this post
-                    </label>
+                    <Check
+                      label="Noindex this post"
+                      name="noindex"
+                      checked={!!data.seoNoindex}
+                    />
                   </div>
-                  <button className="admin-button mt-3">Save post SEO</button>
+                  <div className="border-t border-black/[0.05] px-5 py-3.5">
+                    <button className={T.btnPrimary}>Save post SEO</button>
+                  </div>
                 </form>
               );
             })}

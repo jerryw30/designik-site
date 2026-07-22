@@ -10,7 +10,7 @@ import { bulkPages, createPage, deletePageForever, duplicatePage, restorePage, s
 
 export const dynamic = "force-dynamic";
 
-const wpLink = "text-[#2271b1] hover:text-[#135e96] hover:underline";
+const wpLink = "text-[#a10140] hover:text-[#7c0134] hover:underline";
 
 function wpDate(d: Date) {
   const date = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
@@ -68,7 +68,7 @@ export default async function Pages({
         <h2 className="text-[23px] font-normal text-[#1d2327]">Pages</h2>
         <Link
           href="/admin/pages?new=1"
-          className="rounded-[3px] border border-[#2271b1] bg-white px-2.5 py-1 text-[13px] font-medium text-[#2271b1] hover:bg-[#f0f6fc]"
+          className="rounded-lg border border-[#a10140] bg-white px-2.5 py-1 text-[13px] font-medium text-[#a10140] hover:bg-[#fdf2f7]"
         >
           Add New Page
         </Link>
@@ -77,18 +77,18 @@ export default async function Pages({
 
       {/* inline create (Add New) */}
       {query.new === "1" && (
-        <form action={createPage} className="mt-4 flex flex-wrap gap-2 rounded-[4px] border border-[#c3c4c7] bg-white p-4 shadow-sm">
+        <form action={createPage} className="mt-4 flex flex-wrap gap-2 rounded-lg border border-[#c3c4c7] bg-white p-4 shadow-sm">
           <input
             name="title"
             required
             autoFocus
             placeholder="Page title"
-            className="min-w-0 flex-1 rounded-[4px] border border-[#8c8f94] px-3 py-1.5 text-[14px] outline-none focus:border-[#2271b1] focus:shadow-[0_0_0_1px_#2271b1]"
+            className="min-w-0 flex-1 rounded-lg border border-neutral-300 px-3 py-1.5 text-[14px] outline-none focus:border-[#a10140] focus:shadow-[0_0_0_1px_#a10140]"
           />
-          <button className="rounded-[3px] bg-[#2271b1] px-4 py-1.5 text-[13px] font-medium text-white hover:bg-[#135e96]">
+          <button className="rounded-lg bg-[#a10140] px-4 py-1.5 text-[13px] font-medium text-white hover:bg-[#7c0134]">
             Create &amp; edit visually
           </button>
-          <Link href="/admin/pages" className="px-2 py-1.5 text-[13px] text-[#50575e] hover:text-[#135e96]">
+          <Link href="/admin/pages" className="px-2 py-1.5 text-[13px] text-[#50575e] hover:text-[#7c0134]">
             Cancel
           </Link>
         </form>
@@ -113,7 +113,7 @@ export default async function Pages({
         {/* tablenav top */}
         <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <select name="bulk" defaultValue="-1" className="rounded-[4px] border border-[#8c8f94] bg-white px-2 py-1.5 text-[13px]">
+            <select name="bulk" defaultValue="-1" className="rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-[13px]">
               <option value="-1">Bulk actions</option>
               {inTrash ? (
                 <>
@@ -128,7 +128,7 @@ export default async function Pages({
                 </>
               )}
             </select>
-            <button className="rounded-[3px] border border-[#2271b1] bg-white px-2.5 py-1 text-[13px] font-medium text-[#2271b1] hover:bg-[#f0f6fc]">
+            <button className="rounded-lg border border-[#a10140] bg-white px-2.5 py-1 text-[13px] font-medium text-[#a10140] hover:bg-[#fdf2f7]">
               Apply
             </button>
           </div>
@@ -139,9 +139,9 @@ export default async function Pages({
               defaultValue={search}
               placeholder="Search pages…"
               form="pages-search"
-              className="rounded-[4px] border border-[#8c8f94] bg-white px-3 py-1.5 text-[13px] outline-none focus:border-[#2271b1] focus:shadow-[0_0_0_1px_#2271b1]"
+              className="rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-[13px] outline-none focus:border-[#a10140] focus:shadow-[0_0_0_1px_#a10140]"
             />
-            <button form="pages-search" className="rounded-[3px] border border-[#2271b1] bg-white px-2.5 py-1 text-[13px] font-medium text-[#2271b1] hover:bg-[#f0f6fc]">
+            <button form="pages-search" className="rounded-lg border border-[#a10140] bg-white px-2.5 py-1 text-[13px] font-medium text-[#a10140] hover:bg-[#fdf2f7]">
               Search Pages
             </button>
           </div>
@@ -169,7 +169,7 @@ export default async function Pages({
             {rows.map(({ page, authorName }) => (
               <tr key={page.id} className="group border-b border-[#f0f0f1] align-top hover:bg-[#f6f7f7]">
                 <td className="px-3 py-3">
-                  <input type="checkbox" name="ids" value={page.id} aria-label={`Select ${page.title}`} className="h-4 w-4 accent-[#2271b1]" />
+                  <input type="checkbox" name="ids" value={page.id} aria-label={`Select ${page.title}`} className="h-4 w-4 accent-[#a10140]" />
                 </td>
                 <td className="px-3 py-2.5">
                   <div className="font-semibold">
@@ -187,7 +187,7 @@ export default async function Pages({
                         {page.slug !== "home" && (
                           <>
                             <span className="text-[#c3c4c7]">|</span>
-                            <button formAction={deletePageForever.bind(null, page.id)} className="text-[#b32d2e] hover:underline">Delete Permanently</button>
+                            <button formAction={deletePageForever.bind(null, page.id)} className="text-[#dc2626] hover:underline">Delete Permanently</button>
                           </>
                         )}
                       </>
@@ -207,7 +207,7 @@ export default async function Pages({
                         {page.slug !== "home" && (
                           <>
                             <span className="text-[#c3c4c7]">|</span>
-                            <button formAction={trashPage.bind(null, page.id)} className="text-[#b32d2e] hover:underline">Trash</button>
+                            <button formAction={trashPage.bind(null, page.id)} className="text-[#dc2626] hover:underline">Trash</button>
                           </>
                         )}
                       </>
@@ -240,10 +240,10 @@ export default async function Pages({
         {/* tablenav bottom */}
         <div className="mt-2.5 flex items-center justify-between text-[13px] text-[#50575e]">
           <div className="flex items-center gap-2">
-            <select name="bulk2" defaultValue="-1" className="rounded-[4px] border border-[#8c8f94] bg-white px-2 py-1.5 text-[13px]">
+            <select name="bulk2" defaultValue="-1" className="rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-[13px]">
               <option value="-1">Bulk actions</option>
             </select>
-            <button className="rounded-[3px] border border-[#2271b1] bg-white px-2.5 py-1 text-[13px] font-medium text-[#2271b1] hover:bg-[#f0f6fc]">
+            <button className="rounded-lg border border-[#a10140] bg-white px-2.5 py-1 text-[13px] font-medium text-[#a10140] hover:bg-[#fdf2f7]">
               Apply
             </button>
           </div>

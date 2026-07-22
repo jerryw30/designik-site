@@ -10,8 +10,8 @@ import { bulkPosts, createPost, deletePostForever, duplicatePost, setPostStatus 
 
 export const dynamic = "force-dynamic";
 
-const wpLink = "text-[#2271b1] hover:text-[#135e96] hover:underline";
-const wpBtn = "rounded-[3px] border border-[#2271b1] bg-white px-2.5 py-1 text-[13px] font-medium text-[#2271b1] hover:bg-[#f0f6fc]";
+const wpLink = "text-[#a10140] hover:text-[#7c0134] hover:underline";
+const wpBtn = "rounded-lg border border-[#a10140] bg-white px-2.5 py-1 text-[13px] font-medium text-[#a10140] hover:bg-[#fdf2f7]";
 
 function wpDate(d: Date) {
   const date = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
@@ -70,23 +70,23 @@ export default async function PostsPage({
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="text-[23px] font-normal text-[#1d2327]">Posts</h2>
         <Link href="/admin/posts?new=1" className={wpBtn}>Add New Post</Link>
-        <Link href="/admin/posts/categories" className="text-[13px] text-[#2271b1] hover:underline">Categories</Link>
+        <Link href="/admin/posts/categories" className="text-[13px] text-[#a10140] hover:underline">Categories</Link>
         <span className="text-[#c3c4c7]">|</span>
-        <Link href="/admin/posts/tags" className="text-[13px] text-[#2271b1] hover:underline">Tags</Link>
+        <Link href="/admin/posts/tags" className="text-[13px] text-[#a10140] hover:underline">Tags</Link>
         {search && <span className="text-[13px] text-[#50575e]">Search results for: <strong>&ldquo;{search}&rdquo;</strong></span>}
       </div>
 
       {query.new === "1" && (
-        <form action={createPost} className="mt-4 flex flex-wrap gap-2 rounded-[4px] border border-[#c3c4c7] bg-white p-4 shadow-sm">
+        <form action={createPost} className="mt-4 flex flex-wrap gap-2 rounded-lg border border-[#c3c4c7] bg-white p-4 shadow-sm">
           <input
             name="title"
             required
             autoFocus
             placeholder="Post title"
-            className="min-w-0 flex-1 rounded-[4px] border border-[#8c8f94] px-3 py-1.5 text-[14px] outline-none focus:border-[#2271b1] focus:shadow-[0_0_0_1px_#2271b1]"
+            className="min-w-0 flex-1 rounded-lg border border-neutral-300 px-3 py-1.5 text-[14px] outline-none focus:border-[#a10140] focus:shadow-[0_0_0_1px_#a10140]"
           />
-          <button className="rounded-[3px] bg-[#2271b1] px-4 py-1.5 text-[13px] font-medium text-white hover:bg-[#135e96]">Create draft</button>
-          <Link href="/admin/posts" className="px-2 py-1.5 text-[13px] text-[#50575e] hover:text-[#135e96]">Cancel</Link>
+          <button className="rounded-lg bg-[#a10140] px-4 py-1.5 text-[13px] font-medium text-white hover:bg-[#7c0134]">Create draft</button>
+          <Link href="/admin/posts" className="px-2 py-1.5 text-[13px] text-[#50575e] hover:text-[#7c0134]">Cancel</Link>
         </form>
       )}
 
@@ -106,7 +106,7 @@ export default async function PostsPage({
         {/* tablenav top */}
         <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <select name="bulk" defaultValue="-1" className="rounded-[4px] border border-[#8c8f94] bg-white px-2 py-1.5 text-[13px]">
+            <select name="bulk" defaultValue="-1" className="rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-[13px]">
               <option value="-1">Bulk actions</option>
               {inTrash ? (
                 <>
@@ -129,7 +129,7 @@ export default async function PostsPage({
               defaultValue={search}
               placeholder="Search posts…"
               form="posts-search"
-              className="rounded-[4px] border border-[#8c8f94] bg-white px-3 py-1.5 text-[13px] outline-none focus:border-[#2271b1] focus:shadow-[0_0_0_1px_#2271b1]"
+              className="rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-[13px] outline-none focus:border-[#a10140] focus:shadow-[0_0_0_1px_#a10140]"
             />
             <button form="posts-search" className={wpBtn}>Search Posts</button>
           </div>
@@ -158,7 +158,7 @@ export default async function PostsPage({
               return (
                 <tr key={post.id} className="group border-b border-[#f0f0f1] align-top hover:bg-[#f6f7f7]">
                   <td className="px-3 py-3">
-                    <input type="checkbox" name="ids" value={post.id} aria-label={`Select ${post.title}`} className="h-4 w-4 accent-[#2271b1]" />
+                    <input type="checkbox" name="ids" value={post.id} aria-label={`Select ${post.title}`} className="h-4 w-4 accent-[#a10140]" />
                   </td>
                   <td className="px-3 py-2.5">
                     <div className="font-semibold">
@@ -170,7 +170,7 @@ export default async function PostsPage({
                         <>
                           <button formAction={setPostStatus.bind(null, post.id, "DRAFT")} className={wpLink}>Restore</button>
                           <span className="text-[#c3c4c7]">|</span>
-                          <button formAction={deletePostForever.bind(null, post.id)} className="text-[#b32d2e] hover:underline">Delete Permanently</button>
+                          <button formAction={deletePostForever.bind(null, post.id)} className="text-[#dc2626] hover:underline">Delete Permanently</button>
                         </>
                       ) : (
                         <>
@@ -184,7 +184,7 @@ export default async function PostsPage({
                             {post.status === "PUBLISHED" ? "Unpublish" : "Publish"}
                           </button>
                           <span className="text-[#c3c4c7]">|</span>
-                          <button formAction={setPostStatus.bind(null, post.id, "TRASH")} className="text-[#b32d2e] hover:underline">Trash</button>
+                          <button formAction={setPostStatus.bind(null, post.id, "TRASH")} className="text-[#dc2626] hover:underline">Trash</button>
                         </>
                       )}
                     </div>

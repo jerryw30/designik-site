@@ -1,9 +1,11 @@
 import { and, eq } from "drizzle-orm";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../../../admin-shell";
+import { T, statusPill, wpDate } from "../../../theme";
 import { savePost, savePostWithStatus } from "../../actions";
 
 type PostData = {
@@ -15,6 +17,9 @@ type PostData = {
   seoTitle?: string;
   seoDescription?: string;
 };
+
+const cardTitle = "text-[13px] font-semibold text-[#1b1c20]";
+
 export default async function EditPostPage({
   params,
 }: {
@@ -49,134 +54,210 @@ export default async function EditPostPage({
     .orderBy(users.name);
   return (
     <AdminShell user={user} title={`Edit post · ${post.title}`}>
-      <form action={savePost} className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <form action={savePost}>
         <input type="hidden" name="id" value={post.id} />
-        <section className="space-y-4 rounded-2xl border bg-white p-6">
-          <label className="block text-sm font-medium">
-            Title
-            <input
-              name="title"
-              defaultValue={post.title}
-              required
-              className="mt-1.5 block w-full rounded-xl border px-4 py-3 text-xl"
-            />
-          </label>
-          <label className="block text-sm font-medium">
-            Excerpt
-            <textarea
-              name="excerpt"
-              defaultValue={data.excerpt}
-              className="mt-1.5 block min-h-24 w-full rounded-xl border p-4"
-            />
-          </label>
-          <label className="block text-sm font-medium">
-            Content
-            <textarea
-              name="content"
-              defaultValue={data.content}
-              className="mt-1.5 block min-h-[440px] w-full rounded-xl border p-4 font-mono"
-            />
-          </label>
-        </section>
-        <aside className="space-y-4">
-          <section className="rounded-2xl border bg-white p-5">
-            <h2 className="font-semibold">Publish</h2>
-            <p className="my-3 text-sm text-neutral-500">
-              Current status: {post.status}
-            </p>
-            <button className="admin-button w-full">Save changes</button>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <button
-                formAction={savePostWithStatus.bind(null, "DRAFT")}
-                className="rounded-lg border p-2 text-sm"
-              >
-                Draft
-              </button>
-              <button
-                formAction={savePostWithStatus.bind(null, "PUBLISHED")}
-                className="rounded-lg border p-2 text-sm"
-              >
-                Publish
-              </button>
-            </div>
-          </section>
-          <section className="space-y-3 rounded-2xl border bg-white p-5">
-            <h2 className="font-semibold">Post settings</h2>
-            <label className="block text-sm">
-              Author
-              <select
-                name="authorId"
-                defaultValue={post.createdBy || user.id}
-                className="mt-1 block w-full rounded-lg border p-2"
-              >
-                {authors.map((author) => (
-                  <option key={author.id} value={author.id}>
-                    {author.name} · {author.role.replaceAll("_", " ")}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block text-sm">
-              Slug
-              <input
-                name="slug"
-                defaultValue={post.slug}
-                className="mt-1 block w-full rounded-lg border p-2"
-              />
-            </label>
-            <label className="block text-sm">
-              Category
-              <input
-                name="category"
-                list="category-options"
-                defaultValue={data.category}
-                className="mt-1 block w-full rounded-lg border p-2"
-              />
-              <datalist id="category-options">
-                {categories.map((item) => (
-                  <option key={item.id} value={item.title} />
-                ))}
-              </datalist>
-            </label>
-            <label className="block text-sm">
-              Tags (comma separated)
-              <input
-                name="tags"
-                list="tag-options"
-                defaultValue={data.tags?.join(", ")}
-                className="mt-1 block w-full rounded-lg border p-2"
-              />
-              <datalist id="tag-options">
-                {tags.map((item) => (
-                  <option key={item.id} value={item.title} />
-                ))}
-              </datalist>
-            </label>
-            <label className="block text-sm">
-              Featured image URL
-              <input
-                name="featuredImage"
-                defaultValue={data.featuredImage}
-                className="mt-1 block w-full rounded-lg border p-2"
-              />
-            </label>
-          </section>
-          <section className="space-y-3 rounded-2xl border bg-white p-5">
-            <h2 className="font-semibold">SEO</h2>
-            <input
-              name="seoTitle"
-              defaultValue={data.seoTitle}
-              placeholder="SEO title"
-              className="block w-full rounded-lg border p-2"
-            />
-            <textarea
-              name="seoDescription"
-              defaultValue={data.seoDescription}
-              placeholder="Meta description"
-              className="block w-full rounded-lg border p-2"
-            />
-          </section>
-        </aside>
+
+        {/* Top row: back link + borderless title */}
+        <div className="mb-6">
+          <Link href="/admin/posts" className={`${T.mutedLink} text-[13px] font-medium`}>
+            ← Posts
+          </Link>
+          <input
+            name="title"
+            defaultValue={post.title}
+            required
+            aria-label="Post title"
+            placeholder="Add title"
+            className="mt-2 block w-full border-0 border-b-2 border-transparent bg-transparent pb-1.5 text-2xl font-semibold text-[#1b1c20] outline-none transition placeholder:text-neutral-300 focus:border-[#a10140]"
+          />
+        </div>
+
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+          {/* Main column */}
+          <div className="min-w-0 space-y-6">
+            <section className={T.card}>
+              <div className={T.cardHeader}>
+                <h2 className={cardTitle}>Excerpt</h2>
+              </div>
+              <div className="p-5">
+                <textarea
+                  name="excerpt"
+                  defaultValue={data.excerpt}
+                  aria-label="Excerpt"
+                  placeholder="A short summary shown in listings and previews…"
+                  className={`${T.input} min-h-24`}
+                />
+                <p className={T.help}>Shown on the blog index and in search results.</p>
+              </div>
+            </section>
+
+            <section className={T.card}>
+              <div className={T.cardHeader}>
+                <h2 className={cardTitle}>Content</h2>
+              </div>
+              <div className="p-5">
+                <textarea
+                  name="content"
+                  defaultValue={data.content}
+                  aria-label="Content"
+                  placeholder="Write your post…"
+                  className={`${T.input} min-h-[440px] font-mono text-[13px] leading-6`}
+                />
+              </div>
+            </section>
+          </div>
+
+          {/* Sidebar */}
+          <aside className="min-w-0 space-y-6">
+            <section className={T.card}>
+              <div className={T.cardHeader}>
+                <h2 className={cardTitle}>Publish</h2>
+                <span className={statusPill(post.status)}>{post.status}</span>
+              </div>
+              <div className="p-5">
+                <button className={`${T.btn} w-full`}>Save changes</button>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <button
+                    formAction={savePostWithStatus.bind(null, "DRAFT")}
+                    className={T.btn}
+                  >
+                    Save draft
+                  </button>
+                  <button
+                    formAction={savePostWithStatus.bind(null, "PUBLISHED")}
+                    className={T.btnPrimary}
+                  >
+                    Publish
+                  </button>
+                </div>
+                <p className={T.help}>Last updated {wpDate(post.updatedAt)}</p>
+              </div>
+            </section>
+
+            <section className={T.card}>
+              <div className={T.cardHeader}>
+                <h2 className={cardTitle}>Slug / URL</h2>
+              </div>
+              <div className="p-5">
+                <label htmlFor="post-slug" className={T.label}>
+                  URL slug
+                </label>
+                <input id="post-slug" name="slug" defaultValue={post.slug} className={T.input} />
+                <p className={T.help}>Public address: /blog/{post.slug}</p>
+              </div>
+            </section>
+
+            <section className={T.card}>
+              <div className={T.cardHeader}>
+                <h2 className={cardTitle}>Organization</h2>
+              </div>
+              <div className="space-y-4 p-5">
+                <div>
+                  <label htmlFor="post-author" className={T.label}>
+                    Author
+                  </label>
+                  <select
+                    id="post-author"
+                    name="authorId"
+                    defaultValue={post.createdBy || user.id}
+                    className={`${T.select} block w-full`}
+                  >
+                    {authors.map((author) => (
+                      <option key={author.id} value={author.id}>
+                        {author.name} · {author.role.replaceAll("_", " ")}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="post-category" className={T.label}>
+                    Category
+                  </label>
+                  <input
+                    id="post-category"
+                    name="category"
+                    list="category-options"
+                    defaultValue={data.category}
+                    className={T.input}
+                  />
+                  <datalist id="category-options">
+                    {categories.map((item) => (
+                      <option key={item.id} value={item.title} />
+                    ))}
+                  </datalist>
+                </div>
+                <div>
+                  <label htmlFor="post-tags" className={T.label}>
+                    Tags
+                  </label>
+                  <input
+                    id="post-tags"
+                    name="tags"
+                    list="tag-options"
+                    defaultValue={data.tags?.join(", ")}
+                    className={T.input}
+                  />
+                  <datalist id="tag-options">
+                    {tags.map((item) => (
+                      <option key={item.id} value={item.title} />
+                    ))}
+                  </datalist>
+                  <p className={T.help}>Separate tags with commas.</p>
+                </div>
+              </div>
+            </section>
+
+            <section className={T.card}>
+              <div className={T.cardHeader}>
+                <h2 className={cardTitle}>Featured image</h2>
+              </div>
+              <div className="p-5">
+                <label htmlFor="post-featured-image" className={T.label}>
+                  Image URL
+                </label>
+                <input
+                  id="post-featured-image"
+                  name="featuredImage"
+                  defaultValue={data.featuredImage}
+                  placeholder="https://…"
+                  className={T.input}
+                />
+              </div>
+            </section>
+
+            <section className={T.card}>
+              <div className={T.cardHeader}>
+                <h2 className={cardTitle}>SEO</h2>
+              </div>
+              <div className="space-y-4 p-5">
+                <div>
+                  <label htmlFor="post-seo-title" className={T.label}>
+                    SEO title
+                  </label>
+                  <input
+                    id="post-seo-title"
+                    name="seoTitle"
+                    defaultValue={data.seoTitle}
+                    placeholder="SEO title"
+                    className={T.input}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="post-seo-description" className={T.label}>
+                    Meta description
+                  </label>
+                  <textarea
+                    id="post-seo-description"
+                    name="seoDescription"
+                    defaultValue={data.seoDescription}
+                    placeholder="Meta description"
+                    className={`${T.input} min-h-20`}
+                  />
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
       </form>
     </AdminShell>
   );

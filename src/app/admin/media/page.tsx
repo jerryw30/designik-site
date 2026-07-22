@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../admin-shell";
+import { T } from "../theme";
 import { deleteMediaPermanently, restoreMedia } from "./actions";
 import { CopyUrlButton, MediaPreview, MediaUploadForm } from "./media-client";
 
@@ -61,51 +62,48 @@ export default async function MediaLibrary({
     <AdminShell user={user} title="Media Library">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-semibold">
+          <h2 className={T.screenTitle}>
             {trash ? "Media trash" : "Media Library"}
           </h2>
-          <p className="mt-1 text-sm text-neutral-500">
+          <p className="mt-1 text-[13px] text-neutral-500">
             {total.count} active asset{total.count === 1 ? "" : "s"}. Upload and
             reuse images, video, audio, PDFs, and fonts.
           </p>
         </div>
         <Link
           href={trash ? "/admin/media" : "/admin/media?trash=1"}
-          className="rounded-lg border bg-white px-4 py-2 text-sm font-medium"
+          className={T.btn}
         >
           {trash ? "Back to library" : "Trash"}
         </Link>
       </div>
       {!trash && <MediaUploadForm />}
-      <form className="mb-5 grid gap-3 rounded-xl border bg-white p-3 md:grid-cols-[1fr_180px_auto]">
+      <form
+        className={`${T.card} mb-5 grid gap-3 p-3 md:grid-cols-[minmax(0,1fr)_190px_auto]`}
+      >
         {trash && <input type="hidden" name="trash" value="1" />}
         <input
           name="search"
           defaultValue={search}
           placeholder="Search filename or title…"
-          className="admin-input"
+          className={T.input}
         />
-        <select name="type" defaultValue={type} className="admin-input">
+        <select name="type" defaultValue={type} className={T.select}>
           <option value="all">All media types</option>
           <option value="image">Images</option>
           <option value="video">Video</option>
           <option value="audio">Audio</option>
           <option value="application">Documents</option>
         </select>
-        <button className="rounded-lg border px-5 text-sm font-medium">
-          Filter
-        </button>
+        <button className={T.btn}>Filter</button>
       </form>
       {items.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {items.map((item) => (
-            <article
-              key={item.id}
-              className="overflow-hidden rounded-2xl border bg-white shadow-sm"
-            >
+            <article key={item.id} className="group">
               <Link
                 href={`/admin/media/${item.id}/edit`}
-                className="block aspect-[4/3] overflow-hidden bg-neutral-100"
+                className="block aspect-square overflow-hidden rounded-lg border border-black/[0.06] bg-neutral-100 shadow-[0_1px_3px_rgba(16,17,22,0.05)] ring-2 ring-transparent transition group-hover:ring-[#a10140]"
               >
                 <MediaPreview
                   id={item.id}
@@ -114,31 +112,29 @@ export default async function MediaLibrary({
                   className="h-full w-full object-cover"
                 />
               </Link>
-              <div className="p-4">
+              <div className="mt-2.5 px-0.5">
                 <Link
                   href={`/admin/media/${item.id}/edit`}
-                  className="block truncate font-semibold hover:text-pink-600"
+                  className="block truncate text-[13px] font-semibold text-[#1b1c20] transition-colors hover:text-[#a10140]"
                 >
                   {item.title}
                 </Link>
-                <p className="mt-1 truncate text-xs text-neutral-400">
+                <p className="mt-0.5 truncate text-[11.5px] text-neutral-400">
                   {item.filename}
                 </p>
-                <p className="mt-2 text-xs text-neutral-500">
+                <p className="mt-0.5 text-[11.5px] text-neutral-400">
                   {item.mimeType} · {formatBytes(item.byteSize)}
                 </p>
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-2.5 flex flex-wrap gap-1.5">
                   {trash ? (
                     <>
                       <form action={restoreMedia}>
                         <input type="hidden" name="id" value={item.id} />
-                        <button className="rounded-lg border px-3 py-2 text-xs font-medium">
-                          Restore
-                        </button>
+                        <button className={T.btnSmall}>Restore</button>
                       </form>
                       <form action={deleteMediaPermanently}>
                         <input type="hidden" name="id" value={item.id} />
-                        <button className="rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600">
+                        <button className="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-2.5 py-1 text-[12.5px] font-medium text-red-600 transition hover:bg-red-50">
                           Delete permanently
                         </button>
                       </form>
@@ -147,7 +143,7 @@ export default async function MediaLibrary({
                     <>
                       <Link
                         href={`/admin/media/${item.id}/edit`}
-                        className="rounded-lg border px-3 py-2 text-xs font-medium"
+                        className={T.btnSmall}
                       >
                         Edit
                       </Link>
@@ -160,7 +156,7 @@ export default async function MediaLibrary({
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed bg-white p-16 text-center text-neutral-500">
+        <div className="rounded-xl border border-dashed border-neutral-300 bg-white p-16 text-center text-[13px] text-neutral-500">
           {trash
             ? "Trash is empty."
             : "No media matches this view. Upload the first asset above."}

@@ -1,6 +1,11 @@
 "use client";
 import { useState, useTransition } from "react";
+import { T } from "../theme";
 import { saveMenu, type MenuItem } from "./actions";
+
+const fieldLabel =
+  "mb-1 block text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400";
+
 export default function MenuEditor({
   id,
   initialTitle,
@@ -59,17 +64,17 @@ export default function MenuEditor({
       setMessage("Menu draft saved");
     });
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-      <section className="rounded-2xl border bg-white p-6">
-        <label className="text-sm font-medium">
-          Menu name
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <section className={T.cardPad}>
+        <label className="block">
+          <span className={T.label}>Menu name</span>
           <input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            className="mt-1 block w-full rounded-xl border p-3 text-xl"
+            className={`${T.input} text-[17px] font-semibold`}
           />
         </label>
-        <div className="mt-6 space-y-2">
+        <div className="mt-6 space-y-2.5">
           {items.map((item, index) => (
             <div
               key={item.id}
@@ -77,75 +82,92 @@ export default function MenuEditor({
               onDragStart={() => setDragged(item.id)}
               onDragOver={(event) => event.preventDefault()}
               onDrop={() => move(item.id)}
-              className={`rounded-xl border bg-white p-4 shadow-sm ${item.parentId ? "ml-10 border-l-4 border-l-pink-400" : ""}`}
+              className={`rounded-lg border border-black/[0.07] bg-white p-4 shadow-[0_1px_2px_rgba(16,17,22,0.04)] transition hover:border-[#a10140]/25 ${item.parentId ? "ml-10 border-l-4 border-l-[#a10140]/60" : ""}`}
             >
               <div className="mb-3 flex items-center gap-2">
-                <span className="cursor-grab text-neutral-400">⠿</span>
-                <b className="mr-auto text-sm">Item {index + 1}</b>
+                <span className="cursor-grab text-neutral-300 transition hover:text-[#a10140]">
+                  ⠿
+                </span>
+                <b className="mr-auto text-[13px] font-semibold text-[#1b1c20]">
+                  Item {index + 1}
+                </b>
                 <button
                   type="button"
                   onClick={() => duplicate(item)}
-                  className="text-xs"
+                  className="text-[12px] font-medium text-neutral-500 transition hover:text-[#a10140]"
                 >
                   Duplicate
                 </button>
+                <span className={T.dot}>·</span>
                 <button
                   type="button"
                   onClick={() => remove(item.id)}
-                  className="text-xs text-red-600"
+                  className="text-[12px] font-medium text-red-600 hover:text-red-700 hover:underline"
                 >
                   Remove
                 </button>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
-                <input
-                  aria-label="Label"
-                  value={item.label}
-                  onChange={(event) =>
-                    update(item.id, { label: event.target.value })
-                  }
-                  className="rounded-lg border p-2"
-                />
-                <input
-                  aria-label="URL"
-                  value={item.url}
-                  onChange={(event) =>
-                    update(item.id, { url: event.target.value })
-                  }
-                  className="rounded-lg border p-2"
-                />
-                <select
-                  aria-label="Parent item"
-                  value={item.parentId || ""}
-                  onChange={(event) =>
-                    update(item.id, { parentId: event.target.value || null })
-                  }
-                  className="rounded-lg border p-2"
-                >
-                  <option value="">Top level</option>
-                  {items
-                    .filter(
-                      (parent) => parent.id !== item.id && !parent.parentId,
-                    )
-                    .map((parent) => (
-                      <option key={parent.id} value={parent.id}>
-                        Child of {parent.label}
-                      </option>
-                    ))}
-                </select>
-                <select
-                  aria-label="Link target"
-                  value={item.target}
-                  onChange={(event) =>
-                    update(item.id, {
-                      target: event.target.value as "_self" | "_blank",
-                    })
-                  }
-                  className="rounded-lg border p-2"
-                >
-                  <option value="_self">Same window</option>
-                  <option value="_blank">New window</option>
-                </select>
+                <div>
+                  <span className={fieldLabel}>Label</span>
+                  <input
+                    aria-label="Label"
+                    value={item.label}
+                    onChange={(event) =>
+                      update(item.id, { label: event.target.value })
+                    }
+                    className={T.input}
+                  />
+                </div>
+                <div>
+                  <span className={fieldLabel}>URL</span>
+                  <input
+                    aria-label="URL"
+                    value={item.url}
+                    onChange={(event) =>
+                      update(item.id, { url: event.target.value })
+                    }
+                    className={T.input}
+                  />
+                </div>
+                <div>
+                  <span className={fieldLabel}>Parent item</span>
+                  <select
+                    aria-label="Parent item"
+                    value={item.parentId || ""}
+                    onChange={(event) =>
+                      update(item.id, { parentId: event.target.value || null })
+                    }
+                    className={`${T.select} block w-full`}
+                  >
+                    <option value="">Top level</option>
+                    {items
+                      .filter(
+                        (parent) => parent.id !== item.id && !parent.parentId,
+                      )
+                      .map((parent) => (
+                        <option key={parent.id} value={parent.id}>
+                          Child of {parent.label}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <span className={fieldLabel}>Link target</span>
+                  <select
+                    aria-label="Link target"
+                    value={item.target}
+                    onChange={(event) =>
+                      update(item.id, {
+                        target: event.target.value as "_self" | "_blank",
+                      })
+                    }
+                    className={`${T.select} block w-full`}
+                  >
+                    <option value="_self">Same window</option>
+                    <option value="_blank">New window</option>
+                  </select>
+                </div>
               </div>
             </div>
           ))}
@@ -153,25 +175,29 @@ export default function MenuEditor({
         <button
           type="button"
           onClick={add}
-          className="mt-4 w-full rounded-xl border border-dashed p-3 text-sm"
+          className="mt-4 w-full rounded-lg border border-dashed border-neutral-300 bg-white p-3 text-[13px] font-medium text-neutral-500 transition hover:border-[#a10140]/50 hover:text-[#a10140]"
         >
           + Add menu item
         </button>
       </section>
       <aside>
-        <div className="sticky top-24 rounded-2xl border bg-white p-5">
-          <h2 className="font-semibold">Menu structure</h2>
-          <p className="mt-2 text-sm text-neutral-500">
+        <div className={`${T.card} sticky top-24 p-5`}>
+          <h2 className="text-[14px] font-semibold text-[#1b1c20]">
+            Menu structure
+          </h2>
+          <p className="mt-2 text-[12.5px] leading-relaxed text-neutral-500">
             Drag items to reorder. Choose a parent to create a dropdown.
           </p>
           <button
             disabled={pending}
             onClick={persist}
-            className="admin-button mt-5 w-full"
+            className={`${T.btnPrimary} mt-5 w-full disabled:opacity-50`}
           >
             {pending ? "Saving…" : "Save menu"}
           </button>
-          <p className="mt-3 text-center text-xs text-emerald-600">{message}</p>
+          <p className="mt-3 text-center text-[12px] font-medium text-emerald-600">
+            {message}
+          </p>
         </div>
       </aside>
     </div>

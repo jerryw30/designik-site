@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../../../admin-shell";
+import { T, wpDate } from "../../../theme";
 import { trashMedia, updateMedia } from "../../actions";
 import { CopyUrlButton, MediaPreview } from "../../media-client";
 
@@ -46,97 +47,125 @@ export default async function EditMedia({
     : "";
   return (
     <AdminShell user={user} title="Edit media">
-      <div className="mb-5">
-        <Link href="/admin/media" className="text-sm font-medium text-pink-600">
+      <div className="mb-5 flex items-baseline gap-3">
+        <h2 className={T.screenTitle}>Edit media</h2>
+        <Link href="/admin/media" className={`${T.mutedLink} text-[13px]`}>
           ← Media Library
         </Link>
       </div>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_430px]">
-        <section className="flex min-h-[520px] items-center justify-center overflow-hidden rounded-2xl border bg-neutral-900 p-6">
+        <section className="flex min-h-[520px] items-center justify-center overflow-hidden rounded-xl border border-black/[0.06] bg-[#16171c] p-6 shadow-[0_1px_3px_rgba(16,17,22,0.05)]">
           <MediaPreview
             id={asset.id}
             mimeType={asset.mimeType}
             title={asset.altText || asset.title}
-            className="max-h-[70vh] max-w-full object-contain"
+            className="max-h-[70vh] max-w-full rounded-md object-contain"
           />
         </section>
-        <section className="rounded-2xl border bg-white p-6">
-          <h2 className="text-xl font-semibold">Attachment details</h2>
-          <dl className="mt-3 space-y-1 text-xs text-neutral-500">
-            <div>{asset.filename}</div>
-            <div>
-              {asset.mimeType} · {formatBytes(asset.byteSize)}
+        <div className="space-y-4">
+          <section className={T.card}>
+            <div className={T.cardHeader}>
+              <h3 className="text-[14px] font-semibold text-[#1b1c20]">
+                File details
+              </h3>
             </div>
-            <div>Uploaded {asset.createdAt.toLocaleString()}</div>
-          </dl>
-          <div className="mt-4 flex gap-2">
-            <a
-              href={`/api/media/${asset.id}`}
-              target="_blank"
-              className="rounded-lg border px-3 py-2 text-xs font-medium"
-            >
-              View file
-            </a>
-            <CopyUrlButton url={`/api/media/${asset.id}`} />
-          </div>
-          <form action={updateMedia} className="mt-6 space-y-4">
-            <input type="hidden" name="id" value={asset.id} />
-            <label className="block text-sm font-medium">
-              Title
-              <input
-                name="title"
-                defaultValue={asset.title}
-                required
-                className="admin-input mt-1.5"
-              />
-            </label>
-            {asset.mimeType.startsWith("image/") && (
-              <label className="block text-sm font-medium">
-                Alternative text
-                <input
-                  name="altText"
-                  defaultValue={asset.altText}
-                  className="admin-input mt-1.5"
-                />
-                <span className="mt-1 block text-xs font-normal text-neutral-400">
-                  Describe the purpose of the image for accessibility.
-                </span>
-              </label>
-            )}
-            <label className="block text-sm font-medium">
-              Caption
-              <textarea
-                name="caption"
-                defaultValue={asset.caption}
-                className="admin-input mt-1.5 min-h-20"
-              />
-            </label>
-            <label className="block text-sm font-medium">
-              Description
-              <textarea
-                name="description"
-                defaultValue={asset.description}
-                className="admin-input mt-1.5 min-h-24"
-              />
-            </label>
-            <label className="block text-sm font-medium">
-              Tags
-              <input
-                name="tags"
-                defaultValue={tags}
-                placeholder="team, homepage, brand"
-                className="admin-input mt-1.5"
-              />
-            </label>
-            <button className="admin-button w-full">Save attachment</button>
-          </form>
-          <form action={trashMedia} className="mt-4 border-t pt-4">
-            <input type="hidden" name="id" value={asset.id} />
-            <button className="text-sm font-medium text-red-600">
-              Move to trash
-            </button>
-          </form>
-        </section>
+            <div className="px-5 py-4">
+              <dl className="space-y-1 text-[12.5px] text-neutral-500">
+                <div className="truncate font-medium text-neutral-700">
+                  {asset.filename}
+                </div>
+                <div>
+                  {asset.mimeType} · {formatBytes(asset.byteSize)}
+                </div>
+                <div>Uploaded {wpDate(asset.createdAt)}</div>
+              </dl>
+              <div className="mt-4 flex gap-2">
+                <a
+                  href={`/api/media/${asset.id}`}
+                  target="_blank"
+                  className={T.btnSmall}
+                >
+                  View file
+                </a>
+                <CopyUrlButton url={`/api/media/${asset.id}`} />
+              </div>
+            </div>
+          </section>
+          <section className={T.card}>
+            <div className={T.cardHeader}>
+              <h3 className="text-[14px] font-semibold text-[#1b1c20]">
+                Attachment details
+              </h3>
+            </div>
+            <div className="px-5 py-5">
+              <form action={updateMedia} className="space-y-4">
+                <input type="hidden" name="id" value={asset.id} />
+                <label className="block">
+                  <span className={T.label}>Title</span>
+                  <input
+                    name="title"
+                    defaultValue={asset.title}
+                    required
+                    className={T.input}
+                  />
+                </label>
+                {asset.mimeType.startsWith("image/") && (
+                  <label className="block">
+                    <span className={T.label}>Alternative text</span>
+                    <input
+                      name="altText"
+                      defaultValue={asset.altText}
+                      className={T.input}
+                    />
+                    <span className={`${T.help} block`}>
+                      Describe the purpose of the image for accessibility.
+                    </span>
+                  </label>
+                )}
+                <label className="block">
+                  <span className={T.label}>Caption</span>
+                  <textarea
+                    name="caption"
+                    defaultValue={asset.caption}
+                    className={`${T.input} min-h-20`}
+                  />
+                </label>
+                <label className="block">
+                  <span className={T.label}>Description</span>
+                  <textarea
+                    name="description"
+                    defaultValue={asset.description}
+                    className={`${T.input} min-h-24`}
+                  />
+                </label>
+                <label className="block">
+                  <span className={T.label}>Tags</span>
+                  <input
+                    name="tags"
+                    defaultValue={tags}
+                    placeholder="team, homepage, brand"
+                    className={T.input}
+                  />
+                  <span className={`${T.help} block`}>
+                    Separate tags with commas.
+                  </span>
+                </label>
+                <button className={`${T.btnPrimary} w-full`}>
+                  Save attachment
+                </button>
+              </form>
+              <form
+                action={trashMedia}
+                className="mt-5 border-t border-black/[0.05] pt-4 text-center"
+              >
+                <input type="hidden" name="id" value={asset.id} />
+                <button className={`${T.dangerLink} text-[13px]`}>
+                  Move to trash
+                </button>
+              </form>
+            </div>
+          </section>
+        </div>
       </div>
     </AdminShell>
   );

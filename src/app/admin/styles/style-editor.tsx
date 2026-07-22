@@ -1,6 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import type { GlobalStyles } from "@/cms/global-styles";
+import { T } from "../theme";
 import {
   publishGlobalStyles,
   resetGlobalStylesDraft,
@@ -29,9 +30,9 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
         setMessage("Draft reset to website defaults");
       });
   const color = (key: keyof GlobalStyles["colors"], label: string) => (
-    <label className="block text-sm">
-      {label}
-      <div className="mt-1 flex gap-2">
+    <label className="block">
+      <span className={T.label}>{label}</span>
+      <div className="flex gap-2">
         <input
           type="color"
           value={value.colors[key]}
@@ -41,7 +42,7 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
               colors: { ...value.colors, [key]: e.target.value },
             })
           }
-          className="h-11 w-12 rounded border"
+          className="h-[38px] w-12 shrink-0 cursor-pointer rounded-lg border border-neutral-300 bg-white p-1"
         />
         <input
           value={value.colors[key]}
@@ -51,7 +52,7 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
               colors: { ...value.colors, [key]: e.target.value },
             })
           }
-          className="min-w-0 flex-1 rounded-lg border p-2"
+          className={`min-w-0 flex-1 ${T.input}`}
         />
       </div>
     </label>
@@ -62,8 +63,8 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
     label: string,
     step = 1,
   ) => (
-    <label className="block text-sm">
-      {label}
+    <label className="block">
+      <span className={T.label}>{label}</span>
       <input
         type="number"
         step={step}
@@ -76,13 +77,13 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
             [group]: { ...value[group], [key]: Number(e.target.value) },
           })
         }
-        className="mt-1 block w-full rounded-lg border p-2"
+        className={T.input}
       />
     </label>
   );
   return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_390px]">
-      <section className="rounded-2xl border bg-white p-6">
+    <div className="grid items-start gap-6 xl:grid-cols-[1fr_390px]">
+      <section className={T.cardPad}>
         <div className="mb-6 flex flex-wrap gap-2">
           {(
             ["colors", "typography", "buttons", "layout", "fonts"] as Tab[]
@@ -90,13 +91,17 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
             <button
               key={item}
               onClick={() => setTab(item)}
-              className={`rounded-lg px-4 py-2 text-sm capitalize ${tab === item ? "bg-pink-600 text-white" : "border"}`}
+              className={`rounded-lg px-4 py-2 text-[13px] font-medium capitalize transition ${
+                tab === item
+                  ? "bg-gradient-to-r from-[#a10140] to-[#c81a5e] text-white shadow-[0_4px_14px_rgba(161,1,64,0.25)]"
+                  : "border border-neutral-200 bg-white text-neutral-600 hover:border-[#a10140]/40 hover:text-[#a10140]"
+              }`}
             >
               {item}
             </button>
           ))}
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2">
           {tab === "colors" && (
             <>
               {color("primary", "Primary brand color")}
@@ -108,8 +113,8 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
           )}
           {tab === "typography" && (
             <>
-              <label className="block text-sm md:col-span-2">
-                Body font family
+              <label className="block md:col-span-2">
+                <span className={T.label}>Body font family</span>
                 <input
                   value={value.typography.bodyFamily}
                   onChange={(e) =>
@@ -121,11 +126,11 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
                       },
                     })
                   }
-                  className="mt-1 block w-full rounded-lg border p-2"
+                  className={T.input}
                 />
               </label>
-              <label className="block text-sm md:col-span-2">
-                Heading font family
+              <label className="block md:col-span-2">
+                <span className={T.label}>Heading font family</span>
                 <input
                   value={value.typography.headingFamily}
                   onChange={(e) =>
@@ -137,11 +142,11 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
                       },
                     })
                   }
-                  className="mt-1 block w-full rounded-lg border p-2"
+                  className={T.input}
                 />
               </label>
-              <label className="block text-sm md:col-span-2">
-                Marquee font family
+              <label className="block md:col-span-2">
+                <span className={T.label}>Marquee font family</span>
                 <input
                   value={value.typography.marqueeFamily}
                   onChange={(e) =>
@@ -153,7 +158,7 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
                       },
                     })
                   }
-                  className="mt-1 block w-full rounded-lg border p-2"
+                  className={T.input}
                 />
               </label>
               {number("typography", "bodySize", "Body size")}
@@ -180,7 +185,7 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
               {value.customFonts.map((font, index) => (
                 <div
                   key={font.id}
-                  className="grid gap-2 rounded-xl border p-3 md:grid-cols-2"
+                  className="grid gap-3 rounded-xl border border-neutral-200 bg-neutral-50/60 p-4 md:grid-cols-2"
                 >
                   <input
                     value={font.name}
@@ -195,7 +200,7 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
                         ),
                       })
                     }
-                    className="rounded-lg border p-2"
+                    className={T.input}
                   />
                   <input
                     value={font.url}
@@ -208,7 +213,7 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
                         ),
                       })
                     }
-                    className="rounded-lg border p-2"
+                    className={T.input}
                   />
                   <input
                     type="number"
@@ -226,9 +231,9 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
                         ),
                       })
                     }
-                    className="rounded-lg border p-2"
+                    className={T.input}
                   />
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-3">
                     <select
                       value={font.style}
                       onChange={(e) =>
@@ -244,7 +249,7 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
                           ),
                         })
                       }
-                      className="flex-1 rounded-lg border p-2"
+                      className={`min-w-0 flex-1 ${T.select}`}
                     >
                       <option>normal</option>
                       <option>italic</option>
@@ -258,7 +263,7 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
                           ),
                         })
                       }
-                      className="text-red-600"
+                      className={`text-[13px] ${T.dangerLink}`}
                     >
                       Remove
                     </button>
@@ -281,33 +286,35 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
                     ],
                   })
                 }
-                className="w-full rounded-xl border border-dashed p-3"
+                className="w-full rounded-xl border border-dashed border-neutral-300 p-3 text-[13px] font-medium text-neutral-500 transition hover:border-[#a10140]/50 hover:text-[#a10140]"
               >
                 + Add custom font
               </button>
             </div>
           )}
         </div>
-        <div className="mt-6 flex gap-2">
-          <button
-            disabled={pending}
-            onClick={save}
-            className="rounded-lg border px-4 py-2"
-          >
+        <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-black/[0.05] pt-5">
+          <button disabled={pending} onClick={save} className={T.btn}>
             Save draft
           </button>
-          <button disabled={pending} onClick={publish} className="admin-button">
+          <button
+            disabled={pending}
+            onClick={publish}
+            className={T.btnPrimary}
+          >
             Publish globally
           </button>
           <button
             disabled={pending}
             onClick={reset}
-            className="ml-auto text-sm text-red-600"
+            className={`ml-auto text-[13px] ${T.dangerLink}`}
           >
             Reset draft
           </button>
         </div>
-        <p className="mt-3 text-sm text-emerald-600">{message}</p>
+        <p className="mt-3 text-[13px] font-medium text-emerald-600">
+          {message}
+        </p>
       </section>
       <aside>
         <div
@@ -318,11 +325,11 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
             fontSize: value.typography.bodySize,
             lineHeight: value.typography.bodyLineHeight,
           }}
-          className="sticky top-24 overflow-hidden rounded-2xl border p-6"
+          className="sticky top-24 overflow-hidden rounded-xl border border-black/[0.06] p-6 shadow-[0_1px_3px_rgba(16,17,22,0.05)]"
         >
           <span
             style={{ color: value.colors.accent }}
-            className="text-sm font-semibold uppercase"
+            className="text-[12px] font-semibold uppercase tracking-[0.08em]"
           >
             Live preview
           </span>

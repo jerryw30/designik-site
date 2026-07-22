@@ -5,12 +5,18 @@ import { db } from "@/db";
 import { adminResources, formSubmissions } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../admin-shell";
+import { T, statusPill, wpDate } from "../theme";
 import {
   createForm,
   deleteFormForever,
   duplicateForm,
   setFormStatus,
 } from "./actions";
+
+function pretty(status: string) {
+  return status.charAt(0) + status.slice(1).toLowerCase();
+}
+
 export default async function FormsPage() {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
@@ -29,25 +35,35 @@ export default async function FormsPage() {
   ]);
   return (
     <AdminShell user={user} title="Forms">
-      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <section className="rounded-2xl border bg-white p-6">
-          <h2 className="text-lg font-semibold">Create form</h2>
-          <p className="mt-1 text-sm text-neutral-500">
-            Build a validated public form with stored submissions.
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className={T.screenTitle}>Forms</h2>
+          <p className="mt-1 text-[13px] text-neutral-500">
+            Build validated public forms with stored submissions.
           </p>
-          <form action={createForm} className="mt-5 space-y-3">
-            <input
-              name="title"
-              required
-              placeholder="Form name"
-              className="block w-full rounded-xl border p-3"
-            />
-            <button className="admin-button w-full">Create form</button>
-          </form>
-        </section>
-        <section>
-          <h2 className="text-2xl font-semibold">All forms</h2>
-          <div className="mt-4 space-y-3">
+        </div>
+        <form action={createForm} className="flex items-center gap-2">
+          <input
+            name="title"
+            required
+            placeholder="Form name"
+            className={`${T.input} w-56`}
+          />
+          <button className={T.btnPrimary}>Create form</button>
+        </form>
+      </div>
+
+      <div className={T.tableWrap}>
+        <table className={T.table}>
+          <thead>
+            <tr className={T.theadRow}>
+              <th className={T.th}>Title</th>
+              <th className={T.th}>Status</th>
+              <th className={T.th}>Submissions</th>
+              <th className={T.th}>Last updated</th>
+            </tr>
+          </thead>
+          <tbody>
             {forms.map((form) => {
               const count = submissions.filter(
                   (item) => item.formId === form.id,
@@ -56,44 +72,52 @@ export default async function FormsPage() {
                   (item) => item.formId === form.id && item.status === "UNREAD",
                 ).length;
               return (
-                <article
-                  key={form.id}
-                  className="rounded-2xl border bg-white p-5"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                      <b>{form.title}</b>
-                      <p className="text-xs text-neutral-500">
-                        {form.status} · {count} submissions · {unread} unread
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
+                <tr key={form.id} className={T.row}>
+                  <td className={T.td}>
+                    <Link
+                      href={`/admin/forms/${form.id}/edit`}
+                      className={T.rowTitle}
+                    >
+                      {form.title}
+                    </Link>
+                    {form.status === "PUBLISHED" && (
+                      <a
+                        href={`/forms/${form.slug}`}
+                        target="_blank"
+                        className="block text-[12px] text-neutral-400 hover:text-[#a10140] hover:underline"
+                      >
+                        /forms/{form.slug}
+                      </a>
+                    )}
+                    <div className={T.rowActions}>
                       {form.status !== "TRASH" ? (
                         <>
                           <Link
                             href={`/admin/forms/${form.id}/edit`}
-                            className="rounded-lg border px-3 py-2 text-sm"
+                            className={T.link}
                           >
                             Edit
                           </Link>
+                          <span className={T.dot}>·</span>
                           <Link
                             href={`/admin/forms/${form.id}/preview`}
                             target="_blank"
-                            className="rounded-lg border px-3 py-2 text-sm"
+                            className={T.link}
                           >
                             Preview
                           </Link>
+                          <span className={T.dot}>·</span>
                           <Link
                             href={`/admin/forms/${form.id}/submissions`}
-                            className="rounded-lg border px-3 py-2 text-sm"
+                            className={T.link}
                           >
                             Submissions
                           </Link>
+                          <span className={T.dot}>·</span>
                           <form action={duplicateForm.bind(null, form.id)}>
-                            <button className="rounded-lg border px-3 py-2 text-sm">
-                              Duplicate
-                            </button>
+                            <button className={T.link}>Duplicate</button>
                           </form>
+                          <span className={T.dot}>·</span>
                           <form
                             action={setFormStatus.bind(
                               null,
@@ -103,18 +127,17 @@ export default async function FormsPage() {
                                 : "PUBLISHED",
                             )}
                           >
-                            <button className="admin-button">
+                            <button className={T.link}>
                               {form.status === "PUBLISHED"
                                 ? "Move to draft"
                                 : "Publish"}
                             </button>
                           </form>
+                          <span className={T.dot}>·</span>
                           <form
                             action={setFormStatus.bind(null, form.id, "TRASH")}
                           >
-                            <button className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600">
-                              Trash
-                            </button>
+                            <button className={T.dangerLink}>Trash</button>
                           </form>
                         </>
                       ) : (
@@ -122,38 +145,54 @@ export default async function FormsPage() {
                           <form
                             action={setFormStatus.bind(null, form.id, "DRAFT")}
                           >
-                            <button className="rounded-lg border px-3 py-2 text-sm">
-                              Restore
-                            </button>
+                            <button className={T.link}>Restore</button>
                           </form>
+                          <span className={T.dot}>·</span>
                           <form action={deleteFormForever.bind(null, form.id)}>
-                            <button className="rounded-lg bg-red-600 px-3 py-2 text-sm text-white">
+                            <button className={T.dangerLink}>
                               Delete forever
                             </button>
                           </form>
                         </>
                       )}
                     </div>
-                  </div>
-                  {form.status === "PUBLISHED" && (
-                    <a
-                      href={`/forms/${form.slug}`}
-                      target="_blank"
-                      className="mt-3 block text-xs text-pink-600"
+                  </td>
+                  <td className={T.td}>
+                    <span className={statusPill(form.status)}>
+                      {pretty(form.status)}
+                    </span>
+                  </td>
+                  <td className={T.td}>
+                    <Link
+                      href={`/admin/forms/${form.id}/submissions`}
+                      className={T.link}
                     >
-                      Public URL: /forms/{form.slug}
-                    </a>
-                  )}
-                </article>
+                      {count}
+                    </Link>
+                    {unread > 0 && (
+                      <span className={`ml-2 ${T.pillNew}`}>
+                        {unread} unread
+                      </span>
+                    )}
+                  </td>
+                  <td className={`${T.td} whitespace-nowrap text-neutral-500`}>
+                    {wpDate(form.updatedAt)}
+                  </td>
+                </tr>
               );
             })}
             {!forms.length && (
-              <p className="rounded-2xl border border-dashed bg-white p-12 text-center text-neutral-500">
-                No forms yet.
-              </p>
+              <tr>
+                <td
+                  colSpan={4}
+                  className="px-4 py-14 text-center text-[13px] text-neutral-500"
+                >
+                  No forms yet.
+                </td>
+              </tr>
             )}
-          </div>
-        </section>
+          </tbody>
+        </table>
       </div>
     </AdminShell>
   );

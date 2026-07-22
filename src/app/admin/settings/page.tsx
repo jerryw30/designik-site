@@ -5,6 +5,7 @@ import { siteSettings } from "@/db/schema";
 import { websiteSettings } from "@/cms/website-settings";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../admin-shell";
+import { T } from "../theme";
 import {
   publishSettings,
   resetSettingsDraft,
@@ -15,21 +16,27 @@ const Input = ({
   name,
   value,
   type = "text",
+  help,
 }: {
   label: string;
   name: string;
   value: string;
   type?: string;
+  help?: string;
 }) => (
-  <label className="block text-sm">
-    {label}
-    <input
-      type={type}
-      name={name}
-      defaultValue={value}
-      className="mt-1 block w-full rounded-lg border p-2"
-    />
+  <label className="block">
+    <span className={T.label}>{label}</span>
+    <input type={type} name={name} defaultValue={value} className={T.input} />
+    {help && <p className={T.help}>{help}</p>}
   </label>
+);
+const CardTitle = ({ title, sub }: { title: string; sub?: string }) => (
+  <div className={T.cardHeader}>
+    <div>
+      <h2 className="text-[15px] font-semibold text-[#1b1c20]">{title}</h2>
+      {sub && <p className="mt-0.5 text-[12px] text-neutral-400">{sub}</p>}
+    </div>
+  </div>
 );
 export default async function SettingsPage() {
   const user = await currentUser();
@@ -43,10 +50,20 @@ export default async function SettingsPage() {
     value = websiteSettings(stored?.draft);
   return (
     <AdminShell user={user} title="Website Settings">
+      <div className="mb-6">
+        <h2 className={T.screenTitle}>Website Settings</h2>
+        <p className="mt-1 text-[13px] text-neutral-500">
+          Identity, contact, and site-wide behavior. Draft changes go live when
+          you publish.
+        </p>
+      </div>
       <form className="space-y-6">
-        <section className="rounded-2xl border bg-white p-6">
-          <h2 className="mb-4 text-xl font-semibold">Site identity</h2>
-          <div className="grid gap-4 md:grid-cols-2">
+        <section className={T.card}>
+          <CardTitle
+            title="Site identity"
+            sub="How the website presents itself across pages and search."
+          />
+          <div className="grid gap-5 p-5 md:grid-cols-2">
             <Input
               label="Site name"
               name="siteName"
@@ -56,6 +73,7 @@ export default async function SettingsPage() {
               label="Tagline"
               name="tagline"
               value={value.identity.tagline}
+              help="A short phrase shown alongside the site name."
             />
             <Input
               label="Logo URL"
@@ -66,32 +84,40 @@ export default async function SettingsPage() {
               label="Favicon URL"
               name="faviconUrl"
               value={value.identity.faviconUrl}
+              help="Small icon shown in browser tabs."
             />
           </div>
         </section>
-        <section className="rounded-2xl border bg-white p-6">
-          <h2 className="mb-4 text-xl font-semibold">Contact information</h2>
-          <div className="grid gap-4 md:grid-cols-2">
+        <section className={T.card}>
+          <CardTitle
+            title="Contact information"
+            sub="Used on the public site and for form notifications."
+          />
+          <div className="grid gap-5 p-5 md:grid-cols-2">
             <Input
               type="email"
               label="Contact recipient email"
               name="email"
               value={value.contact.email}
+              help="Form submissions are delivered to this address."
             />
             <Input label="Phone" name="phone" value={value.contact.phone} />
-            <label className="block text-sm md:col-span-2">
-              Address
+            <label className="block md:col-span-2">
+              <span className={T.label}>Address</span>
               <textarea
                 name="address"
                 defaultValue={value.contact.address}
-                className="mt-1 block w-full rounded-lg border p-2"
+                className={`${T.input} min-h-20`}
               />
             </label>
           </div>
         </section>
-        <section className="rounded-2xl border bg-white p-6">
-          <h2 className="mb-4 text-xl font-semibold">Social profiles</h2>
-          <div className="grid gap-4 md:grid-cols-2">
+        <section className={T.card}>
+          <CardTitle
+            title="Social profiles"
+            sub="Full profile URLs, including https://."
+          />
+          <div className="grid gap-5 p-5 md:grid-cols-2">
             <Input
               label="Instagram URL"
               name="instagram"
@@ -115,18 +141,20 @@ export default async function SettingsPage() {
             />
           </div>
         </section>
-        <section className="rounded-2xl border bg-white p-6">
-          <h2 className="mb-4 text-xl font-semibold">Regional settings</h2>
-          <div className="grid gap-4 md:grid-cols-3">
+        <section className={T.card}>
+          <CardTitle title="Regional settings" />
+          <div className="grid gap-5 p-5 md:grid-cols-3">
             <Input
               label="Language code"
               name="language"
               value={value.regional.language}
+              help="For example: en, en-US."
             />
             <Input
               label="Timezone"
               name="timezone"
               value={value.regional.timezone}
+              help="IANA name, e.g. America/Denver."
             />
             <Input
               label="Date format"
@@ -135,71 +163,79 @@ export default async function SettingsPage() {
             />
           </div>
         </section>
-        <section className="rounded-2xl border bg-white p-6">
-          <h2 className="mb-4 text-xl font-semibold">Maintenance mode</h2>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="maintenance"
-              defaultChecked={value.behavior.maintenance}
-            />
-            Enable maintenance page for public visitors
-          </label>
-          <label className="mt-4 block text-sm">
-            Maintenance message
-            <textarea
-              name="maintenanceMessage"
-              defaultValue={value.behavior.maintenanceMessage}
-              className="mt-1 block w-full rounded-lg border p-2"
-            />
-          </label>
-        </section>
-        <section className="rounded-2xl border bg-white p-6">
-          <h2 className="text-xl font-semibold">Custom code</h2>
-          <p className="mb-4 text-sm text-neutral-500">
-            Trusted administrator code only. Draft code is never executed.
-          </p>
-          <label className="block text-sm">
-            Custom CSS
-            <textarea
-              name="css"
-              defaultValue={value.custom.css}
-              className="mt-1 block min-h-40 w-full rounded-lg border bg-neutral-950 p-3 font-mono text-xs text-emerald-300"
-            />
-          </label>
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="block text-sm">
-              Head JavaScript
-              <textarea
-                name="headCode"
-                defaultValue={value.custom.headCode}
-                className="mt-1 block min-h-40 w-full rounded-lg border bg-neutral-950 p-3 font-mono text-xs text-emerald-300"
+        <section className={T.card}>
+          <CardTitle
+            title="Maintenance mode"
+            sub="Temporarily hide the public site behind a maintenance page."
+          />
+          <div className="p-5">
+            <label className="flex items-center gap-2 text-[13px] font-medium text-neutral-700">
+              <input
+                type="checkbox"
+                name="maintenance"
+                defaultChecked={value.behavior.maintenance}
+                className={T.checkbox}
               />
+              Enable maintenance page for public visitors
             </label>
-            <label className="block text-sm">
-              Footer JavaScript
+            <label className="mt-4 block">
+              <span className={T.label}>Maintenance message</span>
               <textarea
-                name="footerCode"
-                defaultValue={value.custom.footerCode}
-                className="mt-1 block min-h-40 w-full rounded-lg border bg-neutral-950 p-3 font-mono text-xs text-emerald-300"
+                name="maintenanceMessage"
+                defaultValue={value.behavior.maintenanceMessage}
+                className={`${T.input} min-h-20`}
               />
+              <p className={T.help}>
+                Shown to visitors while maintenance mode is on.
+              </p>
             </label>
           </div>
         </section>
-        <div className="sticky bottom-4 flex gap-2 rounded-2xl border bg-white/95 p-4 shadow-xl backdrop-blur">
-          <button
-            formAction={saveSettingsDraft}
-            className="rounded-lg border px-4 py-2"
-          >
+        <section className={T.card}>
+          <CardTitle
+            title="Custom code"
+            sub="Trusted administrator code only. Draft code is never executed."
+          />
+          <div className="p-5">
+            <label className="block">
+              <span className={T.label}>Custom CSS</span>
+              <textarea
+                name="css"
+                defaultValue={value.custom.css}
+                className="block min-h-40 w-full rounded-lg border border-neutral-800 bg-[#16171c] p-3 font-mono text-xs leading-relaxed text-emerald-300 outline-none focus:border-[#a10140] focus:ring-2 focus:ring-[#a10140]/15"
+              />
+            </label>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <label className="block">
+                <span className={T.label}>Head JavaScript</span>
+                <textarea
+                  name="headCode"
+                  defaultValue={value.custom.headCode}
+                  className="block min-h-40 w-full rounded-lg border border-neutral-800 bg-[#16171c] p-3 font-mono text-xs leading-relaxed text-emerald-300 outline-none focus:border-[#a10140] focus:ring-2 focus:ring-[#a10140]/15"
+                />
+              </label>
+              <label className="block">
+                <span className={T.label}>Footer JavaScript</span>
+                <textarea
+                  name="footerCode"
+                  defaultValue={value.custom.footerCode}
+                  className="block min-h-40 w-full rounded-lg border border-neutral-800 bg-[#16171c] p-3 font-mono text-xs leading-relaxed text-emerald-300 outline-none focus:border-[#a10140] focus:ring-2 focus:ring-[#a10140]/15"
+                />
+              </label>
+            </div>
+          </div>
+        </section>
+        <div className="sticky bottom-4 z-10 flex flex-wrap items-center gap-2 rounded-xl border border-black/[0.06] bg-white/95 p-3.5 shadow-[0_8px_30px_rgba(16,17,22,0.14)] backdrop-blur">
+          <button formAction={saveSettingsDraft} className={T.btn}>
             Save draft
           </button>
-          <button formAction={publishSettings} className="admin-button">
+          <button formAction={publishSettings} className={T.btnPrimary}>
             Publish settings
           </button>
           <button
             formAction={resetSettingsDraft}
             formNoValidate
-            className="ml-auto text-sm text-red-600"
+            className={`ml-auto text-[13px] ${T.dangerLink}`}
           >
             Reset draft
           </button>

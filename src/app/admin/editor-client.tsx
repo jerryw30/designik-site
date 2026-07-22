@@ -200,7 +200,7 @@ export default function EditorClient({
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-white/40">
           Navigator
         </h2>
-        <div className="mb-3 rounded-lg bg-pink-500/15 px-3 py-2 text-sm font-medium">
+        <div className="mb-3 rounded-lg bg-[#ff2e73]/15 px-3 py-2 text-sm font-medium">
           Page · {page.title}
         </div>
         <div className="space-y-1">
@@ -394,7 +394,7 @@ export default function EditorClient({
                 <button
                   key={item}
                   onClick={() => setTab(item)}
-                  className={`whitespace-nowrap border-b-2 pb-3 capitalize ${tab === item ? "border-pink-400 text-white" : "border-transparent"}`}
+                  className={`whitespace-nowrap border-b-2 pb-3 capitalize ${tab === item ? "border-[#ff2e73] text-white" : "border-transparent"}`}
                 >
                   {item}
                 </button>
@@ -744,8 +744,8 @@ function InlineSelection({
   const setStyle = (key: string, next: string | number | boolean) =>
     onChange(["_elementStyles", target.selector, key], next);
   return (
-    <div className="rounded-lg border border-pink-400/30 bg-pink-500/10 p-3">
-      <div className="text-[10px] font-semibold uppercase text-pink-200">
+    <div className="rounded-lg border border-[#ff2e73]/30 bg-[#ff2e73]/10 p-3">
+      <div className="text-[10px] font-semibold uppercase text-[#ff9dbe]">
         Selected {target.tag}
       </div>
       <div className="mt-1 truncate text-xs text-white/55">
@@ -1163,7 +1163,7 @@ function WidgetList({
             <button
               key={type}
               onClick={() => add(type)}
-              className="rounded-lg border border-white/10 bg-white/[.03] p-2 text-left hover:border-pink-400/50"
+              className="rounded-lg border border-white/10 bg-white/[.03] p-2 text-left hover:border-[#ff2e73]/50"
             >
               <span className="block text-xs text-white/80">{label}</span>
               <span className="text-[9px] uppercase text-white/35">
@@ -1175,7 +1175,7 @@ function WidgetList({
       {value.map((widget, index) => (
         <div
           key={widget.id}
-          className={`rounded-lg border bg-white/[.03] p-3 ${selectedElement === widget.id ? "border-pink-400 ring-1 ring-pink-400/30" : "border-white/10"}`}
+          className={`rounded-lg border bg-white/[.03] p-3 ${selectedElement === widget.id ? "border-[#ff2e73] ring-1 ring-[#ff2e73]/30" : "border-white/10"}`}
         >
           <div className="mb-2 flex items-center gap-2">
             <b className="mr-auto text-xs uppercase text-white/70">
@@ -1472,8 +1472,8 @@ function HeroInlineSelection({
       ),
   ) as [keyof HeroContent, string][];
   return (
-    <div className="rounded-lg border border-pink-400/30 bg-pink-500/10 p-3">
-      <div className="text-[10px] font-semibold uppercase text-pink-200">
+    <div className="rounded-lg border border-[#ff2e73]/30 bg-[#ff2e73]/10 p-3">
+      <div className="text-[10px] font-semibold uppercase text-[#ff9dbe]">
         Selected {target.tag}
       </div>
       {matches.map(([key, current]) => (
@@ -2147,7 +2147,7 @@ function Toggle({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 accent-pink-500"
+        className="h-4 w-4 accent-[#ff2e73]"
       />
     </label>
   );
