@@ -135,6 +135,7 @@ export const sectionDefaults = {
       { label: "About", href: "#about" },
       { label: "Services", href: "#services" },
       { label: "Work", href: "#portfolio" },
+      { label: "Blog", href: "/blog" },
     ],
     buttonLabel: "Start a Project",
     buttonLink: "#contact",
