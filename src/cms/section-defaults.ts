@@ -56,7 +56,12 @@ export const sectionDefaults = {
         photo: "/figma/team/team-lucas.png",
         background: "#2fc6a0",
       },
-      // Ray Davidson (Head of Marketing & Strategy) goes here once his image file is provided
+      {
+        name: "Ray Davidson",
+        role: "Head of Marketing & Strategy",
+        photo: "/figma/team/team-ray.png",
+        background: "#4f8ef7",
+      },
       {
         name: "Mike Kohler",
         role: "Sr. Design/Dev Strategist",
