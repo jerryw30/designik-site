@@ -64,7 +64,7 @@ export default function ChatWidget() {
     return () => clearInterval(id);
   }, [poll, open]);
 
-  // autoscroll + clear unread on open
+  // opening: clear unread + jump to the latest message
   useEffect(() => {
     if (open) {
       setUnread(0);
@@ -72,7 +72,17 @@ export default function ChatWidget() {
         scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
       });
     }
-  }, [open, messages]);
+  }, [open]);
+
+  // new messages: follow only when already near the bottom — don't yank
+  // the visitor down while they're scrolled up reading
+  useEffect(() => {
+    if (!open) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 200;
+    if (nearBottom) requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight }));
+  }, [messages, open]);
 
   const send = useCallback(
     async (e: React.FormEvent) => {

@@ -57,7 +57,12 @@ export default function ChatClient({ adminName }: { adminName: string }) {
     try {
       const res = await fetch(`/api/admin/chat/${id}`);
       const data = await res.json();
-      setMessages(data.messages || []);
+      const next: Msg[] = data.messages || [];
+      // Keep the same array reference when nothing changed so the
+      // autoscroll effect doesn't re-fire on every poll.
+      setMessages((prev) =>
+        prev.length === next.length && prev[prev.length - 1]?.id === next[next.length - 1]?.id ? prev : next,
+      );
     } catch {
       /* ignore */
     }
@@ -82,8 +87,18 @@ export default function ChatClient({ adminName }: { adminName: string }) {
     [loadMessages],
   );
 
+  // Jump to the bottom when opening a conversation…
   useEffect(() => {
     requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }));
+  }, [activeId]);
+
+  // …but on new messages only follow if the admin is already near the
+  // bottom — never yank them down while they're reading history.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 200;
+    if (nearBottom) requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight }));
   }, [messages]);
 
   const send = useCallback(
