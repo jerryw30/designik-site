@@ -174,7 +174,7 @@ export default function Team({ content }: { content?: unknown } = {}) {
                     {/* watermark logo shape */}
                     <span
                       aria-hidden
-                      className="absolute left-[5.894%] top-[14.883%] aspect-[300.273/304.64] w-[88.487%]"
+                      className="absolute left-[5.894%] top-[14.883%] aspect-[300.273/304.64] w-[88.487%] opacity-30"
                       style={{
                         backgroundColor: art.watermark,
                         WebkitMaskImage: `url(${assets.teamWatermark})`,
