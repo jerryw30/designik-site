@@ -19,7 +19,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
   return (
     <section id="services" className="relative bg-white">
       <div className="relative mx-auto hidden h-[827px] w-[1300px] min-[1200px]:block">
-        <article className="group absolute left-[1px] top-[100px] h-[279px] w-[525px] overflow-hidden rounded-[21px] bg-[#fff3e9] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+        <article className="group absolute left-[1px] top-[100px] h-[279px] w-[525px] overflow-hidden rounded-[21px] bg-[#fff3e9] transition-[transform,box-shadow] duration-[650ms] ease-[cubic-bezier(0.33,0.15,0.25,1)] hover:duration-[380ms] hover:ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <Image src="/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="z-0 object-cover object-bottom opacity-60" sizes="525px" />
           <Image
             src={data.cards.product.image || assets.productDesign}
@@ -34,7 +34,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
           </h3>
         </article>
 
-        <article className="group absolute left-[546px] top-[100px] h-[339.604px] w-[287.202px] overflow-hidden rounded-[20px] bg-wine-500 transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+        <article className="group absolute left-[546px] top-[100px] h-[339.604px] w-[287.202px] overflow-hidden rounded-[20px] bg-wine-500 transition-[transform,box-shadow] duration-[650ms] ease-[cubic-bezier(0.33,0.15,0.25,1)] hover:duration-[380ms] hover:ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <Image src="/figma/rectangle39529.png" alt="" fill className="mix-blend-multiply object-cover" sizes="288px" />
           <h3 className="absolute inset-x-0 top-[29px] z-10 text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-white">
             <Lines text={data.cards.digital.title} />
@@ -49,7 +49,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <span className="font-semibold text-wine-500">{data.headingAccent}</span>
         </h2>
 
-        <article className="group absolute left-[854px] top-[305px] h-[135.036px] w-[309.372px] overflow-visible rounded-[20px] bg-[#ffefef] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+        <article className="group absolute left-[854px] top-[305px] h-[135.036px] w-[309.372px] overflow-visible rounded-[20px] bg-[#ffefef] transition-[transform,box-shadow] duration-[650ms] ease-[cubic-bezier(0.33,0.15,0.25,1)] hover:duration-[380ms] hover:ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <h3 className="absolute left-[19px] top-[38px] z-10 font-display text-[24px] font-medium uppercase leading-[28px] text-black">
             <Lines text={data.cards.mobile.title} />
           </h3>
@@ -68,12 +68,12 @@ export default function Services({ content }: { content?: unknown } = {}) {
           ref={seoRef}
           animate={seoInView ? { y: [0, 162, 0] } : { y: 0 }}
           transition={seoInView ? { duration: 5.5, repeat: Infinity, ease: "easeInOut" } : { duration: 0.3 }}
-          className="group absolute left-[1px] top-[407px] h-[178px] w-[171px] overflow-hidden rounded-[20px] bg-[#ffefef] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+          className="group absolute left-[1px] top-[407px] h-[178px] w-[171px] overflow-hidden rounded-[20px] bg-[#ffefef] transition-shadow duration-[650ms] ease-[cubic-bezier(0.33,0.15,0.25,1)] hover:duration-[380ms] hover:ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <h3 className="absolute inset-x-0 top-[29px] z-10 text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-black">{data.cards.seo.title}</h3>
           <Image src={data.cards.seo.image || assets.seo} alt="SEO" width={155} height={98} className="absolute left-[16px] top-[73px] h-[98px] w-[155px] max-w-none transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.018]" />
         </motion.article>
 
-        <article className="group absolute left-[192px] top-[407px] h-[340px] w-[287.202px] overflow-hidden rounded-[20px] bg-[#fff3e9] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+        <article className="group absolute left-[192px] top-[407px] h-[340px] w-[287.202px] overflow-hidden rounded-[20px] bg-[#fff3e9] transition-[transform,box-shadow] duration-[650ms] ease-[cubic-bezier(0.33,0.15,0.25,1)] hover:duration-[380ms] hover:ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <span className="absolute inset-x-0 top-[50px] text-center font-display text-[15.319px] font-normal uppercase leading-[18.027px] text-wine-500">{data.eyebrow}</span>
           <div className="absolute left-[34px] top-[127px] flex items-center gap-[9px]">
             {data.cards.website.icons.map((src, index) => (
@@ -93,7 +93,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
           </h3>
         </article>
 
-        <article className="group absolute left-[498px] top-[467.821px] h-[279.141px] w-[802.151px] overflow-hidden rounded-[20px] bg-[linear-gradient(176.398deg,#a10140_10.085%,#db2f73_137.48%)] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.15)]">
+        <article className="group absolute left-[498px] top-[467.821px] h-[279.141px] w-[802.151px] overflow-hidden rounded-[20px] bg-[linear-gradient(176.398deg,#a10140_10.085%,#db2f73_137.48%)] transition-[transform,box-shadow] duration-[650ms] ease-[cubic-bezier(0.33,0.15,0.25,1)] hover:duration-[380ms] hover:ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_rgba(0,0,0,0.15)]">
           <span className="absolute left-[48px] top-[33px] z-10 font-display text-[15.319px] font-normal uppercase leading-[18.027px] text-white">{data.eyebrow}</span>
           <h3 className="absolute left-[48px] top-[66px] z-10 font-display text-[34.649px] font-medium uppercase leading-[40.776px] text-white">
             <Lines text={data.cards.brand.title} />
