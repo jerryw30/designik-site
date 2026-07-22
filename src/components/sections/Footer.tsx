@@ -17,6 +17,19 @@ import PendulumSwing from "@/components/ui/PendulumSwing";
 
 const RALEWAY = { fontFamily: "var(--font-raleway), sans-serif" } as const;
 
+const FOOTER_HREFS: Record<string, string> = {
+  home: "/",
+  about: "/#about",
+  services: "/#services",
+  work: "/#portfolio",
+  contact: "/#contact",
+  "book a call": "/#contact",
+  careers: "/#contact",
+  journal: "/blog",
+  blog: "/blog",
+};
+const footerHref = (label: string) => FOOTER_HREFS[label.toLowerCase().trim()] || "/";
+
 export default function Footer({ content }: { content?: unknown } = {}) {
   const data = sectionContent("footer", content);
   const globalStyle = (
@@ -155,7 +168,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
               {links.map((l, r) => (
                 <a
                   key={l + r}
-                  href="#"
+                  href={footerHref(l)}
                   className="whitespace-nowrap font-display text-[1.2902cqw] font-medium leading-[2.1528cqw] tracking-[-0.0348em] text-white transition-opacity hover:opacity-70"
                 >
                   {l}
@@ -223,7 +236,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
             {data.columns.map((links, i) => (
               <nav key={i} className="flex flex-col gap-2">
                 {links.map((l) => (
-                  <a key={l} href="#" className="font-display text-[15px] font-medium text-white/90">
+                  <a key={l} href={footerHref(l)} className="font-display text-[15px] font-medium text-white/90">
                     {l}
                   </a>
                 ))}

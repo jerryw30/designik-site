@@ -18,6 +18,9 @@ export default function Nav({ content }: { content?: unknown } = {}) {
   };
   const links = data.links as unknown as HeaderLink[];
   const [open, setOpen] = useState(false);
+  // Hash links target homepage sections — prefix with "/" so they work from
+  // any route (on the homepage "/#x" still just scrolls, no reload).
+  const resolve = (href?: string) => (href?.startsWith("#") ? `/${href}` : href || "/");
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -59,7 +62,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
         className="isolate relative z-50 flex h-[60px] w-full max-w-[306px] items-center justify-between overflow-hidden rounded-full pl-5 pr-2 shadow-[0_4px_4px_rgba(0,0,0,0.25)] backdrop-blur-xl md:h-[70px] md:pl-[31px] md:pr-[18px]"
       >
         <a
-          href={links[0]?.href || "#home"}
+          href={resolve(links[0]?.href || "#home")}
           className="flex items-center gap-2"
           aria-label={`${data.logoAlt} home`}
         >
@@ -82,7 +85,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
           {links.map((l) => (
             <li key={l.label} className="group relative py-4">
               <a
-                href={l.href}
+                href={resolve(l.href)}
                 target={l.target}
                 className="font-display text-[15.75px] font-medium uppercase leading-[22.5px] text-white transition-opacity hover:opacity-75"
               >
@@ -93,7 +96,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
                   {l.children.map((child) => (
                     <li key={child.label}>
                       <a
-                        href={child.href}
+                        href={resolve(child.href)}
                         target={child.target}
                         className="block rounded-xl px-4 py-3 font-display text-sm uppercase text-white/85 hover:bg-white/10 hover:text-white"
                       >
@@ -153,7 +156,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
               <div key={l.label} className="text-center">
                 <motion.a
                   key={l.label}
-                  href={l.href}
+                  href={resolve(l.href)}
                   target={l.target}
                   onClick={() => setOpen(false)}
                   initial={{ opacity: 0, y: 20 }}
@@ -166,7 +169,7 @@ export default function Nav({ content }: { content?: unknown } = {}) {
                 {l.children?.map((child) => (
                   <a
                     key={child.label}
-                    href={child.href}
+                    href={resolve(child.href)}
                     target={child.target}
                     onClick={() => setOpen(false)}
                     className="mt-2 block font-display text-lg uppercase text-white/65"
