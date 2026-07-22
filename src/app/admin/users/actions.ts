@@ -25,6 +25,14 @@ function assertAssignable(actorRole: string, nextRole: Role) {
   if (nextRole === "SUPER_ADMIN" && actorRole !== "SUPER_ADMIN")
     throw new Error("Only a super administrator can assign that role");
 }
+/** Only super admins may touch super admin accounts. */
+async function assertCanModify(actorRole: string, targetId: string) {
+  const [target] = await db.select().from(users).where(eq(users.id, targetId)).limit(1);
+  if (!target) throw new Error("User not found");
+  if (target.role === "SUPER_ADMIN" && actorRole !== "SUPER_ADMIN")
+    throw new Error("Only a super administrator can modify a super administrator");
+  return target;
+}
 export async function createUser(form: FormData) {
   const actor = await requirePermission("manage_users");
   const name = String(form.get("name") || "").trim(),
@@ -54,6 +62,7 @@ export async function updateUser(form: FormData) {
     role = roleValue(form.get("role")),
     active = String(form.get("active")) === "true";
   assertAssignable(actor.role, role);
+  await assertCanModify(actor.role, id);
   const self = id === actor.id;
   await db
     .update(users)
@@ -75,6 +84,7 @@ export async function resetUserPassword(form: FormData) {
     password = String(form.get("password") || "");
   if (password.length < 10)
     throw new Error("Password must contain at least 10 characters");
+  await assertCanModify(actor.role, id);
   await db
     .update(users)
     .set({ passwordHash: await hash(password, 12), updatedAt: new Date() })

@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { login } from "../actions";
+import { PasswordInput } from "../password-input";
 import { AuthCard } from "../ui";
 
 export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -14,7 +15,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
   return <AuthCard title="Welcome back" subtitle="Sign in to manage the Designik website.">
     <form action={login} className="space-y-4">
       <input name="email" type="email" placeholder="Email address" required className="admin-input" />
-      <input name="password" type="password" placeholder="Password" required className="admin-input" />
+      <PasswordInput name="password" placeholder="Password" required autoComplete="current-password" className="admin-input" tone="dark" />
       {error && <p className="text-sm text-red-300">Incorrect email or password.</p>}
       <button className="admin-button w-full">Sign in</button>
     </form>

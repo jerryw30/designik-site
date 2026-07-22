@@ -6,6 +6,7 @@ import { currentUser } from "@/lib/auth";
 import { canViewArea } from "@/lib/roles";
 import { can } from "@/lib/permissions";
 import { AdminShell } from "../admin-shell";
+import { PasswordInput } from "../password-input";
 import { T, wpDate } from "../theme";
 import {
   createUser,
@@ -82,13 +83,13 @@ export default async function UsersPage() {
               <label className={T.label} htmlFor="new-user-password">
                 Temporary password
               </label>
-              <input
+              <PasswordInput
                 id="new-user-password"
                 name="password"
                 required
-                type="password"
                 minLength={10}
                 placeholder="Temporary password"
+                autoComplete="new-password"
                 className={T.input}
               />
               <p className={T.help}>Minimum 10 characters.</p>
@@ -137,6 +138,7 @@ export default async function UsersPage() {
               <tbody>
                 {list.map((item) => {
                   const formId = `user-form-${item.id}`;
+                  const lockedRow = item.role === "SUPER_ADMIN" && user.role !== "SUPER_ADMIN";
                   return (
                     <tr key={item.id} className={T.row}>
                       <td className={T.td}>
@@ -175,16 +177,15 @@ export default async function UsersPage() {
                                   className="mt-2 flex items-center gap-2"
                                 >
                                   <input type="hidden" name="id" value={item.id} />
-                                  <input
+                                  <PasswordInput
                                     name="password"
-                                    type="password"
                                     minLength={10}
                                     required
                                     placeholder="New password"
                                     className={`${T.input} w-44 px-2.5 py-1.5 text-[13px]`}
                                   />
                                   <button
-                                    disabled={!allowed}
+                                    disabled={!allowed || lockedRow}
                                     className={`${T.btnSmall} disabled:opacity-40`}
                                   >
                                     Reset password
@@ -198,7 +199,8 @@ export default async function UsersPage() {
                                     <button
                                       disabled={
                                         !allowed ||
-                                        ((item.role === "SUPER_ADMIN" || item.role === "ADMIN") && user.role !== "SUPER_ADMIN")
+                                        lockedRow ||
+                                        (item.role === "ADMIN" && user.role !== "SUPER_ADMIN")
                                       }
                                       className={`${T.dangerLink} disabled:opacity-40`}
                                     >
@@ -216,7 +218,7 @@ export default async function UsersPage() {
                           name="role"
                           form={formId}
                           defaultValue={item.role}
-                          disabled={!allowed || item.id === user.id}
+                          disabled={!allowed || item.id === user.id || lockedRow}
                           aria-label="Role"
                           className={pillSelect}
                         >
@@ -236,7 +238,7 @@ export default async function UsersPage() {
                           name="active"
                           form={formId}
                           defaultValue={String(item.active)}
-                          disabled={!allowed || item.id === user.id}
+                          disabled={!allowed || item.id === user.id || lockedRow}
                           aria-label="Status"
                           className={pillSelect}
                         >
@@ -250,7 +252,7 @@ export default async function UsersPage() {
                       <td className={`${T.td} text-right`}>
                         <button
                           form={formId}
-                          disabled={!allowed}
+                          disabled={!allowed || lockedRow}
                           className={`${T.btnSmall} disabled:opacity-40`}
                         >
                           Save
