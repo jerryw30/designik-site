@@ -231,6 +231,26 @@ export const activityLog = pgTable(
   (t) => [index("activity_log_created_idx").on(t.createdAt)],
 );
 
+export const pageViews = pgTable(
+  "page_views",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    path: text("path").notNull(),
+    referrer: text("referrer").default("").notNull(),
+    referrerHost: text("referrer_host").default("").notNull(),
+    country: text("country").default("").notNull(),
+    device: text("device").default("").notNull(),
+    sessionId: text("session_id").default("").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => [
+    index("page_views_created_idx").on(t.createdAt),
+    index("page_views_path_idx").on(t.path),
+  ],
+);
+
 export const mediaAssets = pgTable(
   "media_assets",
   {

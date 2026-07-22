@@ -6,7 +6,21 @@ import { pages } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "@/app/admin/admin-shell";
 import { updatePage } from "@/app/admin/actions";
+import { SeoPanel } from "../../../seo-panel";
 import { T, statusPill, wpDate } from "../../../theme";
+
+type PageSeo = {
+  focusKeyphrase?: string;
+  title?: string;
+  description?: string;
+  canonical?: string;
+  noindex?: boolean;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  xTitle?: string;
+  xDescription?: string;
+};
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +32,7 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const [page] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
   if (!page) notFound();
+  const seo = (page.seo || {}) as PageSeo;
 
   return (
     <AdminShell user={user} title={`Edit page · ${page.title}`}>
@@ -54,6 +69,32 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
                 <Link href={`/admin/pages/${page.id}/builder`} className={`${T.btn} mt-4`}>
                   Edit visually
                 </Link>
+              </div>
+            </section>
+
+            <section className={T.card}>
+              <div className={T.cardHeader}>
+                <h2 className={cardTitle}>SEO</h2>
+              </div>
+              <div className="p-5">
+                <SeoPanel
+                  idPrefix="page-seo"
+                  fallbackTitle={page.title}
+                  urlPrefix="/"
+                  slug={page.slug === "home" ? "" : page.slug}
+                  defaults={{
+                    focusKeyphrase: seo.focusKeyphrase,
+                    seoTitle: seo.title,
+                    seoDescription: seo.description,
+                    canonical: seo.canonical,
+                    noindex: seo.noindex,
+                    ogTitle: seo.ogTitle,
+                    ogDescription: seo.ogDescription,
+                    ogImage: seo.ogImage,
+                    xTitle: seo.xTitle,
+                    xDescription: seo.xDescription,
+                  }}
+                />
               </div>
             </section>
           </div>

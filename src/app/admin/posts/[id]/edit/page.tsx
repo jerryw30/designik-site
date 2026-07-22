@@ -6,6 +6,7 @@ import { adminResources, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { AdminShell } from "../../../admin-shell";
 import { MediaPicker } from "../../../media-picker";
+import { SeoPanel } from "../../../seo-panel";
 import { T, statusPill, wpDate } from "../../../theme";
 import { savePost, savePostWithStatus } from "../../actions";
 
@@ -17,6 +18,14 @@ type PostData = {
   featuredImage?: string;
   seoTitle?: string;
   seoDescription?: string;
+  focusKeyphrase?: string;
+  seoCanonical?: string;
+  seoNoindex?: boolean;
+  seoOgTitle?: string;
+  seoOgDescription?: string;
+  seoOgImage?: string;
+  seoXTitle?: string;
+  seoXDescription?: string;
 };
 
 const cardTitle = "text-[13px] font-semibold text-[#1b1c20]";
@@ -221,31 +230,25 @@ export default async function EditPostPage({
               <div className={T.cardHeader}>
                 <h2 className={cardTitle}>SEO</h2>
               </div>
-              <div className="space-y-4 p-5">
-                <div>
-                  <label htmlFor="post-seo-title" className={T.label}>
-                    SEO title
-                  </label>
-                  <input
-                    id="post-seo-title"
-                    name="seoTitle"
-                    defaultValue={data.seoTitle}
-                    placeholder="SEO title"
-                    className={T.input}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="post-seo-description" className={T.label}>
-                    Meta description
-                  </label>
-                  <textarea
-                    id="post-seo-description"
-                    name="seoDescription"
-                    defaultValue={data.seoDescription}
-                    placeholder="Meta description"
-                    className={`${T.input} min-h-20`}
-                  />
-                </div>
+              <div className="p-5">
+                <SeoPanel
+                  idPrefix="post-seo"
+                  fallbackTitle={post.title}
+                  urlPrefix="/blog/"
+                  slug={post.slug}
+                  defaults={{
+                    focusKeyphrase: data.focusKeyphrase,
+                    seoTitle: data.seoTitle,
+                    seoDescription: data.seoDescription,
+                    canonical: data.seoCanonical,
+                    noindex: data.seoNoindex,
+                    ogTitle: data.seoOgTitle,
+                    ogDescription: data.seoOgDescription,
+                    ogImage: data.seoOgImage,
+                    xTitle: data.seoXTitle,
+                    xDescription: data.seoXDescription,
+                  }}
+                />
               </div>
             </section>
           </aside>

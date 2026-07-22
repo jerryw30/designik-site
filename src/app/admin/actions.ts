@@ -171,10 +171,22 @@ export async function updatePage(form: FormData) {
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, "-");
+  const seo = {
+    focusKeyphrase: String(form.get("focusKeyphrase") || "").trim(),
+    title: String(form.get("seoTitle") || "").trim(),
+    description: String(form.get("seoDescription") || "").trim(),
+    canonical: String(form.get("canonical") || "").trim(),
+    noindex: form.get("noindex") === "on",
+    ogTitle: String(form.get("ogTitle") || "").trim(),
+    ogDescription: String(form.get("ogDescription") || "").trim(),
+    ogImage: String(form.get("ogImage") || "").trim(),
+    xTitle: String(form.get("xTitle") || "").trim(),
+    xDescription: String(form.get("xDescription") || "").trim(),
+  };
   if (id && title && slug) {
     await db
       .update(pages)
-      .set({ title, slug, updatedAt: new Date() })
+      .set({ title, slug, seo, updatedAt: new Date() })
       .where(eq(pages.id, id));
     await logActivity(user, "pages", "updated", title, id);
   }

@@ -32,27 +32,33 @@ export async function generateMetadata({
     seoTitle?: string;
     seoDescription?: string;
     seoCanonical?: string;
+    seoOgTitle?: string;
+    seoOgDescription?: string;
     seoOgImage?: string;
+    seoXTitle?: string;
+    seoXDescription?: string;
     seoNoindex?: boolean;
   };
   const title = data.seoTitle || post.title,
     description = data.seoDescription || data.excerpt || "",
     image = data.seoOgImage || data.featuredImage;
+  const ogTitle = data.seoOgTitle || title,
+    ogDescription = data.seoOgDescription || description;
   return {
     title,
     description,
     alternates: { canonical: data.seoCanonical || `/blog/${post.slug}` },
     robots: data.seoNoindex ? { index: false, follow: true } : undefined,
     openGraph: {
-      title,
-      description,
+      title: ogTitle,
+      description: ogDescription,
       type: "article",
       images: image ? [image] : undefined,
     },
     twitter: {
       card: image ? "summary_large_image" : "summary",
-      title,
-      description,
+      title: data.seoXTitle || ogTitle,
+      description: data.seoXDescription || ogDescription,
       images: image ? [image] : undefined,
     },
   };

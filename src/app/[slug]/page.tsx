@@ -37,14 +37,32 @@ export async function generateMetadata({
     description?: string;
     canonical?: string;
     noindex?: boolean;
+    ogTitle?: string;
+    ogDescription?: string;
     ogImage?: string;
+    xTitle?: string;
+    xDescription?: string;
   };
+  const title = seo.title || page.title;
+  const description = seo.description;
+  const ogTitle = seo.ogTitle || title;
+  const ogDescription = seo.ogDescription || description;
   return {
-    title: seo.title || page.title,
-    description: seo.description,
+    title,
+    description,
     alternates: seo.canonical ? { canonical: seo.canonical } : undefined,
     robots: seo.noindex ? { index: false, follow: false } : undefined,
-    openGraph: seo.ogImage ? { images: [seo.ogImage] } : undefined,
+    openGraph: {
+      title: ogTitle,
+      description: ogDescription,
+      images: seo.ogImage ? [seo.ogImage] : undefined,
+    },
+    twitter: {
+      card: seo.ogImage ? "summary_large_image" : "summary",
+      title: seo.xTitle || ogTitle,
+      description: seo.xDescription || ogDescription,
+      images: seo.ogImage ? [seo.ogImage] : undefined,
+    },
   };
 }
 

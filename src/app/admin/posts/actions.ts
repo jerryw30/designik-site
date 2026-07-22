@@ -35,6 +35,14 @@ function postData(form: FormData) {
     featuredImage: String(form.get("featuredImage") || "").trim(),
     seoTitle: String(form.get("seoTitle") || "").trim(),
     seoDescription: String(form.get("seoDescription") || "").trim(),
+    focusKeyphrase: String(form.get("focusKeyphrase") || "").trim(),
+    seoCanonical: String(form.get("canonical") || "").trim(),
+    seoNoindex: form.get("noindex") === "on",
+    seoOgTitle: String(form.get("ogTitle") || "").trim(),
+    seoOgDescription: String(form.get("ogDescription") || "").trim(),
+    seoOgImage: String(form.get("ogImage") || "").trim(),
+    seoXTitle: String(form.get("xTitle") || "").trim(),
+    seoXDescription: String(form.get("xDescription") || "").trim(),
   };
 }
 

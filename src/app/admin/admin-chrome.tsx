@@ -19,6 +19,7 @@ function Icon({ d, className }: { d: string; className?: string }) {
 
 const I = {
   home: "M3 10.5 12 3l9 7.5|M5 9.5V21h14V9.5|M9 21v-6h6v6",
+  chart: "M3 3v18h18|M7 15v3|M12 10v8|M17 6v12",
   pages: "M6 2h9l5 5v15H6z|M14 2v6h6",
   posts: "M12 20h9|M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z",
   media: "M3 5h18v14H3z|M3 15l5-5 4 4 3-3 6 6|M8.5 9.5a1 1 0 1 0 0-.01",
@@ -50,7 +51,10 @@ type BadgeKey = "leads" | "chat";
 const NAV: { group: string; items: { label: string; href: string; icon: keyof typeof I; badge?: BadgeKey }[] }[] = [
   {
     group: "Overview",
-    items: [{ label: "Dashboard", href: "/admin", icon: "home" }],
+    items: [
+      { label: "Dashboard", href: "/admin", icon: "home" },
+      { label: "Analytics", href: "/admin/analytics", icon: "chart" },
+    ],
   },
   {
     group: "Content",

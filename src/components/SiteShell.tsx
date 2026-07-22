@@ -1,6 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import SmoothScroll from "./SmoothScroll";
+import SiteAnalytics from "./SiteAnalytics";
 import BackToTop from "./ui/BackToTop";
 import GetStartedModal from "./ui/GetStartedModal";
 import ChatWidget from "./ui/ChatWidget";
@@ -42,6 +43,7 @@ export default function SiteShell({
   return (
     <SmoothScroll>
       {children}
+      <SiteAnalytics />
       <BackToTop />
       <ChatWidget />
       <GetStartedModal />
