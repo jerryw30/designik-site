@@ -131,9 +131,9 @@ export default function ChatClient({ adminName }: { adminName: string }) {
   const active = conversations.find((c) => c.id === activeId);
 
   return (
-    <div className="grid h-[calc(100vh-160px)] grid-cols-[320px_1fr] overflow-hidden rounded-2xl border bg-white">
+    <div className="m-4 grid h-[calc(100dvh-96px)] grid-cols-[320px_1fr] grid-rows-[100%] overflow-hidden rounded-2xl border bg-white">
       {/* conversation list */}
-      <div className="flex flex-col border-r">
+      <div className="flex min-h-0 flex-col border-r">
         <div className="flex items-center justify-between border-b px-5 py-4">
           <h2 className="font-semibold">Conversations</h2>
           <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500">
@@ -174,7 +174,7 @@ export default function ChatClient({ adminName }: { adminName: string }) {
       </div>
 
       {/* conversation view */}
-      <div className="flex flex-col">
+      <div className="flex min-h-0 flex-col">
         {active ? (
           <>
             <div className="flex items-center gap-3 border-b px-5 py-3.5">
