@@ -134,10 +134,56 @@ function Preview({
         </div>
       </div>
     );
-  const content =
-    value.content.content && typeof value.content.content === "object"
-      ? value.content.content
-      : value.content;
+  if (module === "templates") {
+    const list = Array.isArray(value.content.sections)
+      ? value.content.sections
+      : [];
+    return (
+      <div style={style} className="mx-auto mt-10 max-w-6xl space-y-6">
+        {list.length ? (
+          list.map((item, index) => {
+            const data =
+              item && typeof item === "object"
+                ? (item as Record<string, unknown>)
+                : {};
+            const type = String(data.type || "widgets");
+            return (
+              <div key={index} className="overflow-hidden bg-white">
+                {type === "widgets" ? (
+                  <WidgetSection content={data.content} />
+                ) : (
+                  <div className="border border-dashed border-neutral-300 p-10 text-center text-neutral-400">
+                    {String(data.name || type)} · {type} section — full
+                    preview available in the page builder
+                  </div>
+                )}
+              </div>
+            );
+          })
+        ) : (
+          <div className="border border-dashed border-neutral-300 bg-white p-14 text-center text-neutral-400">
+            This template has no sections yet.
+          </div>
+        )}
+      </div>
+    );
+  }
+  // Saved sections: {type, name, content} wrapper (design editor) or a flat
+  // widgets object — pick whichever actually holds the widgets.
+  const record = value.content;
+  const content = Array.isArray(record.widgets)
+    ? record
+    : record.content && typeof record.content === "object"
+      ? record.content
+      : record;
+  const savedType = String(record.type || "widgets");
+  if (savedType !== "widgets")
+    return (
+      <div className="mx-auto mt-10 max-w-6xl border border-dashed border-neutral-300 bg-white p-14 text-center text-neutral-400">
+        {String(record.name || savedType)} · {savedType} section — full
+        preview available in the page builder
+      </div>
+    );
   return (
     <div style={style} className="mx-auto mt-10 max-w-6xl bg-white">
       <WidgetSection content={content} />

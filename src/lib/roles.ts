@@ -41,7 +41,7 @@ export const AREA_PERMISSIONS: Record<string, Permission | null> = {
   headers: "edit_pages",
   footers: "edit_pages",
   popups: "edit_pages",
-  styles: "edit_pages",
+  styles: "manage_settings",
   posts: "edit_posts",
   media: "manage_media",
   menus: "manage_menus",

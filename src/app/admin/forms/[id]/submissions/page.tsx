@@ -1,4 +1,5 @@
 import { and, desc, eq } from "drizzle-orm";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources, formSubmissions } from "@/db/schema";
@@ -32,9 +33,14 @@ export default async function SubmissionsPage({
     <AdminShell user={user} title={`Submissions · ${form.title}`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className={T.screenTitle}>
-            {submissions.length} submissions
-          </h2>
+          <div className="flex items-baseline gap-3">
+            <h2 className={T.screenTitle}>
+              {submissions.length} submission{submissions.length === 1 ? "" : "s"}
+            </h2>
+            <Link href="/admin/forms" className={`${T.mutedLink} text-[13px]`}>
+              ← All forms
+            </Link>
+          </div>
           <p className="mt-1 text-[13px] text-neutral-500">
             Review and export saved form entries.
           </p>
@@ -68,7 +74,11 @@ export default async function SubmissionsPage({
                           {key}
                         </dt>
                         <dd className="whitespace-pre-wrap text-[13px] text-[#1b1c20]">
-                          {String(value)}
+                          {typeof value === "boolean"
+                            ? value
+                              ? "Yes"
+                              : "No"
+                            : String(value) || "—"}
                         </dd>
                       </div>
                     ))}

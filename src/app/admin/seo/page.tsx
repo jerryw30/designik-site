@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources, pages, siteSettings } from "@/db/schema";
@@ -60,15 +60,24 @@ export default async function SeoPage() {
       .from(siteSettings)
       .where(eq(siteSettings.key, "seo_settings"))
       .limit(1),
-    db.select().from(pages).orderBy(desc(pages.updatedAt)),
+    db
+      .select()
+      .from(pages)
+      .where(isNull(pages.deletedAt))
+      .orderBy(desc(pages.updatedAt)),
     db
       .select()
       .from(adminResources)
-      .where(eq(adminResources.module, "posts"))
+      .where(
+        and(
+          eq(adminResources.module, "posts"),
+          isNull(adminResources.deletedAt),
+        ),
+      )
       .orderBy(desc(adminResources.updatedAt)),
   ]);
-  const stored = row?.value as { draft?: unknown } | undefined,
-    value = seoSettings(stored?.draft);
+  const stored = row?.value as { draft?: unknown; published?: unknown } | undefined,
+    value = seoSettings(stored?.draft ?? stored?.published);
   return (
     <AdminShell user={user} title="SEO Center">
       <div className="mb-6">

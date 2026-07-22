@@ -6,6 +6,7 @@ import { pages, revisions } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
+import { ConfirmButton } from "../wp-ui";
 import { T, wpDate } from "../theme";
 import { deleteRevision, restoreRevision } from "./actions";
 export default async function RevisionsPage({
@@ -98,7 +99,12 @@ export default async function RevisionsPage({
                         </form>
                       )}
                       <form action={deleteRevision.bind(null, item.id)}>
-                        <button className={T.btnDanger}>Delete</button>
+                        <ConfirmButton
+                          message={`Delete the revision "${item.label || "Revision"}"? This cannot be undone.`}
+                          className={T.btnDanger}
+                        >
+                          Delete
+                        </ConfirmButton>
                       </form>
                     </div>
                   </td>

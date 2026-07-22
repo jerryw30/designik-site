@@ -18,13 +18,16 @@ function formatBytes(bytes: number) {
 
 export default async function EditMedia({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
   if (!canViewArea(user.role, "media")) redirect("/admin");
   const { id } = await params;
+  const saved = (await searchParams).saved === "1";
   const [asset] = await db
     .select({
       id: mediaAssets.id,
@@ -49,6 +52,14 @@ export default async function EditMedia({
     : "";
   return (
     <AdminShell user={user} title="Edit media">
+      {saved && (
+        <p
+          role="status"
+          className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] font-medium text-emerald-700"
+        >
+          Attachment updated.
+        </p>
+      )}
       <div className="mb-5 flex items-baseline gap-3">
         <h2 className={T.screenTitle}>Edit media</h2>
         <Link href="/admin/media" className={`${T.mutedLink} text-[13px]`}>
@@ -61,6 +72,7 @@ export default async function EditMedia({
             id={asset.id}
             mimeType={asset.mimeType}
             title={asset.altText || asset.title}
+            interactive
             className="max-h-[70vh] max-w-full rounded-md object-contain"
           />
         </section>

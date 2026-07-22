@@ -12,19 +12,32 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
   const [value, setValue] = useState(initial),
     [tab, setTab] = useState<Tab>("colors"),
     [message, setMessage] = useState(""),
+    [error, setError] = useState(false),
     [pending, start] = useTransition();
+  const run = (task: () => Promise<void>) =>
+    start(async () => {
+      try {
+        setError(false);
+        await task();
+      } catch {
+        setError(true);
+        setMessage(
+          "Could not save global styles — you may not have permission.",
+        );
+      }
+    });
   const save = () =>
-      start(async () => {
+      run(async () => {
         await saveGlobalStylesDraft(value);
         setMessage("Draft saved");
       }),
     publish = () =>
-      start(async () => {
+      run(async () => {
         await publishGlobalStyles(value);
         setMessage("Published live");
       }),
     reset = () =>
-      start(async () => {
+      run(async () => {
         const defaults = await resetGlobalStylesDraft();
         setValue(defaults);
         setMessage("Draft reset to website defaults");
@@ -312,7 +325,9 @@ export default function StyleEditor({ initial }: { initial: GlobalStyles }) {
             Reset draft
           </button>
         </div>
-        <p className="mt-3 text-[13px] font-medium text-emerald-600">
+        <p
+          className={`mt-3 text-[13px] font-medium ${error ? "text-red-600" : "text-emerald-600"}`}
+        >
           {message}
         </p>
       </section>

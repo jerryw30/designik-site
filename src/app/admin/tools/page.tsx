@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
@@ -39,7 +38,9 @@ export default async function Tools({
               ? "invalid JSON"
               : error === "format"
                 ? "unsupported backup format"
-                : "select a backup file"}
+                : error === "db"
+                  ? "the backup could not be written to the database — it may have been applied partially, so review your content before retrying"
+                  : "select a backup file"}
           .
         </div>
       )}
@@ -56,9 +57,15 @@ export default async function Tools({
               designs, settings, and Media Library files. Passwords,
               administrator sessions, and private form submissions are excluded.
             </p>
-            <Link href="/admin/tools/export" className={`${T.btnPrimary} mt-5`}>
+            {/* Plain anchor: next/link would prefetch the route handler and
+                trigger a backup export (and audit entry) on hover. */}
+            <a
+              href="/admin/tools/export"
+              download
+              className={`${T.btnPrimary} mt-5`}
+            >
               Download JSON backup
-            </Link>
+            </a>
           </div>
         </section>
         <section className={T.card}>

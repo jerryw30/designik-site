@@ -118,7 +118,28 @@ function object(value: unknown): Record<string, unknown> {
 }
 
 export function designValue(module: DesignModule, value: unknown): DesignStore {
-  const raw = object(value);
+  let raw = object(value);
+  // Saved sections created from the page builder are stored as a flat
+  // snapshot ({type, name, content, draftContent, ...}) rather than the
+  // draft/published wrapper. Lift them into the wrapper shape so the design
+  // editor and preview read the real section content instead of defaults.
+  if (
+    module === "saved-sections" &&
+    !raw.draft &&
+    !raw.published &&
+    (raw.draftContent || raw.publishedContent)
+  ) {
+    raw = {
+      draft: {
+        content: {
+          type: raw.type || "widgets",
+          name: raw.name || "Saved section",
+          content: object(raw.draftContent || raw.content),
+        },
+      },
+      published: null,
+    };
+  }
   const fallback = designDefault(module);
   const merge = (input: unknown): GlobalDesign => {
     const source = object(input);
@@ -135,6 +156,33 @@ export function designValue(module: DesignModule, value: unknown): DesignStore {
     draft: merge(raw.draft || raw),
     published: raw.published ? merge(raw.published) : null,
   };
+}
+
+export type DesignLocation = "homepage" | "blog" | "pages" | "posts";
+
+/**
+ * Resolve which published design applies to the page being rendered:
+ * honors the display-location condition ("entire-site" or the matching
+ * location) and picks the highest priority when several qualify.
+ */
+export function publishedDesign(
+  rows: ReadonlyArray<{ module: string; data: unknown }>,
+  module: DesignModule,
+  location: DesignLocation,
+): GlobalDesign | null {
+  return (
+    rows
+      .filter((row) => row.module === module)
+      .map((row) => designValue(module, row.data).published)
+      .filter(
+        (design): design is GlobalDesign =>
+          !!design &&
+          ["entire-site", location].includes(design.conditions.location),
+      )
+      .sort(
+        (a, b) => (b.conditions.priority || 0) - (a.conditions.priority || 0),
+      )[0] || null
+  );
 }
 
 export const designLabels: Record<

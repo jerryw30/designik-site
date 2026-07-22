@@ -2,7 +2,7 @@ import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import SiteHome, { type SiteSection } from "@/components/SiteHome";
-import { designValue, type DesignModule } from "@/cms/design-resources";
+import { publishedDesign } from "@/cms/design-resources";
 import { db } from "@/db";
 import { adminResources, pages, sections } from "@/db/schema";
 import type { FormDefinition } from "@/app/admin/forms/actions";
@@ -95,17 +95,9 @@ export default async function PublishedPage({
         ),
       ),
   ]);
-  const selected = (module: DesignModule) =>
-    resources
-      .filter((row) => row.module === module)
-      .map((row) => designValue(module, row.data).published)
-      .filter(Boolean)
-      .sort(
-        (a, b) => (b?.conditions.priority || 0) - (a?.conditions.priority || 0),
-      )[0] || null;
-  const header = selected("headers");
-  const footer = selected("footers");
-  const popup = selected("popups");
+  const header = publishedDesign(resources, "headers", "pages");
+  const footer = publishedDesign(resources, "footers", "pages");
+  const popup = publishedDesign(resources, "popups", "pages");
   const overrideContent = (kind: "header" | "footer", original: unknown) => {
     const design = kind === "header" ? header : footer;
     if (!design) return original;

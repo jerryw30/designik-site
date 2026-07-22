@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { activityLog } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
 import { T, wpDate } from "../theme";
 
@@ -39,7 +40,7 @@ export default async function ActivityPage({
 }) {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
-  if (user.role !== "SUPER_ADMIN" && user.role !== "ADMIN") redirect("/admin");
+  if (!canViewArea(user.role, "activity")) redirect("/admin");
 
   const moduleFilter = (await searchParams).module || "";
   const rows = await db

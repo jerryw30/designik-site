@@ -6,19 +6,14 @@ import { adminResources, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
-import { SelectAllBox } from "../wp-ui";
+import { ConfirmButton, SelectAllBox } from "../wp-ui";
+import { wpDate } from "../theme";
 import { bulkPosts, createPost, deletePostForever, duplicatePost, setPostStatus } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 const wpLink = "text-[#a10140] hover:text-[#7c0134] hover:underline";
 const wpBtn = "rounded-lg border border-[#a10140] bg-white px-2.5 py-1 text-[13px] font-medium text-[#a10140] hover:bg-[#fdf2f7]";
-
-function wpDate(d: Date) {
-  const date = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
-  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }).toLowerCase();
-  return `${date} at ${time}`;
-}
 
 type PostData = { category?: string; tags?: string[] };
 
@@ -172,7 +167,13 @@ export default async function PostsPage({
                         <>
                           <button formAction={setPostStatus.bind(null, post.id, "DRAFT")} className={wpLink}>Restore</button>
                           <span className="text-[#c3c4c7]">|</span>
-                          <button formAction={deletePostForever.bind(null, post.id)} className="text-[#dc2626] hover:underline">Delete Permanently</button>
+                          <ConfirmButton
+                            message={`Permanently delete "${post.title}"? This cannot be undone.`}
+                            formAction={deletePostForever.bind(null, post.id)}
+                            className="text-[#dc2626] hover:underline"
+                          >
+                            Delete Permanently
+                          </ConfirmButton>
                         </>
                       ) : (
                         <>
@@ -181,6 +182,12 @@ export default async function PostsPage({
                           <button formAction={duplicatePost.bind(null, post.id)} className={wpLink}>Duplicate</button>
                           <span className="text-[#c3c4c7]">|</span>
                           <a href={`/admin/posts/${post.id}/preview`} target="_blank" className={wpLink}>Preview</a>
+                          {post.status === "PUBLISHED" && (
+                            <>
+                              <span className="text-[#c3c4c7]">|</span>
+                              <a href={`/blog/${post.slug}`} target="_blank" className={wpLink}>View</a>
+                            </>
+                          )}
                           <span className="text-[#c3c4c7]">|</span>
                           <button formAction={setPostStatus.bind(null, post.id, post.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED")} className={wpLink}>
                             {post.status === "PUBLISHED" ? "Unpublish" : "Publish"}
@@ -191,18 +198,14 @@ export default async function PostsPage({
                       )}
                     </div>
                   </td>
-                  <td className="hidden px-3 py-2.5 lg:table-cell">
-                    <span className={wpLink}>{authorName || "—"}</span>
+                  <td className="hidden px-3 py-2.5 text-[#50575e] lg:table-cell">
+                    {authorName || "—"}
                   </td>
-                  <td className="hidden px-3 py-2.5 md:table-cell">
-                    <span className={wpLink}>{data.category || "Uncategorized"}</span>
+                  <td className="hidden px-3 py-2.5 text-[#50575e] md:table-cell">
+                    {data.category || "Uncategorized"}
                   </td>
-                  <td className="hidden px-3 py-2.5 xl:table-cell">
-                    {data.tags?.length ? (
-                      <span className={wpLink}>{data.tags.join(", ")}</span>
-                    ) : (
-                      <span className="text-[#50575e]">—</span>
-                    )}
+                  <td className="hidden px-3 py-2.5 text-[#50575e] xl:table-cell">
+                    {data.tags?.length ? data.tags.join(", ") : "—"}
                   </td>
                   <td className="px-3 py-2.5 text-[#50575e]">
                     {post.status === "PUBLISHED" ? "Published" : "Last Modified"}

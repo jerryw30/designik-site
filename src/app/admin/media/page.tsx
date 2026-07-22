@@ -16,6 +16,29 @@ function formatBytes(bytes: number) {
   return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
 }
 
+const ERROR_NOTICES: Record<string, string> = {
+  missing: "Select at least one file to upload.",
+  size: "A file exceeded the 4 MB upload limit. Nothing was uploaded.",
+  type: "One of the files is not a supported media type. Nothing was uploaded.",
+};
+
+const SUCCESS_NOTICES: Record<string, string> = {
+  uploaded: "Media uploaded.",
+  trashed: "Asset moved to trash.",
+  restored: "Asset restored to the library.",
+  deleted: "Asset permanently deleted.",
+};
+
+function noticeFor(query: Record<string, string | string[] | undefined>) {
+  const error = typeof query.error === "string" ? query.error : "";
+  if (error)
+    return { tone: "error" as const, text: ERROR_NOTICES[error] || "Upload failed." };
+  for (const key of Object.keys(SUCCESS_NOTICES))
+    if (query[key] === "1")
+      return { tone: "success" as const, text: SUCCESS_NOTICES[key] };
+  return null;
+}
+
 export default async function MediaLibrary({
   searchParams,
 }: {
@@ -59,9 +82,22 @@ export default async function MediaLibrary({
     .select({ count: sql<number>`count(*)::int` })
     .from(mediaAssets)
     .where(isNull(mediaAssets.deletedAt));
+  const notice = noticeFor(query);
 
   return (
     <AdminShell user={user} title="Media Library">
+      {notice && (
+        <p
+          role="status"
+          className={`mb-5 rounded-lg border px-4 py-3 text-[13px] font-medium ${
+            notice.tone === "error"
+              ? "border-red-200 bg-red-50 text-red-700"
+              : "border-emerald-200 bg-emerald-50 text-emerald-700"
+          }`}
+        >
+          {notice.text}
+        </p>
+      )}
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className={T.screenTitle}>
@@ -101,26 +137,43 @@ export default async function MediaLibrary({
       </form>
       {items.length ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {items.map((item) => (
+          {items.map((item) => {
+            const tile = (
+              <MediaPreview
+                id={item.id}
+                mimeType={item.mimeType}
+                title={item.altText || item.title}
+                className="h-full w-full object-cover"
+              />
+            );
+            const tileClass =
+              "block aspect-square overflow-hidden rounded-lg border border-black/[0.06] bg-neutral-100 shadow-[0_1px_3px_rgba(16,17,22,0.05)]";
+            return (
             <article key={item.id} className="group">
-              <Link
-                href={`/admin/media/${item.id}/edit`}
-                className="block aspect-square overflow-hidden rounded-lg border border-black/[0.06] bg-neutral-100 shadow-[0_1px_3px_rgba(16,17,22,0.05)] ring-2 ring-transparent transition group-hover:ring-[#a10140]"
-              >
-                <MediaPreview
-                  id={item.id}
-                  mimeType={item.mimeType}
-                  title={item.altText || item.title}
-                  className="h-full w-full object-cover"
-                />
-              </Link>
-              <div className="mt-2.5 px-0.5">
+              {trash ? (
+                // Trashed assets have no edit screen — restore first.
+                <div className={tileClass}>{tile}</div>
+              ) : (
                 <Link
                   href={`/admin/media/${item.id}/edit`}
-                  className="block truncate text-[13px] font-semibold text-[#1b1c20] transition-colors hover:text-[#a10140]"
+                  className={`${tileClass} ring-2 ring-transparent transition group-hover:ring-[#a10140]`}
                 >
-                  {item.title}
+                  {tile}
                 </Link>
+              )}
+              <div className="mt-2.5 px-0.5">
+                {trash ? (
+                  <span className="block truncate text-[13px] font-semibold text-[#1b1c20]">
+                    {item.title}
+                  </span>
+                ) : (
+                  <Link
+                    href={`/admin/media/${item.id}/edit`}
+                    className="block truncate text-[13px] font-semibold text-[#1b1c20] transition-colors hover:text-[#a10140]"
+                  >
+                    {item.title}
+                  </Link>
+                )}
                 <p className="mt-0.5 truncate text-[11.5px] text-neutral-400">
                   {item.filename}
                 </p>
@@ -155,7 +208,8 @@ export default async function MediaLibrary({
                 </div>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="rounded-xl border border-dashed border-neutral-300 bg-white p-16 text-center text-[13px] text-neutral-500">

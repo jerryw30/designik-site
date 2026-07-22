@@ -48,8 +48,8 @@ export default async function SettingsPage() {
       .from(siteSettings)
       .where(eq(siteSettings.key, "website_settings"))
       .limit(1),
-    stored = row?.value as { draft?: unknown } | undefined,
-    value = websiteSettings(stored?.draft);
+    stored = row?.value as { draft?: unknown; published?: unknown } | undefined,
+    value = websiteSettings(stored?.draft ?? stored?.published);
   return (
     <AdminShell user={user} title="Website Settings">
       <div className="mb-6">

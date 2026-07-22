@@ -163,14 +163,37 @@ export async function ensureHomepage() {
   return page.id;
 }
 
+/** Public URL for a page slug (front page lives at "/"). */
+function publicPagePath(slug: string) {
+  return slug === "home" ? "/" : `/${slug}`;
+}
+
+/** Return `slug` or, when another page already uses it, a deduped variant. */
+async function uniquePageSlug(slug: string, excludeId: string) {
+  let candidate = slug;
+  for (let n = 2; n < 100; n += 1) {
+    const [taken] = await db
+      .select({ id: pages.id })
+      .from(pages)
+      .where(eq(pages.slug, candidate))
+      .limit(1);
+    if (!taken || taken.id === excludeId) return candidate;
+    candidate = `${slug}-${n}`;
+  }
+  return `${slug}-${Date.now().toString(36)}`;
+}
+
 export async function updatePage(form: FormData) {
   const user = await requireUser();
   const id = String(form.get("id"));
   const title = String(form.get("title") || "").trim();
-  const slug = String(form.get("slug") || "")
+  let slug = String(form.get("slug") || "")
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9-]/g, "-");
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-|-$/g, "");
+  const status = String(form.get("status") || "");
   const seo = {
     focusKeyphrase: String(form.get("focusKeyphrase") || "").trim(),
     title: String(form.get("seoTitle") || "").trim(),
@@ -184,11 +207,31 @@ export async function updatePage(form: FormData) {
     xDescription: String(form.get("xDescription") || "").trim(),
   };
   if (id && title && slug) {
+    const [existing] = await db
+      .select({ slug: pages.slug, publishedAt: pages.publishedAt })
+      .from(pages)
+      .where(eq(pages.id, id))
+      .limit(1);
+    if (!existing) return;
+    // The front page is looked up by the "home" slug — never rename it.
+    if (existing.slug === "home") slug = "home";
+    else slug = await uniquePageSlug(slug, id);
+    const statusChange =
+      status === "PUBLISHED" || status === "DRAFT"
+        ? {
+            status: status as "PUBLISHED" | "DRAFT",
+            publishedAt:
+              status === "PUBLISHED" ? new Date() : existing.publishedAt,
+          }
+        : {};
     await db
       .update(pages)
-      .set({ title, slug, seo, updatedAt: new Date() })
+      .set({ title, slug, seo, ...statusChange, updatedAt: new Date() })
       .where(eq(pages.id, id));
     await logActivity(user, "pages", "updated", title, id);
+    revalidatePath(`/admin/pages/${id}/edit`);
+    revalidatePath(publicPagePath(slug));
+    if (existing.slug !== slug) revalidatePath(publicPagePath(existing.slug));
   }
   revalidatePath("/admin/pages");
 }
@@ -286,48 +329,69 @@ export async function setPageStatus(id: string, status: "DRAFT" | "PUBLISHED") {
     id,
   );
   revalidatePath("/admin/pages");
+  revalidatePath(publicPagePath(page.slug));
   revalidatePath("/");
 }
 
 export async function trashPage(id: string) {
   const user = await requireUser();
+  const [page] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
+  // The front page can never be trashed.
+  if (!page || page.slug === "home") return;
   await db
     .update(pages)
     .set({ deletedAt: new Date(), status: "ARCHIVED", updatedAt: new Date() })
     .where(eq(pages.id, id));
-  await logActivity(user, "pages", "trashed", id, id);
+  await logActivity(user, "pages", "trashed", page.title, id);
   revalidatePath("/admin/pages");
+  revalidatePath(publicPagePath(page.slug));
+}
+/** Trash from the edit screen, then land back on the list. */
+export async function trashPageFromEditor(id: string) {
+  await trashPage(id);
+  redirect("/admin/pages");
 }
 export async function restorePage(id: string) {
   const user = await requireUser();
+  const [page] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
+  if (!page) return;
   await db
     .update(pages)
     .set({ deletedAt: null, status: "DRAFT", updatedAt: new Date() })
     .where(eq(pages.id, id));
-  await logActivity(user, "pages", "restored", id, id);
+  await logActivity(user, "pages", "restored", page.title, id);
   revalidatePath("/admin/pages");
 }
 export async function deletePageForever(id: string) {
   const user = await requireUser();
+  const [page] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
+  if (!page || page.slug === "home" || !page.deletedAt) return;
   await db
     .delete(pages)
     .where(and(eq(pages.id, id), isNotNull(pages.deletedAt)));
-  await logActivity(user, "pages", "deleted", id, id);
+  await logActivity(user, "pages", "deleted", page.title, id);
   revalidatePath("/admin/pages");
 }
 
 /** WordPress-style bulk actions from the Pages list table. */
 export async function bulkPages(form: FormData) {
   const user = await requireUser();
-  const action = String(form.get("bulk") || "");
+  // Two selects (tablenav top + bottom) can submit; use whichever is set.
+  const pick = (name: string) => {
+    const value = String(form.get(name) || "");
+    return value && value !== "-1" ? value : "";
+  };
+  const action = pick("bulk") || pick("bulk2");
   const ids = form.getAll("ids").map(String).filter(Boolean);
-  if (!action || action === "-1" || ids.length === 0) return;
+  if (!action || ids.length === 0) return;
+  const touched: string[] = [];
   for (const id of ids) {
     const [row] = await db.select().from(pages).where(eq(pages.id, id));
     if (!row) continue;
     if (action === "trash" && row.slug !== "home") {
       await db.update(pages).set({ deletedAt: new Date(), status: "ARCHIVED", updatedAt: new Date() }).where(eq(pages.id, id));
       await logActivity(user, "pages", "trashed", row.title, id);
+      touched.push(row.slug);
     } else if (action === "restore") {
       await db.update(pages).set({ deletedAt: null, status: "DRAFT", updatedAt: new Date() }).where(eq(pages.id, id));
       await logActivity(user, "pages", "restored", row.title, id);
@@ -337,21 +401,16 @@ export async function bulkPages(form: FormData) {
     } else if (action === "publish") {
       await db.update(pages).set({ status: "PUBLISHED", publishedAt: new Date(), updatedAt: new Date() }).where(eq(pages.id, id));
       await logActivity(user, "pages", "published", row.title, id);
+      touched.push(row.slug);
     } else if (action === "draft") {
       await db.update(pages).set({ status: "DRAFT", updatedAt: new Date() }).where(eq(pages.id, id));
       await logActivity(user, "pages", "drafted", row.title, id);
+      touched.push(row.slug);
     }
   }
   revalidatePath("/admin/pages");
   revalidatePath("/");
-}
-
-export async function getHomepageSections(pageId: string) {
-  return db
-    .select()
-    .from(sections)
-    .where(eq(sections.pageId, pageId))
-    .orderBy(asc(sections.position));
+  for (const slug of touched) revalidatePath(publicPagePath(slug));
 }
 
 export async function saveHeroDraft(sectionId: string, value: unknown) {

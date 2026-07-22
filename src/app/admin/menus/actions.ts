@@ -1,8 +1,9 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { designValue } from "@/cms/design-resources";
 import { db } from "@/db";
 import { adminResources, pages, revisions, sections } from "@/db/schema";
 import { logActivity } from "@/lib/activity";
@@ -73,6 +74,8 @@ export async function saveMenu(id: string, title: string, items: MenuItem[]) {
     id,
   );
   revalidatePath(`/admin/menus/${id}/edit`);
+  revalidatePath(`/admin/menus/${id}/preview`);
+  revalidatePath("/admin/menus");
 }
 export async function setMenuStatus(
   id: string,
@@ -86,6 +89,20 @@ export async function setMenuStatus(
     .limit(1);
   if (!menu) return;
   if (status === "PUBLISHED") {
+    const items = (menu.data as { items?: MenuItem[] }).items || [];
+    const roots = items.filter((item) => !item.parentId);
+    const links = roots.map((root) => ({
+      label: root.label,
+      href: root.url,
+      target: root.target,
+      children: items
+        .filter((item) => item.parentId === root.id)
+        .map((child) => ({
+          label: child.label,
+          href: child.url,
+          target: child.target,
+        })),
+    }));
     const [home] = await db
       .select()
       .from(pages)
@@ -98,20 +115,6 @@ export async function setMenuStatus(
         .where(and(eq(sections.pageId, home.id), eq(sections.type, "header")))
         .limit(1);
       if (header) {
-        const items = (menu.data as { items?: MenuItem[] }).items || [];
-        const roots = items.filter((item) => !item.parentId);
-        const links = roots.map((root) => ({
-          label: root.label,
-          href: root.url,
-          target: root.target,
-          children: items
-            .filter((item) => item.parentId === root.id)
-            .map((child) => ({
-              label: child.label,
-              href: child.url,
-              target: child.target,
-            })),
-        }));
         const draft = { ...(header.draftContent as object), links };
         await db.insert(revisions).values({
           pageId: home.id,
@@ -131,6 +134,40 @@ export async function setMenuStatus(
           })
           .where(eq(sections.id, header.id));
       }
+    }
+    // A published Header Builder header overrides the home header section on
+    // the live site — push the menu links into those headers too, otherwise
+    // "Publish to header" would have no visible effect.
+    const activeHeaders = await db
+      .select()
+      .from(adminResources)
+      .where(
+        and(
+          eq(adminResources.module, "headers"),
+          eq(adminResources.status, "PUBLISHED"),
+          isNull(adminResources.deletedAt),
+        ),
+      );
+    for (const row of activeHeaders) {
+      const value = designValue("headers", row.data);
+      await db
+        .update(adminResources)
+        .set({
+          data: {
+            draft: {
+              ...value.draft,
+              content: { ...value.draft.content, links },
+            },
+            published: value.published
+              ? {
+                  ...value.published,
+                  content: { ...value.published.content, links },
+                }
+              : value.published,
+          },
+          updatedAt: new Date(),
+        })
+        .where(eq(adminResources.id, row.id));
     }
   }
   await db
@@ -153,7 +190,7 @@ export async function setMenuStatus(
     id,
   );
   revalidatePath("/admin/menus");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
 }
 export async function duplicateMenu(id: string) {
   const user = await authorize();

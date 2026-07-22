@@ -40,6 +40,8 @@ export default async function EditPostPage({
   if (!user) redirect("/admin/login");
   if (!canViewArea(user.role, "posts")) redirect("/admin");
   const { id } = await params;
+  // adminResources.id is a uuid column — malformed ids must 404, not crash.
+  if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const [post] = await db
     .select()
     .from(adminResources)
@@ -141,6 +143,24 @@ export default async function EditPostPage({
                   >
                     Publish
                   </button>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px]">
+                  <a
+                    href={`/admin/posts/${post.id}/preview`}
+                    target="_blank"
+                    className={T.link}
+                  >
+                    Preview
+                  </a>
+                  {post.status === "PUBLISHED" && (
+                    <a
+                      href={`/blog/${post.slug}`}
+                      target="_blank"
+                      className={T.link}
+                    >
+                      View post
+                    </a>
+                  )}
                 </div>
                 <p className={T.help}>Last updated {wpDate(post.updatedAt)}</p>
               </div>

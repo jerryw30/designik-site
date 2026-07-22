@@ -102,7 +102,19 @@ export async function restoreRevision(id: string) {
 }
 export async function deleteRevision(id: string) {
   const user = await requirePermission("edit_pages");
+  const [revision] = await db
+    .select({ label: revisions.label })
+    .from(revisions)
+    .where(eq(revisions.id, id))
+    .limit(1);
+  if (!revision) return;
   await db.delete(revisions).where(eq(revisions.id, id));
-  await logActivity(user, "pages", "deleted revision", id, id);
+  await logActivity(
+    user,
+    "pages",
+    "deleted revision",
+    revision.label || id,
+    id,
+  );
   revalidatePath("/admin/revisions");
 }

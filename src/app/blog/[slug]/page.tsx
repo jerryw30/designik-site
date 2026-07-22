@@ -4,6 +4,8 @@ import { db } from "@/db";
 import { adminResources, users } from "@/db/schema";
 import Link from "next/link";
 import Nav from "@/components/sections/Nav";
+import GlobalPopup from "@/components/GlobalPopup";
+import { blogChrome } from "@/cms/blog-chrome";
 import Footer from "@/components/sections/Footer";
 import type { Metadata } from "next";
 
@@ -104,9 +106,10 @@ export default async function BlogPost({
       .trim()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
+  const chrome = await blogChrome();
   return (
     <>
-      <Nav />
+      <Nav content={chrome.headerContent} />
       <main className="min-h-screen overflow-x-clip bg-white px-5 pb-24 pt-36 md:pt-44">
       <article className="relative z-10 mx-auto max-w-3xl">
         <Link href="/blog" className="font-display text-[13px] font-semibold uppercase text-black/50 transition hover:text-wine-500">
@@ -167,7 +170,8 @@ export default async function BlogPost({
         ) : null}
       </article>
       </main>
-      <Footer />
+      <Footer content={chrome.footerContent} />
+      <GlobalPopup design={chrome.popup} />
     </>
   );
 }

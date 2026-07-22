@@ -114,30 +114,34 @@ export async function saveForm(
       options: (field.options || []).map(String).filter(Boolean).slice(0, 50),
     };
   });
-  await db
+  const [record] = await db
     .update(adminResources)
     .set({
       title: title.trim() || "Untitled Form",
       data: { ...definition, fields },
       updatedAt: new Date(),
     })
-    .where(and(eq(adminResources.id, id), eq(adminResources.module, "forms")));
+    .where(and(eq(adminResources.id, id), eq(adminResources.module, "forms")))
+    .returning({ slug: adminResources.slug });
   await logActivity(user, "forms", "updated", title.trim() || "Untitled Form", id);
+  revalidatePath("/admin/forms");
   revalidatePath(`/admin/forms/${id}/edit`);
+  if (record) revalidatePath(`/forms/${record.slug}`);
 }
 export async function setFormStatus(
   id: string,
   status: "DRAFT" | "PUBLISHED" | "TRASH",
 ) {
   const user = await authorize();
-  await db
+  const [record] = await db
     .update(adminResources)
     .set({
       status,
       deletedAt: status === "TRASH" ? new Date() : null,
       updatedAt: new Date(),
     })
-    .where(and(eq(adminResources.id, id), eq(adminResources.module, "forms")));
+    .where(and(eq(adminResources.id, id), eq(adminResources.module, "forms")))
+    .returning({ title: adminResources.title, slug: adminResources.slug });
   await logActivity(
     user,
     "forms",
@@ -146,11 +150,11 @@ export async function setFormStatus(
       : status === "TRASH"
         ? "trashed"
         : "drafted",
-    id,
+    record?.title || id,
     id,
   );
   revalidatePath("/admin/forms");
-  revalidatePath("/forms");
+  if (record) revalidatePath(`/forms/${record.slug}`);
 }
 export async function duplicateForm(id: string) {
   const user = await authorize();
@@ -175,7 +179,7 @@ export async function duplicateForm(id: string) {
 }
 export async function deleteFormForever(id: string) {
   const user = await authorize();
-  await db
+  const [record] = await db
     .delete(adminResources)
     .where(
       and(
@@ -183,8 +187,9 @@ export async function deleteFormForever(id: string) {
         eq(adminResources.module, "forms"),
         eq(adminResources.status, "TRASH"),
       ),
-    );
-  await logActivity(user, "forms", "deleted", id, id);
+    )
+    .returning({ title: adminResources.title });
+  await logActivity(user, "forms", "deleted", record?.title || id, id);
   revalidatePath("/admin/forms");
 }
 export async function setSubmissionStatus(
@@ -192,10 +197,11 @@ export async function setSubmissionStatus(
   status: "READ" | "UNREAD",
 ) {
   const user = await authorize();
-  await db
+  const [record] = await db
     .update(formSubmissions)
     .set({ status })
-    .where(eq(formSubmissions.id, id));
+    .where(eq(formSubmissions.id, id))
+    .returning({ formId: formSubmissions.formId });
   await logActivity(
     user,
     "forms",
@@ -204,10 +210,15 @@ export async function setSubmissionStatus(
     id,
   );
   revalidatePath("/admin/forms");
+  if (record) revalidatePath(`/admin/forms/${record.formId}/submissions`);
 }
 export async function deleteSubmission(id: string) {
   const user = await authorize();
-  await db.delete(formSubmissions).where(eq(formSubmissions.id, id));
+  const [record] = await db
+    .delete(formSubmissions)
+    .where(eq(formSubmissions.id, id))
+    .returning({ formId: formSubmissions.formId });
   await logActivity(user, "forms", "deleted", `submission ${id}`, id);
   revalidatePath("/admin/forms");
+  if (record) revalidatePath(`/admin/forms/${record.formId}/submissions`);
 }

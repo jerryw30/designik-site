@@ -23,8 +23,17 @@ export async function GET(
     .select()
     .from(formSubmissions)
     .where(eq(formSubmissions.formId, id));
+  // Columns follow the form definition order, then any legacy keys that only
+  // exist on older submissions.
+  const definition = form.data as { fields?: { name?: unknown }[] };
+  const definedKeys = (definition.fields ?? [])
+    .map((field) => String(field?.name || ""))
+    .filter(Boolean);
   const keys = [
-    ...new Set(entries.flatMap((entry) => Object.keys(entry.data as object))),
+    ...new Set([
+      ...definedKeys,
+      ...entries.flatMap((entry) => Object.keys(entry.data as object)),
+    ]),
   ];
   const output = [
     ["id", "status", "createdAt", ...keys].map(csv).join(","),

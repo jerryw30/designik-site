@@ -38,6 +38,31 @@ function slugify(value: string) {
 async function authorize() {
   return requirePermission("edit_pages");
 }
+function object(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : {};
+}
+/**
+ * Saved sections are also consumed by the page builder, which reads the flat
+ * {type, name, content, draftContent} snapshot shape. Mirror those keys next
+ * to the draft/published wrapper so editing a saved section here never breaks
+ * "insert saved section" in the builder.
+ */
+function savedSectionMirror(
+  designModule: DesignModule,
+  draft: GlobalDesign,
+): Record<string, unknown> {
+  if (designModule !== "saved-sections") return {};
+  const content = object(draft.content);
+  const inner = object(content.content);
+  return {
+    type: String(content.type || "widgets"),
+    name: String(content.name || "Saved section"),
+    content: inner,
+    draftContent: inner,
+  };
+}
 
 export async function createDesign(form: FormData) {
   const user = await authorize();
@@ -51,7 +76,11 @@ export async function createDesign(form: FormData) {
       title,
       slug: `${slugify(title)}-${Date.now().toString(36)}`,
       createdBy: user.id,
-      data: { draft: value, published: null },
+      data: {
+        ...savedSectionMirror(designModule, value),
+        draft: value,
+        published: null,
+      },
     })
     .returning({ id: adminResources.id });
   await logActivity(user, designModule, "created", title, created.id);
@@ -83,7 +112,11 @@ export async function saveDesignDraft(
     .update(adminResources)
     .set({
       title: title.trim() || "Untitled",
-      data: { draft, published: value.published },
+      data: {
+        ...savedSectionMirror(designModule, draft),
+        draft,
+        published: value.published,
+      },
       updatedAt: new Date(),
     })
     .where(eq(adminResources.id, id));
@@ -129,7 +162,11 @@ export async function publishDesign(
     .set({
       title: title.trim() || "Untitled",
       status: "PUBLISHED",
-      data: { draft, published: draft },
+      data: {
+        ...savedSectionMirror(designModule, draft),
+        draft,
+        published: draft,
+      },
       updatedAt: new Date(),
     })
     .where(
@@ -140,7 +177,7 @@ export async function publishDesign(
       ),
     );
   await logActivity(user, designModule, "published", title.trim() || "Untitled", id);
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   revalidatePath(`/admin/${designModule}`);
   revalidatePath(`/admin/${designModule}/${id}/edit`);
 }
@@ -159,7 +196,7 @@ export async function unpublishDesign(id: string, moduleInput: string) {
       ),
     );
   await logActivity(user, designModule, "unpublished", id, id);
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   revalidatePath(`/admin/${designModule}`);
   revalidatePath(`/admin/${designModule}/${id}/edit`);
 }
@@ -176,12 +213,17 @@ export async function duplicateDesign(form: FormData) {
     )
     .limit(1);
   if (!source) return;
+  const value = designValue(designModule, source.data);
   await db.insert(adminResources).values({
     module: designModule,
     title: `${source.title} Copy`,
     slug: `${source.slug}-copy-${Date.now().toString(36)}`,
     status: "DRAFT",
-    data: { ...designValue(designModule, source.data), published: null },
+    data: {
+      ...savedSectionMirror(designModule, value.draft),
+      draft: value.draft,
+      published: null,
+    },
     createdBy: user.id,
   });
   await logActivity(user, designModule, "duplicated", source.title, id);
@@ -203,7 +245,7 @@ export async function trashDesign(form: FormData) {
       ),
     );
   await logActivity(user, designModule, "trashed", id, id);
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   revalidatePath(`/admin/${designModule}`);
   redirect(`/admin/${designModule}`);
 }

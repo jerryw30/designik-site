@@ -1,4 +1,4 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
 
@@ -9,6 +9,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  // Junk ids would fail the uuid cast in Postgres with a 500 — 404 instead.
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))
+    return new Response("Media not found", { status: 404 });
+  // Trashed assets are still served (matching WordPress) so the admin trash
+  // grid can preview them; permanent delete removes the row and the URL dies.
   const [asset] = await db
     .select({
       content: mediaAssets.contentBase64,
@@ -17,7 +22,7 @@ export async function GET(
       updatedAt: mediaAssets.updatedAt,
     })
     .from(mediaAssets)
-    .where(and(eq(mediaAssets.id, id), isNull(mediaAssets.deletedAt)))
+    .where(eq(mediaAssets.id, id))
     .limit(1);
   if (!asset) return new Response("Media not found", { status: 404 });
   return new Response(Buffer.from(asset.content, "base64"), {

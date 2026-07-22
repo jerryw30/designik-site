@@ -17,6 +17,8 @@ export default async function PagePreview({
   if (!user) redirect("/admin/login");
   if (!canViewArea(user.role, "pages")) redirect("/admin");
   const { id } = await params;
+  // pages.id is a uuid column — malformed ids must 404, not crash.
+  if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const [page] = await db
     .select({ id: pages.id })
     .from(pages)

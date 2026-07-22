@@ -5,10 +5,7 @@ import { db } from "@/db";
 import { siteSettings } from "@/db/schema";
 import { logActivity } from "@/lib/activity";
 import { requirePermission } from "@/lib/permissions";
-import {
-  websiteSettings,
-  websiteSettingsDefaults,
-} from "@/cms/website-settings";
+import { websiteSettings } from "@/cms/website-settings";
 const KEY = "website_settings";
 async function existing() {
   const [row] = await db
@@ -113,17 +110,19 @@ export async function publishSettings(form: FormData) {
 export async function resetSettingsDraft() {
   const user = await requirePermission("manage_settings"),
     old = await existing();
+  // Discard unpublished edits: the draft returns to what is currently live,
+  // so an accidental publish afterwards cannot wipe the live configuration.
   await db
     .insert(siteSettings)
     .values({
       key: KEY,
-      value: { draft: websiteSettingsDefaults, published: old.published },
+      value: { draft: old.published, published: old.published },
       updatedBy: user.id,
     })
     .onConflictDoUpdate({
       target: siteSettings.key,
       set: {
-        value: { draft: websiteSettingsDefaults, published: old.published },
+        value: { draft: old.published, published: old.published },
         updatedBy: user.id,
         updatedAt: new Date(),
       },

@@ -11,6 +11,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  // Junk ids would fail the uuid cast in Postgres with a 500 — 404 instead.
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))
+    return NextResponse.json({ error: "Form is not available" }, { status: 404 });
   let body: Record<string, unknown>;
   try {
     body = await request.json();

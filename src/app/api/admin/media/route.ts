@@ -50,6 +50,8 @@ export async function POST(request: Request) {
     if (file.size > MAX_FILE_SIZE) return Response.json({ error: `${file.name} is over 4MB.` }, { status: 400 });
     if (!allowedTypes.test(file.type)) return Response.json({ error: `${file.name}: unsupported type.` }, { status: 400 });
     const filename = cleanFilename(file.name);
+    const title =
+      filename.replace(/\.[a-z0-9]+$/i, "").replaceAll("-", " ") || filename;
     const [row] = await db
       .insert(mediaAssets)
       .values({
@@ -57,7 +59,8 @@ export async function POST(request: Request) {
         mimeType: file.type,
         byteSize: file.size,
         contentBase64: Buffer.from(await file.arrayBuffer()).toString("base64"),
-        title: filename.replace(/\.[a-z0-9]+$/i, "").replaceAll("-", " ") || filename,
+        title,
+        altText: file.type.startsWith("image/") ? title : "",
         uploadedBy: user.id,
       })
       .returning({ id: mediaAssets.id, title: mediaAssets.title, mimeType: mediaAssets.mimeType });

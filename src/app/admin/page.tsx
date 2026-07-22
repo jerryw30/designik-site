@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { activityLog, adminResources, chatConversations, leads, mediaAssets, pages, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { canViewArea } from "@/lib/roles";
 import { ensureHomepage } from "./actions";
 import { AdminShell } from "./admin-shell";
 
@@ -43,6 +44,11 @@ export default async function Dashboard() {
   if (!user) redirect("/admin/login");
   await ensureHomepage();
 
+  // Only surface data this role could open from the sidebar — lead details
+  // and the audit trail must not leak to e.g. viewers or content editors.
+  const canLeads = canViewArea(user.role, "leads");
+  const canActivity = canViewArea(user.role, "activity");
+
   const [
     [allPages],
     [published],
@@ -65,8 +71,12 @@ export default async function Dashboard() {
     db.select({ value: count() }).from(leads).where(eq(leads.status, "NEW")),
     db.select({ value: count() }).from(chatConversations),
     db.select({ value: count() }).from(users),
-    db.select().from(leads).orderBy(desc(leads.createdAt)).limit(6),
-    db.select().from(activityLog).orderBy(desc(activityLog.createdAt)).limit(6),
+    canLeads
+      ? db.select().from(leads).orderBy(desc(leads.createdAt)).limit(6)
+      : Promise.resolve([]),
+    canActivity
+      ? db.select().from(activityLog).orderBy(desc(activityLog.createdAt)).limit(6)
+      : Promise.resolve([]),
   ]);
 
   const stats = [
@@ -76,16 +86,16 @@ export default async function Dashboard() {
     { label: "Leads", value: leadCount.value, sub: `${newLeads.value} new`, href: "/admin/leads", alert: newLeads.value > 0 },
     { label: "Chats", value: chatCount.value, sub: "conversations", href: "/admin/chat" },
     { label: "Users", value: userCount.value, sub: "team accounts", href: "/admin/users" },
-  ];
+  ].filter((s) => canViewArea(user.role, s.href.split("/")[2] || ""));
 
   const quickActions = [
     { label: "Create new page", href: "/admin/pages?new=1", icon: "M12 5v14 M5 12h14" },
     { label: "Write a post", href: "/admin/posts?new=1", icon: "M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" },
-    { label: "Upload media", href: "/admin/media?upload=1", icon: "M12 16V4 M6 10l6-6 6 6 M4 20h16" },
+    { label: "Upload media", href: "/admin/media", icon: "M12 16V4 M6 10l6-6 6 6 M4 20h16" },
     { label: "Edit navigation", href: "/admin/menus", icon: "M4 6h16 M4 12h16 M4 18h16" },
     { label: "Site settings", href: "/admin/settings", icon: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6" },
     { label: "SEO settings", href: "/admin/seo", icon: "M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16 M21 21l-4.3-4.3" },
-  ];
+  ].filter((a) => canViewArea(user.role, a.href.split("/")[2].split("?")[0]));
 
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 
@@ -114,9 +124,11 @@ export default async function Dashboard() {
           <Link href="/admin/pages" className="rounded-full bg-white px-5 py-2 text-[13px] font-semibold text-[#a10140] transition hover:scale-[1.03]">
             Manage pages
           </Link>
-          <Link href="/admin/leads" className="rounded-full border border-white/25 bg-white/10 px-5 py-2 text-[13px] font-medium backdrop-blur transition hover:bg-white/20">
-            Review leads {newLeads.value > 0 && <span className="ml-1 rounded-full bg-[#ff2e73] px-1.5 py-0.5 text-[10px] font-bold">{newLeads.value}</span>}
-          </Link>
+          {canLeads && (
+            <Link href="/admin/leads" className="rounded-full border border-white/25 bg-white/10 px-5 py-2 text-[13px] font-medium backdrop-blur transition hover:bg-white/20">
+              Review leads {newLeads.value > 0 && <span className="ml-1 rounded-full bg-[#ff2e73] px-1.5 py-0.5 text-[10px] font-bold">{newLeads.value}</span>}
+            </Link>
+          )}
           <a href="/" target="_blank" className="rounded-full border border-white/25 px-5 py-2 text-[13px] font-medium transition hover:bg-white/10">
             View live site ↗
           </a>
@@ -151,8 +163,9 @@ export default async function Dashboard() {
         })}
       </section>
 
-      <div className="mt-5 grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+      <div className={`mt-5 grid gap-5 ${canLeads ? "xl:grid-cols-[1.15fr_0.85fr]" : ""}`}>
         {/* recent leads */}
+        {canLeads && (
         <section className="rounded-2xl border border-black/[0.05] bg-white shadow-[0_1px_3px_rgba(16,17,22,0.05)]">
           <div className="flex items-center justify-between border-b border-black/[0.05] px-5 py-4">
             <h3 className="text-[15px] font-semibold">Recent leads</h3>
@@ -183,6 +196,7 @@ export default async function Dashboard() {
             </ul>
           )}
         </section>
+        )}
 
         <div className="space-y-5">
           {/* quick actions */}
@@ -209,6 +223,7 @@ export default async function Dashboard() {
           </section>
 
           {/* activity */}
+          {canActivity && (
           <section className="rounded-2xl border border-black/[0.05] bg-white shadow-[0_1px_3px_rgba(16,17,22,0.05)]">
             <div className="flex items-center justify-between border-b border-black/[0.05] px-5 py-4">
               <h3 className="text-[15px] font-semibold">Recent activity</h3>
@@ -238,6 +253,7 @@ export default async function Dashboard() {
               </ul>
             )}
           </section>
+          )}
         </div>
       </div>
     </AdminShell>

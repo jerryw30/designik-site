@@ -27,7 +27,10 @@ export default function FormEditor({
   const [title, setTitle] = useState(initialTitle),
     [definition, setDefinition] = useState(initialDefinition),
     [dragged, setDragged] = useState<string | null>(null),
-    [message, setMessage] = useState(""),
+    [message, setMessage] = useState<{
+      tone: "success" | "error";
+      text: string;
+    } | null>(null),
     [pending, start] = useTransition();
   const fields = definition.fields;
   const update = (id: string, patch: Partial<FormField>) =>
@@ -83,8 +86,16 @@ export default function FormEditor({
   };
   const persist = () =>
     start(async () => {
-      await saveForm(id, title, definition);
-      setMessage("Form saved");
+      setMessage(null);
+      try {
+        await saveForm(id, title, definition);
+        setMessage({ tone: "success", text: "Form saved" });
+      } catch {
+        setMessage({
+          tone: "error",
+          text: "Save failed — check your connection and try again.",
+        });
+      }
     });
   return (
     <div className="grid gap-6 xl:grid-cols-[1fr_330px]">
@@ -102,7 +113,18 @@ export default function FormEditor({
             <div
               key={field.id}
               draggable
-              onDragStart={() => setDragged(field.id)}
+              onDragStart={(e) => {
+                // Selecting text inside a control must not start a card drag.
+                if (
+                  (e.target as HTMLElement).closest?.(
+                    "input, textarea, select, button",
+                  )
+                ) {
+                  e.preventDefault();
+                  return;
+                }
+                setDragged(field.id);
+              }}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => drop(field.id)}
               className="rounded-lg border border-neutral-200 bg-white p-4 transition hover:border-[#a10140]/35"
@@ -189,6 +211,12 @@ export default function FormEditor({
                       placeholder="Options, comma separated"
                       className={T.input}
                     />
+                    {!field.options.length && (
+                      <p className="mt-1 text-[11.5px] font-medium text-amber-600">
+                        Add at least one option or visitors cannot complete
+                        this field.
+                      </p>
+                    )}
                   </div>
                 )}
                 <label className="flex items-center gap-2 self-end pb-2 text-[13px] font-medium text-neutral-700">
@@ -260,9 +288,16 @@ export default function FormEditor({
           >
             {pending ? "Saving…" : "Save form"}
           </button>
-          <p className="text-center text-[12px] font-medium text-emerald-600">
-            {message}
-          </p>
+          {message && (
+            <p
+              role="status"
+              className={`text-center text-[12px] font-medium ${
+                message.tone === "error" ? "text-red-600" : "text-emerald-600"
+              }`}
+            >
+              {message.text}
+            </p>
+          )}
         </div>
       </aside>
     </div>

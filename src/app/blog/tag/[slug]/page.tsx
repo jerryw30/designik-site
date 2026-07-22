@@ -1,42 +1,84 @@
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import BlogArchive from "@/components/BlogArchive";
 import { db } from "@/db";
 import { adminResources } from "@/db/schema";
 
 export const revalidate = 60;
+
+const termSlug = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+/**
+ * Tags on posts are free text, so resolve the archive from the saved term
+ * when it exists and otherwise fall back to matching post tags by slug — a
+ * tag chip on a post never dead-ends.
+ */
+async function loadTag(slug: string) {
+  const [[term], published] = await Promise.all([
+    db
+      .select()
+      .from(adminResources)
+      .where(
+        and(eq(adminResources.module, "tags"), eq(adminResources.slug, slug)),
+      )
+      .limit(1),
+    db
+      .select()
+      .from(adminResources)
+      .where(
+        and(
+          eq(adminResources.module, "posts"),
+          eq(adminResources.status, "PUBLISHED"),
+          isNull(adminResources.deletedAt),
+        ),
+      )
+      .orderBy(desc(adminResources.updatedAt)),
+  ]);
+  const matches = (post: (typeof published)[number]) =>
+    ((post.data as { tags?: string[] }).tags || []).find(
+      (tag) => termSlug(tag) === slug,
+    );
+  const posts = published.filter((post) => matches(post));
+  if (!term && !posts.length) return null;
+  const title = term?.title || (posts[0] && matches(posts[0])) || slug;
+  const description = (term?.data as { description?: string } | undefined)
+    ?.description;
+  return { title, description, posts };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const archive = await loadTag((await params).slug);
+  if (!archive) return {};
+  return {
+    title: `${archive.title} — Designik Journal`,
+    description:
+      archive.description || `Journal posts tagged ${archive.title}.`,
+  };
+}
+
 export default async function TagArchive({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
-  const [term] = await db
-    .select()
-    .from(adminResources)
-    .where(
-      and(eq(adminResources.module, "tags"), eq(adminResources.slug, slug)),
-    )
-    .limit(1);
-  if (!term) notFound();
-  const posts = await db
-    .select()
-    .from(adminResources)
-    .where(
-      and(
-        eq(adminResources.module, "posts"),
-        eq(adminResources.status, "PUBLISHED"),
-        isNull(adminResources.deletedAt),
-        sql`${adminResources.data}->'tags' @> ${JSON.stringify([term.title])}::jsonb`,
-      ),
-    )
-    .orderBy(desc(adminResources.updatedAt));
-  const data = term.data as { description?: string };
+  const archive = await loadTag((await params).slug);
+  if (!archive) notFound();
   return (
     <BlogArchive
-      title={`Tag: ${term.title}`}
-      description={data.description}
-      posts={posts}
+      eyebrow="Tagged"
+      title={archive.title}
+      description={archive.description}
+      posts={archive.posts}
     />
   );
 }

@@ -166,7 +166,7 @@ export default async function AnalyticsPage() {
           <div className={T.cardHeader}>
             <h3 className="text-[15px] font-semibold">Where visitors come from · 30 days</h3>
           </div>
-          {refTotal <= 1 && !direct ? (
+          {!direct && external.length === 0 ? (
             <p className="px-5 py-10 text-center text-[13px] text-neutral-400">No traffic recorded yet.</p>
           ) : (
             <ul className="space-y-3.5 p-5">

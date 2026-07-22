@@ -6,18 +6,13 @@ import { pages, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
-import { SelectAllBox } from "../wp-ui";
+import { ConfirmButton, SelectAllBox } from "../wp-ui";
+import { wpDate } from "../theme";
 import { bulkPages, createPage, deletePageForever, duplicatePage, restorePage, setPageStatus, trashPage } from "../actions";
 
 export const dynamic = "force-dynamic";
 
 const wpLink = "text-[#a10140] hover:text-[#7c0134] hover:underline";
-
-function wpDate(d: Date) {
-  const date = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
-  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }).toLowerCase();
-  return `${date} at ${time}`;
-}
 
 export default async function Pages({
   searchParams,
@@ -189,7 +184,13 @@ export default async function Pages({
                         {page.slug !== "home" && (
                           <>
                             <span className="text-[#c3c4c7]">|</span>
-                            <button formAction={deletePageForever.bind(null, page.id)} className="text-[#dc2626] hover:underline">Delete Permanently</button>
+                            <ConfirmButton
+                              message={`Permanently delete "${page.title}"? This cannot be undone.`}
+                              formAction={deletePageForever.bind(null, page.id)}
+                              className="text-[#dc2626] hover:underline"
+                            >
+                              Delete Permanently
+                            </ConfirmButton>
                           </>
                         )}
                       </>
@@ -202,6 +203,12 @@ export default async function Pages({
                         <button formAction={duplicatePage.bind(null, page.id)} className={wpLink}>Duplicate</button>
                         <span className="text-[#c3c4c7]">|</span>
                         <a href={`/admin/pages/${page.id}/preview`} target="_blank" className={wpLink}>Preview</a>
+                        {page.status === "PUBLISHED" && (
+                          <>
+                            <span className="text-[#c3c4c7]">|</span>
+                            <a href={page.slug === "home" ? "/" : `/${page.slug}`} target="_blank" className={wpLink}>View</a>
+                          </>
+                        )}
                         <span className="text-[#c3c4c7]">|</span>
                         <button formAction={setPageStatus.bind(null, page.id, page.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED")} className={wpLink}>
                           {page.status === "PUBLISHED" ? "Unpublish" : "Publish"}
@@ -216,8 +223,8 @@ export default async function Pages({
                     )}
                   </div>
                 </td>
-                <td className="hidden px-3 py-2.5 md:table-cell">
-                  <span className={wpLink}>{authorName || "—"}</span>
+                <td className="hidden px-3 py-2.5 text-[#50575e] md:table-cell">
+                  {authorName || "—"}
                 </td>
                 <td className="hidden px-3 py-2.5 text-[#50575e] sm:table-cell">/{page.slug === "home" ? "" : page.slug}</td>
                 <td className="px-3 py-2.5 text-[#50575e]">
@@ -244,6 +251,18 @@ export default async function Pages({
           <div className="flex items-center gap-2">
             <select name="bulk2" defaultValue="-1" className="rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-[13px]">
               <option value="-1">Bulk actions</option>
+              {inTrash ? (
+                <>
+                  <option value="restore">Restore</option>
+                  <option value="delete">Delete permanently</option>
+                </>
+              ) : (
+                <>
+                  <option value="publish">Publish</option>
+                  <option value="draft">Move to Draft</option>
+                  <option value="trash">Move to Trash</option>
+                </>
+              )}
             </select>
             <button className="rounded-lg border border-[#a10140] bg-white px-2.5 py-1 text-[13px] font-medium text-[#a10140] hover:bg-[#fdf2f7]">
               Apply

@@ -1,12 +1,17 @@
-import { desc, eq } from "drizzle-orm";
+import Link from "next/link";
+import { desc, eq, ne, and } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
+import { ConfirmButton } from "../wp-ui";
 import { T } from "../theme";
 import { createTaxonomy, deleteTaxonomy } from "./actions";
+
+type PostData = { category?: string; tags?: string[] };
+type TermData = { description?: string };
 
 export async function TaxonomyScreen({
   kind,
@@ -16,19 +21,44 @@ export async function TaxonomyScreen({
   const user = await currentUser();
   if (!user) redirect("/admin/login");
   if (!canViewArea(user.role, "posts")) redirect("/admin");
-  const items = await db
-    .select()
-    .from(adminResources)
-    .where(eq(adminResources.module, kind))
-    .orderBy(desc(adminResources.updatedAt));
+  const [items, posts] = await Promise.all([
+    db
+      .select()
+      .from(adminResources)
+      .where(eq(adminResources.module, kind))
+      .orderBy(desc(adminResources.updatedAt)),
+    db
+      .select({ data: adminResources.data })
+      .from(adminResources)
+      .where(
+        and(
+          eq(adminResources.module, "posts"),
+          ne(adminResources.status, "TRASH"),
+        ),
+      ),
+  ]);
+  // How many (non-trashed) posts use each term.
+  const usage = (title: string) => {
+    const wanted = title.toLowerCase();
+    return posts.filter((post) => {
+      const data = (post.data || {}) as PostData;
+      return kind === "categories"
+        ? (data.category || "Uncategorized").toLowerCase() === wanted
+        : (data.tags || []).some((tag) => tag.toLowerCase() === wanted);
+    }).length;
+  };
   const label = kind === "categories" ? "Category" : "Tag";
+  const archiveBase = kind === "categories" ? "/blog/category" : "/blog/tag";
   return (
     <AdminShell
       user={user}
       title={kind === "categories" ? "Categories" : "Tags"}
     >
       <div className="mb-6">
-        <h2 className={T.screenTitle}>
+        <Link href="/admin/posts" className={`${T.mutedLink} text-[13px] font-medium`}>
+          ← Posts
+        </Link>
+        <h2 className={`${T.screenTitle} mt-2`}>
           {kind === "categories" ? "Categories" : "Tags"}
         </h2>
         <p className="mt-1 text-[13px] text-neutral-500">
@@ -82,32 +112,58 @@ export async function TaxonomyScreen({
               <thead>
                 <tr className={T.theadRow}>
                   <th className={T.th}>Name</th>
-                  <th className={`${T.th} w-48`}>Slug</th>
+                  <th className={`${T.th} hidden md:table-cell`}>Description</th>
+                  <th className={`${T.th} w-40`}>Slug</th>
+                  <th className={`${T.th} w-20 text-right`}>Count</th>
                 </tr>
               </thead>
               <tbody>
-                {items.map((item) => (
-                  <tr key={item.id} className={T.row}>
-                    <td className={T.td}>
-                      <span className="text-[14px] font-semibold text-[#1b1c20]">
-                        {item.title}
-                      </span>
-                      <div className={T.rowActions}>
-                        <form action={deleteTaxonomy.bind(null, kind, item.id)}>
-                          <button className={T.dangerLink}>Delete</button>
-                        </form>
-                      </div>
-                    </td>
-                    <td className={`${T.td} text-neutral-500`}>{item.slug}</td>
-                  </tr>
-                ))}
+                {items.map((item) => {
+                  const data = (item.data || {}) as TermData;
+                  const count = usage(item.title);
+                  return (
+                    <tr key={item.id} className={T.row}>
+                      <td className={T.td}>
+                        <span className="text-[14px] font-semibold text-[#1b1c20]">
+                          {item.title}
+                        </span>
+                        <div className={T.rowActions}>
+                          <a
+                            href={`${archiveBase}/${item.slug}`}
+                            target="_blank"
+                            className={T.link}
+                          >
+                            View
+                          </a>
+                          <span className={T.dot}>|</span>
+                          <form action={deleteTaxonomy.bind(null, kind, item.id)}>
+                            <ConfirmButton
+                              message={`Delete the ${label.toLowerCase()} "${item.title}"? Posts using it keep the label but it disappears from this list.`}
+                              className={T.dangerLink}
+                            >
+                              Delete
+                            </ConfirmButton>
+                          </form>
+                        </div>
+                      </td>
+                      <td className={`${T.td} hidden text-neutral-500 md:table-cell`}>
+                        {data.description || "—"}
+                      </td>
+                      <td className={`${T.td} text-neutral-500`}>{item.slug}</td>
+                      <td className={`${T.td} text-right text-neutral-500`}>
+                        {count}
+                      </td>
+                    </tr>
+                  );
+                })}
                 {!items.length && (
                   <tr>
                     <td
-                      colSpan={2}
+                      colSpan={4}
                       className="px-4 py-14 text-center text-[13px] text-neutral-400"
                     >
-                      No {kind} yet.
+                      No {kind} yet — add your first {label.toLowerCase()} on
+                      the left.
                     </td>
                   </tr>
                 )}

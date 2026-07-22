@@ -4,6 +4,8 @@ import { and, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { adminResources } from "@/db/schema";
 import Nav from "@/components/sections/Nav";
+import GlobalPopup from "@/components/GlobalPopup";
+import { blogChrome } from "@/cms/blog-chrome";
 import Footer from "@/components/sections/Footer";
 import { assets } from "@/lib/assets";
 import type { Metadata } from "next";
@@ -54,12 +56,13 @@ export default async function BlogPage({
       })
     : allPosts;
 
+  const chrome = await blogChrome();
   const [featured, ...rest] = posts;
   const featuredData = (featured?.data || {}) as { excerpt?: string; category?: string; featuredImage?: string };
 
   return (
     <>
-      <Nav />
+      <Nav content={chrome.headerContent} />
       <main className="min-h-screen overflow-x-clip bg-white">
         {/* grid + mist texture like the site sections */}
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0">
@@ -193,7 +196,8 @@ export default async function BlogPage({
           )}
         </div>
       </main>
-      <Footer />
+      <Footer content={chrome.footerContent} />
+      <GlobalPopup design={chrome.popup} />
     </>
   );
 }

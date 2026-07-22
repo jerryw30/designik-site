@@ -3,6 +3,34 @@
 import { useRef } from "react";
 
 /**
+ * Submit button that asks for confirmation before running its (server)
+ * form action. Use for destructive actions like permanent deletes.
+ */
+export function ConfirmButton({
+  message,
+  formAction,
+  className,
+  children,
+}: {
+  message: string;
+  formAction?: (formData: FormData) => void | Promise<void>;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      formAction={formAction}
+      className={className}
+      onClick={(event) => {
+        if (!window.confirm(message)) event.preventDefault();
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+/**
  * WordPress-style "select all" header checkbox: toggles every checkbox named
  * `ids` inside the closest form.
  */

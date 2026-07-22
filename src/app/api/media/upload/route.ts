@@ -15,9 +15,23 @@ function cleanFilename(value: string) {
 }
 
 export async function POST(request: Request) {
+  // Fetch-based submits (the admin upload form) ask for JSON so validation
+  // errors surface inline; plain form posts keep the redirect fallback.
+  const wantsJson = (request.headers.get("accept") || "").includes(
+    "application/json",
+  );
+  const fail = (param: string, message: string, status: number) =>
+    wantsJson
+      ? Response.json({ error: message }, { status })
+      : Response.redirect(
+          new URL(`/admin/media?error=${param}`, request.url),
+          303,
+        );
   const user = await currentUser();
   if (!user)
-    return Response.redirect(new URL("/admin/login", request.url), 303);
+    return wantsJson
+      ? Response.json({ error: "Please sign in again." }, { status: 401 })
+      : Response.redirect(new URL("/admin/login", request.url), 303);
   if (!can(user.role, "manage_media"))
     return new Response("Forbidden", { status: 403 });
   const form = await request.formData();
@@ -25,21 +39,12 @@ export async function POST(request: Request) {
     .getAll("files")
     .filter((item): item is File => item instanceof File && item.size > 0);
   if (!files.length)
-    return Response.redirect(
-      new URL("/admin/media?error=missing", request.url),
-      303,
-    );
+    return fail("missing", "Select at least one file to upload.", 400);
   for (const file of files) {
     if (file.size > MAX_FILE_SIZE)
-      return Response.redirect(
-        new URL("/admin/media?error=size", request.url),
-        303,
-      );
+      return fail("size", `${file.name} exceeds the 4 MB upload limit.`, 400);
     if (!allowedTypes.test(file.type))
-      return Response.redirect(
-        new URL("/admin/media?error=type", request.url),
-        303,
-      );
+      return fail("type", `${file.name} is not a supported media type.`, 400);
   }
   for (const file of files) {
     const filename = cleanFilename(file.name);
@@ -55,8 +60,7 @@ export async function POST(request: Request) {
     });
     await logActivity(user, "media", "uploaded", filename);
   }
-  return Response.redirect(
-    new URL("/admin/media?uploaded=1", request.url),
-    303,
-  );
+  return wantsJson
+    ? Response.json({ ok: true, count: files.length })
+    : Response.redirect(new URL("/admin/media?uploaded=1", request.url), 303);
 }

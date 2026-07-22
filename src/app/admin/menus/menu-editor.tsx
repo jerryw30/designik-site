@@ -19,6 +19,7 @@ export default function MenuEditor({
   const [items, setItems] = useState(initialItems);
   const [dragged, setDragged] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState(false);
   const [pending, start] = useTransition();
   const update = (id: string, patch: Partial<MenuItem>) =>
     setItems((list) =>
@@ -60,8 +61,14 @@ export default function MenuEditor({
   };
   const persist = () =>
     start(async () => {
-      await saveMenu(id, title, items);
-      setMessage("Menu draft saved");
+      try {
+        setError(false);
+        await saveMenu(id, title, items);
+        setMessage("Menu saved");
+      } catch {
+        setError(true);
+        setMessage("Could not save the menu — please retry.");
+      }
     });
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -195,7 +202,9 @@ export default function MenuEditor({
           >
             {pending ? "Saving…" : "Save menu"}
           </button>
-          <p className="mt-3 text-center text-[12px] font-medium text-emerald-600">
+          <p
+            className={`mt-3 text-center text-[12px] font-medium ${error ? "text-red-600" : "text-emerald-600"}`}
+          >
             {message}
           </p>
         </div>

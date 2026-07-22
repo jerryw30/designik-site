@@ -34,29 +34,43 @@ export function DesignEditor({
     "content" | "style" | "responsive" | "conditions"
   >("content");
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [status, setStatus] = useState(initialStatus);
   const [dirty, setDirty] = useState(false);
+  const [previewVersion, setPreviewVersion] = useState(0);
   const [pending, start] = useTransition();
   const change = (next: GlobalDesign) => {
     setValue(next);
     setDirty(true);
     setMessage("");
+    setError("");
   };
-  const save = () =>
+  const run = (task: () => Promise<void>) =>
     start(async () => {
+      try {
+        setError("");
+        await task();
+      } catch {
+        setError("Something went wrong — check your permissions and retry.");
+      }
+    });
+  const save = () =>
+    run(async () => {
       await saveDesignDraft(id, module, title, value);
       setDirty(false);
       setMessage("Draft saved");
+      setPreviewVersion((v) => v + 1);
     });
   const publish = () =>
-    start(async () => {
+    run(async () => {
       await publishDesign(id, module, title, value);
       setStatus("PUBLISHED");
       setDirty(false);
       setMessage("Published live");
+      setPreviewVersion((v) => v + 1);
     });
   const unpublish = () =>
-    start(async () => {
+    run(async () => {
       await unpublishDesign(id, module);
       setStatus("DRAFT");
       setMessage("Removed from live website");
@@ -87,6 +101,7 @@ export function DesignEditor({
         </div>
         <div className="h-[calc(100vh-9rem)] overflow-hidden rounded-xl bg-white shadow-2xl">
           <iframe
+            key={previewVersion}
             title="Design draft preview"
             src={previewUrl}
             className="h-full w-full border-0"
@@ -95,9 +110,16 @@ export function DesignEditor({
       </section>
       <aside className="flex max-h-[calc(100vh-4rem)] flex-col border-l border-white/10 bg-[#17181d] text-white">
         <div className="border-b border-white/10 p-5">
-          <h2 className="text-xl font-semibold">
-            {module.replaceAll("-", " ")}
-          </h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-xl font-semibold capitalize">
+              {module.replaceAll("-", " ")}
+            </h2>
+            <span
+              className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${status === "PUBLISHED" ? "bg-emerald-500/15 text-emerald-300" : "bg-amber-500/15 text-amber-300"}`}
+            >
+              {status}
+            </span>
+          </div>
           <div className="mt-4 flex gap-3 overflow-x-auto">
             {(["content", "style", "responsive", "conditions"] as const).map(
               (item) => (
@@ -271,15 +293,23 @@ export function DesignEditor({
             </button>
           )}
           <p
-            className={`mt-2 min-h-4 text-center text-xs ${dirty ? "text-amber-300" : "text-emerald-300"}`}
+            className={`mt-2 min-h-4 text-center text-xs ${error ? "text-red-400" : dirty ? "text-amber-300" : "text-emerald-300"}`}
           >
-            {dirty ? "Unsaved changes" : message}
+            {error || (dirty ? "Unsaved changes" : message)}
           </p>
         </div>
       </aside>
     </div>
   );
 }
+
+/** Fields whose values must be one of a fixed set — render a select instead
+ * of a free text input so users can't save unsupported magic strings. */
+const enumFields: Record<string, string[]> = {
+  trigger: ["delay", "scroll"],
+  frequency: ["session", "day", "always"],
+  target: ["_self", "_blank"],
+};
 
 function RecursiveField({
   name,
@@ -401,6 +431,19 @@ function RecursiveField({
       />
     );
   const string = String(value ?? "");
+  const options = enumFields[name];
+  if (options)
+    return (
+      <select
+        value={options.includes(string) ? string : options[0]}
+        onChange={(e) => onChange(e.target.value)}
+        className="admin-input mt-1"
+      >
+        {options.map((option) => (
+          <option key={option}>{option}</option>
+        ))}
+      </select>
+    );
   const mediaField = /image|video|photo|avatar|logo|background/i.test(name);
   return (
     <div>

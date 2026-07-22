@@ -22,6 +22,29 @@ function slugify(value: string) {
   );
 }
 
+/**
+ * Post slugs are unique per module — return `slug` or a deduped variant so
+ * saving never hits the unique index and crashes.
+ */
+async function uniquePostSlug(slug: string, excludeId: string) {
+  let candidate = slug;
+  for (let n = 2; n < 100; n += 1) {
+    const [taken] = await db
+      .select({ id: adminResources.id })
+      .from(adminResources)
+      .where(
+        and(
+          eq(adminResources.module, "posts"),
+          eq(adminResources.slug, candidate),
+        ),
+      )
+      .limit(1);
+    if (!taken || taken.id === excludeId) return candidate;
+    candidate = `${slug}-${n}`;
+  }
+  return `${slug}-${Date.now().toString(36)}`;
+}
+
 function postData(form: FormData) {
   return {
     excerpt: String(form.get("excerpt") || ""),
@@ -69,7 +92,10 @@ export async function savePost(form: FormData) {
   const id = String(form.get("id"));
   const title =
     String(form.get("title") || "Untitled post").trim() || "Untitled post";
-  const requestedSlug = slugify(String(form.get("slug") || title));
+  const requestedSlug = await uniquePostSlug(
+    slugify(String(form.get("slug") || title)),
+    id,
+  );
   await db
     .update(adminResources)
     .set({
@@ -95,7 +121,7 @@ export async function savePostWithStatus(
   const id = String(form.get("id"));
   const title =
     String(form.get("title") || "Untitled post").trim() || "Untitled post";
-  const slug = slugify(String(form.get("slug") || title));
+  const slug = await uniquePostSlug(slugify(String(form.get("slug") || title)), id);
   await db
     .update(adminResources)
     .set({
@@ -126,6 +152,12 @@ export async function setPostStatus(
   status: "DRAFT" | "PUBLISHED" | "TRASH",
 ) {
   const user = await authorize();
+  const [post] = await db
+    .select({ title: adminResources.title, slug: adminResources.slug })
+    .from(adminResources)
+    .where(and(eq(adminResources.id, id), eq(adminResources.module, "posts")))
+    .limit(1);
+  if (!post) return;
   await db
     .update(adminResources)
     .set({
@@ -142,11 +174,12 @@ export async function setPostStatus(
       : status === "TRASH"
         ? "trashed"
         : "drafted",
-    id,
+    post.title,
     id,
   );
   revalidatePath("/admin/posts");
   revalidatePath("/blog");
+  revalidatePath(`/blog/${post.slug}`);
 }
 
 export async function duplicatePost(id: string) {
@@ -171,6 +204,18 @@ export async function duplicatePost(id: string) {
 
 export async function deletePostForever(id: string) {
   const user = await authorize();
+  const [post] = await db
+    .select({ title: adminResources.title })
+    .from(adminResources)
+    .where(
+      and(
+        eq(adminResources.id, id),
+        eq(adminResources.module, "posts"),
+        eq(adminResources.status, "TRASH"),
+      ),
+    )
+    .limit(1);
+  if (!post) return;
   await db
     .delete(adminResources)
     .where(
@@ -180,7 +225,7 @@ export async function deletePostForever(id: string) {
         eq(adminResources.status, "TRASH"),
       ),
     );
-  await logActivity(user, "posts", "deleted", id, id);
+  await logActivity(user, "posts", "deleted", post.title, id);
   revalidatePath("/admin/posts");
 }
 
@@ -246,10 +291,17 @@ export async function createTaxonomy(
     );
   }
   revalidatePath(`/admin/posts/${kind}`);
+  revalidatePath(`/blog/${kind === "categories" ? "category" : "tag"}/${slug}`);
 }
 
 export async function deleteTaxonomy(kind: "categories" | "tags", id: string) {
   const user = await authorize();
+  const [term] = await db
+    .select({ title: adminResources.title, slug: adminResources.slug })
+    .from(adminResources)
+    .where(and(eq(adminResources.id, id), eq(adminResources.module, kind)))
+    .limit(1);
+  if (!term) return;
   await db
     .delete(adminResources)
     .where(and(eq(adminResources.id, id), eq(adminResources.module, kind)));
@@ -257,8 +309,11 @@ export async function deleteTaxonomy(kind: "categories" | "tags", id: string) {
     user,
     "posts",
     "deleted",
-    `${kind === "categories" ? "category" : "tag"} "${id}"`,
+    `${kind === "categories" ? "category" : "tag"} "${term.title}"`,
     id,
   );
   revalidatePath(`/admin/posts/${kind}`);
+  revalidatePath(
+    `/blog/${kind === "categories" ? "category" : "tag"}/${term.slug}`,
+  );
 }

@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { adminResources, pages, siteSettings } from "@/db/schema";
 import { logActivity } from "@/lib/activity";
 import { requirePermission } from "@/lib/permissions";
-import { seoDefaults, seoSettings } from "@/cms/seo";
+import { seoSettings } from "@/cms/seo";
 const KEY = "seo_settings";
 async function existing() {
   const [row] = await db
@@ -84,17 +84,19 @@ export async function publishSeo(form: FormData) {
 export async function resetSeoDraft() {
   const user = await requirePermission("manage_seo"),
     old = await existing();
+  // Discard unpublished edits: the draft returns to what is currently live,
+  // so an accidental publish afterwards cannot wipe the live configuration.
   await db
     .insert(siteSettings)
     .values({
       key: KEY,
-      value: { draft: seoDefaults, published: old.published },
+      value: { draft: old.published, published: old.published },
       updatedBy: user.id,
     })
     .onConflictDoUpdate({
       target: siteSettings.key,
       set: {
-        value: { draft: seoDefaults, published: old.published },
+        value: { draft: old.published, published: old.published },
         updatedBy: user.id,
         updatedAt: new Date(),
       },
@@ -104,19 +106,28 @@ export async function resetSeoDraft() {
 }
 export async function updatePageSeo(form: FormData) {
   const user = await requirePermission("manage_seo");
-  const id = String(form.get("id")),
-    seo = {
-      title: String(form.get("title") || ""),
-      description: String(form.get("description") || ""),
-      canonical: String(form.get("canonical") || ""),
-      ogImage: String(form.get("ogImage") || ""),
-      noindex: form.get("noindex") === "on",
-    };
+  const id = String(form.get("id"));
+  const [page] = await db
+    .select()
+    .from(pages)
+    .where(eq(pages.id, id))
+    .limit(1);
+  if (!page) return;
+  // Merge with the stored object so fields managed from the page builder
+  // (focus keyphrase, OG/X title overrides, …) survive a save from here.
+  const seo = {
+    ...(page.seo as object),
+    title: String(form.get("title") || ""),
+    description: String(form.get("description") || ""),
+    canonical: String(form.get("canonical") || ""),
+    ogImage: String(form.get("ogImage") || ""),
+    noindex: form.get("noindex") === "on",
+  };
   await db
     .update(pages)
     .set({ seo, updatedAt: new Date() })
     .where(eq(pages.id, id));
-  await logActivity(user, "seo", "updated", id, id);
+  await logActivity(user, "seo", "updated", page.title, id);
   revalidatePath("/admin/seo");
   revalidatePath("/", "layout");
 }

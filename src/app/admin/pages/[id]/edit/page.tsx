@@ -6,7 +6,8 @@ import { pages } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "@/app/admin/admin-shell";
-import { updatePage } from "@/app/admin/actions";
+import { trashPageFromEditor, updatePage } from "@/app/admin/actions";
+import { ConfirmButton } from "../../../wp-ui";
 import { SeoPanel } from "../../../seo-panel";
 import { T, statusPill, wpDate } from "../../../theme";
 
@@ -32,6 +33,8 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
   if (!user) redirect("/admin/login");
   if (!canViewArea(user.role, "pages")) redirect("/admin");
   const { id } = await params;
+  // pages.id is a uuid column — malformed ids must 404, not crash.
+  if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const [page] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
   if (!page) notFound();
   const seo = (page.seo || {}) as PageSeo;
@@ -109,7 +112,38 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
                 <span className={statusPill(page.status)}>{page.status}</span>
               </div>
               <div className="p-5">
-                <button className={`${T.btnPrimary} w-full`}>Save page</button>
+                <button className={`${T.btn} w-full`}>Save changes</button>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <button name="status" value="DRAFT" className={T.btn}>
+                    Save draft
+                  </button>
+                  <button name="status" value="PUBLISHED" className={T.btnPrimary}>
+                    Publish
+                  </button>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px]">
+                  <a href={`/admin/pages/${page.id}/preview`} target="_blank" className={T.link}>
+                    Preview
+                  </a>
+                  {page.status === "PUBLISHED" && !page.deletedAt && (
+                    <a
+                      href={page.slug === "home" ? "/" : `/${page.slug}`}
+                      target="_blank"
+                      className={T.link}
+                    >
+                      View page
+                    </a>
+                  )}
+                  {page.slug !== "home" && !page.deletedAt && (
+                    <ConfirmButton
+                      message={`Move "${page.title}" to the trash?`}
+                      formAction={trashPageFromEditor.bind(null, page.id)}
+                      className={T.dangerLink}
+                    >
+                      Move to Trash
+                    </ConfirmButton>
+                  )}
+                </div>
                 <p className={T.help}>Last updated {wpDate(page.updatedAt)}</p>
               </div>
             </section>
@@ -122,8 +156,19 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
                 <label htmlFor="page-slug" className={T.label}>
                   URL slug
                 </label>
-                <input id="page-slug" name="slug" defaultValue={page.slug} required className={T.input} />
-                <p className={T.help}>Public address: /{page.slug}</p>
+                <input
+                  id="page-slug"
+                  name="slug"
+                  defaultValue={page.slug}
+                  required
+                  readOnly={page.slug === "home"}
+                  className={`${T.input} ${page.slug === "home" ? "bg-neutral-50 text-neutral-400" : ""}`}
+                />
+                <p className={T.help}>
+                  {page.slug === "home"
+                    ? "This is the front page — its URL is always /."
+                    : `Public address: /${page.slug}`}
+                </p>
               </div>
             </section>
           </aside>

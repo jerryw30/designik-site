@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { heroContent } from "@/cms/defaults";
-import { designValue, type DesignModule } from "@/cms/design-resources";
+import { publishedDesign } from "@/cms/design-resources";
 import SiteHome from "@/components/SiteHome";
 import { db } from "@/db";
 import { adminResources, sections } from "@/db/schema";
@@ -42,17 +42,9 @@ export default async function Home() {
         isNull(adminResources.deletedAt),
       ),
     );
-  const selected = (module: DesignModule) =>
-    globalRows
-      .filter((row) => row.module === module)
-      .map((row) => designValue(module, row.data).published)
-      .filter(Boolean)
-      .sort(
-        (a, b) => (b?.conditions.priority || 0) - (a?.conditions.priority || 0),
-      )[0] || null;
-  const header = selected("headers"),
-    footer = selected("footers"),
-    popup = selected("popups");
+  const header = publishedDesign(globalRows, "headers", "homepage"),
+    footer = publishedDesign(globalRows, "footers", "homepage"),
+    popup = publishedDesign(globalRows, "popups", "homepage");
   const mapped = list.map((s) => {
     const override =
       s.type === "header" ? header : s.type === "footer" ? footer : null;

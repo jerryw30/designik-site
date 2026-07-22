@@ -27,6 +27,11 @@ export default async function PreviewMenu({
       <p className="mb-8 rounded-lg bg-amber-100 p-3 text-sm text-black">
         Menu preview · {menu.status}
       </p>
+      {!roots.length && (
+        <p className="mx-auto max-w-5xl text-center text-white/60">
+          This menu has no items yet — add some in the menu editor.
+        </p>
+      )}
       <nav className="mx-auto max-w-5xl rounded-full bg-white/10 px-8 py-5">
         <ul className="flex items-center justify-center gap-10">
           {roots.map((item) => (

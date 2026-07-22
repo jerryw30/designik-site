@@ -14,21 +14,27 @@ export default function PublicForm({
     [message, setMessage] = useState("");
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement = event.currentTarget;
     setStatus("sending");
-    const data = Object.fromEntries(new FormData(event.currentTarget));
-    const response = await fetch(`/api/forms/${formId}/submit`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const result = await response.json();
-    if (response.ok) {
-      setStatus("success");
-      setMessage(result.message);
-      event.currentTarget.reset();
-    } else {
+    const data = Object.fromEntries(new FormData(formElement));
+    try {
+      const response = await fetch(`/api/forms/${formId}/submit`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        setStatus("success");
+        setMessage(result.message);
+        formElement.reset();
+      } else {
+        setStatus("error");
+        setMessage(result.error || "Submission failed");
+      }
+    } catch {
       setStatus("error");
-      setMessage(result.error || "Submission failed");
+      setMessage("Network error — please try again.");
     }
   }
   if (status === "success")

@@ -17,6 +17,8 @@ export default async function RevisionDetail({
   if (!user) redirect("/admin/login");
   if (!canViewArea(user.role, "revisions")) redirect("/admin");
   const { id } = await params;
+  // revisions.id is a uuid column — malformed ids must 404, not crash.
+  if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const [revision] = await db
     .select()
     .from(revisions)

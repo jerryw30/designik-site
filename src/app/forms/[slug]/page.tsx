@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { adminResources } from "@/db/schema";
 import PublicForm from "@/components/forms/PublicForm";
 import type { FormDefinition } from "@/app/admin/forms/actions";
+export const dynamic = "force-dynamic";
 export default async function PublicFormPage({
   params,
 }: {
