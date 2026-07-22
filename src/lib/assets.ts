@@ -93,7 +93,7 @@ export const assets = {
   footerBadge: A("individual/footer-badge--229-15.svg"),
   footerTag: A("individual/image-photoroom-1-5--277-82.png"),
   footerSend: A("individual/send-1--221-1671.png"),
-  footerField: A("individual/a9b0fcd7-d136-4e8e-8600-cc7ec606d501-1--221-1647.png"),
+  footerField: A("individual/footer-desert-scene.png"),
 
   // Testimonials (exact per-node Figma exports)
   testiPhoneRaw: A("individual/testi-phone-raw--245-180.png"),

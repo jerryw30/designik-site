@@ -125,7 +125,7 @@ export const sectionDefaults = {
     newsletterNote:
       "By subscribing, you agree to our privacy policy and terms.",
     copyright: "\u00a9 2026 Designik Agency. All rights reserved.",
-    backgroundImage: "/figma/individual/a9b0fcd7-d136-4e8e-8600-cc7ec606d501-1--221-1647.png",
+    backgroundImage: "/figma/individual/footer-desert-scene.png",
   },
   header: {
     logo: "/figma/vector1.svg",
