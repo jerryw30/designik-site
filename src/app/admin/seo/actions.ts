@@ -22,17 +22,30 @@ async function existing() {
   };
 }
 function fromForm(form: FormData) {
+  const g = (k: string) => String(form.get(k) || "").trim();
   return seoSettings({
-    siteTitle: String(form.get("siteTitle") || ""),
-    titleTemplate: String(form.get("titleTemplate") || ""),
-    description: String(form.get("description") || ""),
-    canonicalBase: String(form.get("canonicalBase") || ""),
-    ogImage: String(form.get("ogImage") || ""),
-    twitterHandle: String(form.get("twitterHandle") || ""),
+    siteTitle: g("siteTitle"),
+    titleTemplate: g("titleTemplate"),
+    description: g("description"),
+    canonicalBase: g("canonicalBase"),
+    keywords: g("keywords"),
+    ogImage: g("ogImage"),
+    twitterHandle: g("twitterHandle"),
+    twitterCardType: g("twitterCardType") === "summary" ? "summary" : "summary_large_image",
+    facebookAppId: g("facebookAppId"),
+    orgName: g("orgName"),
+    orgLogo: g("orgLogo"),
+    orgSameAs: g("orgSameAs"),
+    schemaJson: g("schemaJson"),
+    googleVerification: g("googleVerification"),
+    bingVerification: g("bingVerification"),
+    pinterestVerification: g("pinterestVerification"),
+    yandexVerification: g("yandexVerification"),
+    baiduVerification: g("baiduVerification"),
     index: form.get("index") === "on",
     follow: form.get("follow") === "on",
-    googleVerification: String(form.get("googleVerification") || ""),
     sitemapEnabled: form.get("sitemapEnabled") === "on",
+    headCode: String(form.get("headCode") || ""),
   });
 }
 export async function saveSeoDraft(form: FormData) {

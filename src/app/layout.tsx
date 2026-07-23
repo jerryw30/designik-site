@@ -10,7 +10,7 @@ import {
   globalStyles,
   globalStyleVariables,
 } from "@/cms/global-styles";
-import { safeBase, seoSettings } from "@/cms/seo";
+import { organizationSchema, safeBase, seoSettings, verificationMeta } from "@/cms/seo";
 import { websiteSettings } from "@/cms/website-settings";
 
 const oswald = Oswald({
@@ -62,18 +62,23 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = pageSeo.title || global.siteTitle;
   const description = pageSeo.description || global.description;
   const image = pageSeo.ogImage || global.ogImage;
+  const otherMeta = verificationMeta(global);
   return {
     metadataBase: safeBase(global.canonicalBase),
     title: { default: title, template: global.titleTemplate || "%s" },
     description,
+    keywords: global.keywords || undefined,
     alternates: { canonical: pageSeo.canonical || "/" },
     robots: {
       index: pageSeo.noindex ? false : global.index,
       follow: global.follow,
     },
-    verification: global.googleVerification
-      ? { google: global.googleVerification }
-      : undefined,
+    verification: {
+      google: global.googleVerification || undefined,
+      yandex: global.yandexVerification || undefined,
+      other: Object.keys(otherMeta).length ? otherMeta : undefined,
+    },
+    other: Object.keys(otherMeta).length ? otherMeta : undefined,
     openGraph: {
       title,
       description,
@@ -82,7 +87,7 @@ export async function generateMetadata(): Promise<Metadata> {
       images: image ? [image] : undefined,
     },
     twitter: {
-      card: image ? "summary_large_image" : "summary",
+      card: image ? global.twitterCardType : "summary",
       title,
       description,
       images: image ? [image] : undefined,
@@ -97,7 +102,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [[record], [websiteRecord]] = await Promise.all([
+  const [[record], [websiteRecord], [seoRecord]] = await Promise.all([
     db
       .select()
       .from(siteSettings)
@@ -108,13 +113,21 @@ export default async function RootLayout({
       .from(siteSettings)
       .where(eq(siteSettings.key, "website_settings"))
       .limit(1),
+    db
+      .select()
+      .from(siteSettings)
+      .where(eq(siteSettings.key, "seo_settings"))
+      .limit(1),
   ]);
   const stored = record?.value as { published?: unknown } | undefined;
   const websiteStored = websiteRecord?.value as
     | { published?: unknown }
     | undefined;
+  const seoStored = seoRecord?.value as { published?: unknown } | undefined;
   const published = globalStyles(stored?.published);
   const website = websiteSettings(websiteStored?.published);
+  const seo = seoSettings(seoStored?.published);
+  const orgSchema = organizationSchema(seo);
   const variables = globalStyleVariables(published) as React.CSSProperties;
   const fontCss = customFontCss(published);
   return (
@@ -135,6 +148,24 @@ export default async function RootLayout({
         {website.custom.headCode && (
           <script
             dangerouslySetInnerHTML={{ __html: website.custom.headCode }}
+          />
+        )}
+        {/* SEO Center: header scripts (analytics, tag managers) */}
+        {seo.headCode && (
+          <script dangerouslySetInnerHTML={{ __html: seo.headCode }} />
+        )}
+        {/* Organization JSON-LD */}
+        {orgSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+          />
+        )}
+        {/* Custom JSON-LD from the SEO Center */}
+        {seo.schemaJson.trim() && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: seo.schemaJson }}
           />
         )}
       </head>
