@@ -32,7 +32,7 @@ export const sectionDefaults = {
     heading: "Design You Can Feel",
     buttonLabel: "Play the Reel",
     buttonLink: "#contact",
-    backgroundImage: "/figma/interactive-tv-flowers.png",
+    backgroundImage: "/figma/image252.png",
     heightVh: 80,
     parallax: true,
   },
