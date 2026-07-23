@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { HeroContent } from "@/cms/defaults";
 import { newWidget, widgetRegistry, type WidgetType } from "@/cms/widgets";
+import { normalizeLayout, type LayoutRow } from "@/cms/layout";
+import { LayoutEditor } from "@/app/admin/layout-editor";
 import {
   sectionContent,
   sectionDefaults,
@@ -481,13 +483,21 @@ function SectionPanel({
   forms: { id: string; title: string }[];
 }) {
   const type = section.type as EditableSectionType;
-  const [value, setValue] = useState<Record<string, unknown>>(
-    () =>
-      sectionContent(type, section.draftContent) as unknown as Record<
-        string,
-        unknown
-      >,
-  );
+  const [value, setValue] = useState<Record<string, unknown>>(() => {
+    // Widgets sections use the row/column layout model — normalize (and
+    // migrate any legacy flat `widgets[]`) so the editor always sees `rows`.
+    if (type === "widgets") {
+      const layout = normalizeLayout(section.draftContent);
+      return {
+        backgroundColor: layout.backgroundColor,
+        paddingTop: layout.paddingTop,
+        paddingBottom: layout.paddingBottom,
+        maxWidth: layout.maxWidth,
+        rows: layout.rows,
+      } as Record<string, unknown>;
+    }
+    return sectionContent(type, section.draftContent) as unknown as Record<string, unknown>;
+  });
   const [status, setStatus] = useState("");
   const [past, setPast] = useState<Record<string, unknown>[]>([]);
   const [future, setFuture] = useState<Record<string, unknown>[]>([]);
@@ -626,11 +636,17 @@ function SectionPanel({
       )}
       {panel ||
         Object.entries(value)
-          .filter(([key]) => !["_layout", "_elementStyles"].includes(key))
+          .filter(([key]) => !["_layout", "_elementStyles", "widgets"].includes(key))
           .map(([key, current]) => (
             <div key={key} className="block text-xs capitalize text-white/55">
-              <span>{key.replace(/([A-Z])/g, " $1")}</span>
-              {key === "widgets" && Array.isArray(current) ? (
+              {key !== "rows" && <span>{key.replace(/([A-Z])/g, " $1")}</span>}
+              {key === "rows" && Array.isArray(current) ? (
+                <LayoutEditor
+                  rows={current as LayoutRow[]}
+                  media={media}
+                  onChange={(next) => change(key, next)}
+                />
+              ) : key === "widgets" && Array.isArray(current) ? (
                 <WidgetList
                   value={current as BuilderWidget[]}
                   onChange={(next) => change(key, next)}

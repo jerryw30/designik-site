@@ -1,7 +1,7 @@
 import Image from "next/image";
-import { sectionContent } from "@/cms/section-defaults";
 import PublicForm from "@/components/forms/PublicForm";
 import type { FormDefinition } from "@/app/admin/forms/actions";
+import { normalizeLayout, type LayoutRow, type LayoutWidget } from "@/cms/layout";
 import {
   AccordionWidget,
   CarouselWidget,
@@ -22,6 +22,74 @@ type Widget = {
   readonly content: string;
   readonly settings: Readonly<Record<string, string | number | boolean>>;
 };
+
+const V_ALIGN: Record<string, string> = { top: "flex-start", center: "center", bottom: "flex-end", stretch: "stretch" };
+
+function WidgetItem({ widget, forms }: { widget: LayoutWidget; forms: WidgetForm[] }) {
+  const settings = widget.settings;
+  return (
+    <div
+      data-cms-element={widget.id}
+      data-desktop-visible={settings.desktopVisible !== false}
+      data-tablet-visible={settings.tabletVisible !== false}
+      data-mobile-visible={settings.mobileVisible !== false}
+      className={`cms-widget cms-animation-${String(settings.animation || "none")}`}
+      style={{
+        color: String(settings.color || "inherit"),
+        backgroundColor: String(settings.backgroundColor || "transparent"),
+        fontSize: Number(settings.fontSize || 16),
+        fontWeight: Number(settings.fontWeight || 400),
+        textAlign: (settings.align || "left") as "left" | "center" | "right",
+        width: `${Math.max(1, Math.min(100, Number(settings.width || 100)))}%`,
+        marginTop: Number(settings.marginTop || 0),
+        marginBottom: Number(settings.marginBottom || 0),
+        padding: Number(settings.padding || 0),
+        borderWidth: Number(settings.borderWidth || 0),
+        borderStyle: "solid",
+        borderColor: String(settings.borderColor || "transparent"),
+        borderRadius: Number(settings.borderRadius || 0),
+        boxShadow: String(settings.shadow || "none"),
+        transition: "color .2s, background-color .2s, transform .2s",
+        ["--widget-hover-color" as string]: String(settings.hoverColor || settings.color || "inherit"),
+        ["--widget-hover-background" as string]: String(settings.hoverBackgroundColor || settings.backgroundColor || "transparent"),
+      }}
+    >
+      <WidgetView widget={widget as Widget} forms={forms} />
+    </div>
+  );
+}
+
+function Row({ row, forms }: { row: LayoutRow; forms: WidgetForm[] }) {
+  const s = row.settings;
+  return (
+    <div
+      className="mx-auto flex flex-wrap"
+      style={{
+        gap: s.gap,
+        paddingTop: s.paddingY,
+        paddingBottom: s.paddingY,
+        paddingLeft: s.paddingX,
+        paddingRight: s.paddingX,
+        background: s.background !== "transparent" ? s.background : undefined,
+        maxWidth: s.maxWidth || undefined,
+        alignItems: V_ALIGN[s.verticalAlign] || "flex-start",
+      }}
+    >
+      {row.columns.map((col) => (
+        <div
+          key={col.id}
+          className="flex min-w-0 flex-col gap-5"
+          style={{ flexGrow: Math.max(1, col.width), flexBasis: 0, minWidth: 220 }}
+        >
+          {col.widgets.map((w) => (
+            <WidgetItem key={w.id} widget={w} forms={forms} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function WidgetSection({
   content,
   forms = [],
@@ -29,62 +97,19 @@ export default function WidgetSection({
   content?: unknown;
   forms?: WidgetForm[];
 }) {
-  const data = sectionContent("widgets", content);
+  const layout = normalizeLayout(content);
   return (
     <section
       style={{
-        backgroundColor: data.backgroundColor,
-        paddingTop: data.paddingTop,
-        paddingBottom: data.paddingBottom,
+        backgroundColor: layout.backgroundColor,
+        paddingTop: layout.paddingTop,
+        paddingBottom: layout.paddingBottom,
       }}
     >
-      <div
-        className="mx-auto flex flex-col gap-5 px-6"
-        style={{ maxWidth: data.maxWidth }}
-      >
-        {(data.widgets as ReadonlyArray<Widget>).map((widget) => {
-          const settings = widget.settings;
-          return (
-            <div
-              key={widget.id}
-              data-cms-element={widget.id}
-              data-desktop-visible={settings.desktopVisible !== false}
-              data-tablet-visible={settings.tabletVisible !== false}
-              data-mobile-visible={settings.mobileVisible !== false}
-              className={`cms-widget cms-animation-${String(settings.animation || "none")}`}
-              style={{
-                color: String(settings.color || "inherit"),
-                backgroundColor: String(
-                  settings.backgroundColor || "transparent",
-                ),
-                fontSize: Number(settings.fontSize || 16),
-                fontWeight: Number(settings.fontWeight || 400),
-                textAlign: (settings.align || "left") as
-                  "left" | "center" | "right",
-                width: `${Math.max(1, Math.min(100, Number(settings.width || 100)))}%`,
-                marginTop: Number(settings.marginTop || 0),
-                marginBottom: Number(settings.marginBottom || 0),
-                padding: Number(settings.padding || 0),
-                borderWidth: Number(settings.borderWidth || 0),
-                borderStyle: "solid",
-                borderColor: String(settings.borderColor || "transparent"),
-                borderRadius: Number(settings.borderRadius || 0),
-                boxShadow: String(settings.shadow || "none"),
-                transition: "color .2s, background-color .2s, transform .2s",
-                ["--widget-hover-color" as string]: String(
-                  settings.hoverColor || settings.color || "inherit",
-                ),
-                ["--widget-hover-background" as string]: String(
-                  settings.hoverBackgroundColor ||
-                    settings.backgroundColor ||
-                    "transparent",
-                ),
-              }}
-            >
-              <WidgetView widget={widget} forms={forms} />
-            </div>
-          );
-        })}
+      <div className="mx-auto flex flex-col gap-6 px-6" style={{ maxWidth: layout.maxWidth }}>
+        {layout.rows.map((row) => (
+          <Row key={row.id} row={row} forms={forms} />
+        ))}
       </div>
     </section>
   );
