@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { chatConversations, chatMessages } from "@/db/schema";
+import { sendNotification } from "@/lib/mailer";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,23 @@ export async function POST(request: Request) {
       status: "OPEN",
     })
     .where(eq(chatConversations.id, conversationId));
+
+  // Notify the team by email (best-effort — never blocks the chat reply).
+  const who = body.name?.trim() || body.email?.trim() || "A website visitor";
+  await sendNotification({
+    subject: `New Designik chat message from ${who}`,
+    text: [
+      `${who} sent a message via the website chat:`,
+      "",
+      text,
+      "",
+      body.email ? `Visitor email: ${body.email}` : null,
+      `Reply in the admin: Chat → this conversation.`,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+    replyTo: body.email?.trim() || undefined,
+  });
 
   return NextResponse.json({ conversationId, message });
 }
