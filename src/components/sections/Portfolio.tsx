@@ -148,16 +148,16 @@ function StackCard({
 
             {/* mobile text block — inside the card */}
             <div className="absolute inset-x-0 top-0 z-10 p-6 md:hidden">
-              <h3 className={cn("font-display text-[26px] font-semibold uppercase leading-[1.15]", light ? "text-white" : "text-wine-500")}>{accent}</h3>
-              <p className={cn("font-display text-[18px] font-medium uppercase leading-[1.15]", light ? "text-white" : "text-black")}>{heading}</p>
-              <p className={cn("mt-2 max-w-[44ch] text-[12px] leading-[1.55]", light ? "text-white/90" : "text-black/80")}>{description}</p>
+              <h3 className={cn("font-display text-[34px] font-semibold uppercase leading-[1.1]", light ? "text-white" : "text-wine-500")}>{accent}</h3>
+              <p className={cn("font-display text-[24px] font-medium uppercase leading-[1.1]", light ? "text-white" : "text-black")}>{heading}</p>
+              <p className={cn("mt-3 max-w-[44ch] text-[15px] leading-[1.5]", light ? "text-white/90" : "text-black/80")}>{description}</p>
               <a
                 href={data.buttonLink}
-                className="group mt-3 inline-flex h-9 items-center gap-2 rounded-full bg-white pl-4 pr-1.5 font-display text-[11px] font-semibold uppercase text-wine-500 shadow-sm"
+                className="group mt-4 inline-flex h-11 items-center gap-2 rounded-full bg-white pl-5 pr-2 font-display text-[13px] font-semibold uppercase text-wine-500 shadow-sm"
               >
                 {data.buttonLabel}
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-wine-500 text-white transition-transform group-hover:rotate-45">
-                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden>
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-wine-500 text-white transition-transform group-hover:rotate-45">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
                     <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
