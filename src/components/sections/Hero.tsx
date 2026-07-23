@@ -33,7 +33,7 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
             stays pinned to it on every viewport. */}
         <div
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ width: "max(100vw, calc(100svh * 4096 / 3061))", aspectRatio: "4096 / 3061" }}
+          style={{ width: "max(100vw, calc(100svh * 4314 / 3593))", aspectRatio: "4314 / 3593" }}
         >
           {/* Spotlight glow BEHIND the scene (Figma: Ellipse 1496, #FF579B, heavy blur).
               The scene PNG has a transparent sky/valley, so the glow shows through behind
@@ -42,7 +42,7 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
             className="absolute inset-0"
             style={{
               background:
-                "radial-gradient(46% 40% at 50% 42%, rgba(255,87,155,0.95), rgba(255,99,150,0.45) 45%, rgba(255,87,155,0.12) 70%, transparent 86%)",
+                "radial-gradient(46% 40% at 50% 48%, rgba(255,87,155,0.95), rgba(255,99,150,0.45) 45%, rgba(255,87,155,0.12) 70%, transparent 86%)",
             }}
           />
 
@@ -54,10 +54,10 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
           <div
             className="absolute isolate overflow-hidden bg-black shadow-[inset_0_0_20px_rgba(0,0,0,0.75)]"
             style={{
-              left: "42.3%",
-              top: "54.6%",
-              width: "15.6%",
-              height: "15.2%",
+              left: "42.56%",
+              top: "43.67%",
+              width: "14.81%",
+              height: "13.44%",
               borderRadius: "2% / 11%",
             }}
           >
