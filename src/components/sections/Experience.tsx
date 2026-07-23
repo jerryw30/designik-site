@@ -248,7 +248,7 @@ export default function Experience({ content }: { content?: unknown } = {}) {
               { l: "27%", t: "57%", w: "6%" },
               { l: "65%", t: "80%", w: "6%" },
             ].map((pos, i) => (
-              <div key={i} aria-hidden className="pointer-events-none absolute z-[15]" style={{ left: pos.l, top: pos.t, width: pos.w }}>
+              <div key={i} aria-hidden className="pointer-events-none absolute z-[15] hidden" style={{ left: pos.l, top: pos.t, width: pos.w }}>
                 <Image src={ARROWS[i].src} alt="" width={125} height={123} className="h-auto w-full" />
               </div>
             ))}
@@ -269,7 +269,7 @@ export default function Experience({ content }: { content?: unknown } = {}) {
               const spec = PILLS[i % PILLS.length];
               const words = p.label.split(" ");
               const lines = words.length > 1 ? [words[0], words.slice(1).join(" ")] : [p.label];
-              const mobilePos = ["left-[4%] top-[22%]", "right-[4%] top-[20%]", "left-[2%] top-[44%]", "right-[2%] top-[42%]", "left-[4%] top-[64%]"][i] || p.position;
+              const mobilePos = ["left-[4%] top-[22%]", "right-[4%] top-[20%]", "left-[2%] top-[44%]", "right-[2%] top-[42%]", "right-[4%] top-[64%]"][i] || p.position;
               return (
                 <motion.div
                   key={i}
