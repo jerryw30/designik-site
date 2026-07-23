@@ -63,12 +63,6 @@ export const sectionDefaults = {
         background: "#4f8ef7",
       },
       {
-        name: "Mike Kohler",
-        role: "Sr. Design/Dev Strategist",
-        photo: "/figma/team/team-mike.png",
-        background: "#fe503f",
-      },
-      {
         name: "Jerry Wayne",
         role: "Lead Developer",
         photo: "/figma/team/team-jerry-v3.png",
