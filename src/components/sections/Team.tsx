@@ -185,8 +185,11 @@ export default function Team({ content }: { content?: unknown } = {}) {
                         maskSize: "100% 100%",
                       }}
                     />
-                    {/* member photo — uniform height, bottom-anchored and centered so every card aligns */}
-                    <div className="absolute inset-x-0 bottom-0 h-[88%]">
+                    {/* member photo — bottom-anchored; per-member vertical nudge aligns the heads */}
+                    <div
+                      className="absolute inset-x-0 bottom-0 h-[88%]"
+                      style={{ transform: `translateY(${(m as { photoY?: number }).photoY ?? 0}%) scale(${(m as { photoScale?: number }).photoScale ?? 1})`, transformOrigin: "50% 100%" }}
+                    >
                       <Image
                         src={m.photo}
                         alt={m.name}
