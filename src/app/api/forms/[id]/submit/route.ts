@@ -6,6 +6,7 @@ import { adminResources, formSubmissions } from "@/db/schema";
 import type { FormDefinition } from "@/app/admin/forms/actions";
 import { currentUser } from "@/lib/auth";
 import { can } from "@/lib/permissions";
+import { sendNotification } from "@/lib/mailer";
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -100,6 +101,23 @@ export async function POST(
     ipHash,
     userAgent: request.headers.get("user-agent")?.slice(0, 500),
   });
+
+  // Email the team (best-effort — the submission is already saved).
+  const replyTo = definition.fields.find((f) => f.type === "email" && clean[f.name])?.name;
+  await sendNotification({
+    subject: `New "${form.title}" form submission`,
+    text: [
+      `A visitor submitted the "${form.title}" form:`,
+      "",
+      ...definition.fields
+        .filter((f) => clean[f.name] !== undefined && clean[f.name] !== "")
+        .map((f) => `${f.label || f.name}: ${clean[f.name] === true ? "Yes" : clean[f.name] === false ? "No" : clean[f.name]}`),
+      "",
+      `View it in the admin: Forms → ${form.title} → Submissions.`,
+    ].join("\n"),
+    replyTo: replyTo ? String(clean[replyTo]) : undefined,
+  });
+
   return NextResponse.json({
     ok: true,
     message:
