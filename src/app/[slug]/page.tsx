@@ -73,7 +73,7 @@ export default async function PublishedPage({
 }) {
   const page = await publishedPage((await params).slug);
   if (!page || page.slug === "home") notFound();
-  const [pageSections, resources] = await Promise.all([
+  const [pageSections, resources, homeChrome] = await Promise.all([
     db
       .select()
       .from(sections)
@@ -94,7 +94,16 @@ export default async function PublishedPage({
           isNull(adminResources.deletedAt),
         ),
       ),
+    // the homepage's header/footer — the real site chrome, used as the global
+    // fallback so every page (incl. brand-new ones) shows them automatically
+    db
+      .select({ type: sections.type, content: sections.publishedContent })
+      .from(sections)
+      .innerJoin(pages, eq(sections.pageId, pages.id))
+      .where(and(eq(pages.slug, "home"), inArray(sections.type, ["header", "footer"]))),
   ]);
+  const homeHeader = homeChrome.find((s) => s.type === "header")?.content ?? {};
+  const homeFooter = homeChrome.find((s) => s.type === "footer")?.content ?? {};
   const header = publishedDesign(resources, "headers", "pages");
   const footer = publishedDesign(resources, "footers", "pages");
   const popup = publishedDesign(resources, "popups", "pages");
@@ -134,19 +143,21 @@ export default async function PublishedPage({
           ? overrideContent(section.type, section.publishedContent)
           : section.publishedContent,
     }));
-  if (header && !mapped.some((section) => section.type === "header"))
+  // Every page always gets a header and footer: the published Header/Footer
+  // Builder design if one exists, otherwise the homepage's real chrome.
+  if (!mapped.some((section) => section.type === "header"))
     mapped.unshift({
       id: "global-header",
       type: "header",
       visible: true,
-      content: overrideContent("header", {}),
+      content: header ? overrideContent("header", {}) : homeHeader,
     });
-  if (footer && !mapped.some((section) => section.type === "footer"))
+  if (!mapped.some((section) => section.type === "footer"))
     mapped.push({
       id: "global-footer",
       type: "footer",
       visible: true,
-      content: overrideContent("footer", {}),
+      content: footer ? overrideContent("footer", {}) : homeFooter,
     });
   const forms = resources
     .filter((row) => row.module === "forms")
