@@ -232,3 +232,50 @@ body {
     font-size: var(--hero-p-desktop);
   }
 }
+
+/* ---- Portfolio case-study popup (pure-CSS enter/exit; framer doesn't
+   fire reliably through the modal's portal + AnimatePresence here) ---- */
+@keyframes dgkModalOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes dgkModalOverlayOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes dgkModalCardIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes dgkModalCardOut {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(16px) scale(0.94); }
+}
+@keyframes dgkModalRise {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+.dgk-modal-overlay {
+  animation: dgkModalOverlayIn 300ms ease both;
+}
+.dgk-modal-overlay[data-closing="true"] {
+  animation: dgkModalOverlayOut 300ms ease both;
+}
+.dgk-modal-card {
+  animation: dgkModalCardIn 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.dgk-modal-overlay[data-closing="true"] .dgk-modal-card {
+  animation: dgkModalCardOut 280ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+.dgk-modal-rise {
+  animation: dgkModalRise 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dgk-modal-overlay,
+  .dgk-modal-overlay[data-closing="true"],
+  .dgk-modal-card,
+  .dgk-modal-overlay[data-closing="true"] .dgk-modal-card,
+  .dgk-modal-rise {
+    animation-duration: 1ms;
+  }
+}

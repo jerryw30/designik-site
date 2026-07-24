@@ -1,13 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
+import { useCallback, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { assets } from "@/lib/assets";
 import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/utils";
 import { sectionContent } from "@/cms/section-defaults";
 import PendulumSwing from "@/components/ui/PendulumSwing";
+import ProjectModal, { type CardProject } from "@/components/sections/ProjectModal";
 
 /**
  * Pixel-exact port of the Figma "Designik Design Portfolio" section.
@@ -24,6 +26,12 @@ type Banner = {
   accent?: string;
   heading?: string;
   description?: string;
+  // Case-study popup content (all optional — falls back to the card fields).
+  longDescription?: string;
+  gallery?: readonly string[];
+  tags?: readonly string[];
+  year?: string;
+  link?: string;
 };
 
 // Per-card geometry from Figma (card-local px / 14.4 = cqw)
@@ -54,10 +62,19 @@ const CARD_SPECS = [
   },
 ];
 
-function ReadMoreButton({ label, href, className }: { label: string; href: string; className?: string }) {
+function ReadMoreButton({
+  label,
+  onClick,
+  className,
+}: {
+  label: string;
+  onClick: () => void;
+  className?: string;
+}) {
   return (
-    <a
-      href={href}
+    <button
+      type="button"
+      onClick={onClick}
       className={cn(
         "group inline-flex items-center gap-[0.9236cqw] whitespace-nowrap rounded-full bg-white pl-[2.3764cqw] pr-[1.0806cqw] shadow-sm",
         "h-[3.8194cqw]",
@@ -72,7 +89,7 @@ function ReadMoreButton({ label, href, className }: { label: string; href: strin
           <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </span>
-    </a>
+    </button>
   );
 }
 
@@ -81,11 +98,13 @@ function StackCard({
   index,
   total,
   data,
+  onOpen,
 }: {
   banner: Banner;
   index: number;
   total: number;
   data: { projectAccent: string; projectHeading: string; description: string; buttonLabel: string; buttonLink: string };
+  onOpen: (project: CardProject, rect: DOMRect) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -101,6 +120,29 @@ function StackCard({
   const accent = banner.accent || data.projectAccent;
   const heading = banner.heading || data.projectHeading;
   const description = banner.description || data.description;
+
+  // Open the case-study popup, growing it out of this card.
+  const openModal = () => {
+    const el = ref.current?.querySelector("article") ?? ref.current;
+    const rect = el?.getBoundingClientRect();
+    if (!rect) return;
+    onOpen(
+      {
+        accent,
+        heading,
+        description,
+        longDescription: banner.longDescription,
+        gallery:
+          banner.gallery && banner.gallery.length
+            ? banner.gallery
+            : [banner.device, banner.background].filter(Boolean),
+        tags: banner.tags,
+        year: banner.year,
+        link: banner.link,
+      },
+      rect,
+    );
+  };
 
   return (
     <div ref={ref} className="sticky" style={{ top: `calc(100px + ${index * 1.6}rem)` }}>
@@ -151,8 +193,9 @@ function StackCard({
               <h3 className={cn("font-display text-[34px] font-semibold uppercase leading-[1.1]", light ? "text-white" : "text-wine-500")}>{accent}</h3>
               <p className={cn("font-display text-[24px] font-medium uppercase leading-[1.1]", light ? "text-white" : "text-black")}>{heading}</p>
               <p className={cn("mt-3 max-w-[44ch] text-[15px] leading-[1.5]", light ? "text-white/90" : "text-black/80")}>{description}</p>
-              <a
-                href={data.buttonLink}
+              <button
+                type="button"
+                onClick={openModal}
                 className="group mt-4 inline-flex h-11 items-center gap-2 rounded-full bg-white pl-5 pr-2 font-display text-[13px] font-semibold uppercase text-wine-500 shadow-sm"
               >
                 {data.buttonLabel}
@@ -161,7 +204,7 @@ function StackCard({
                     <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
-              </a>
+              </button>
             </div>
 
             {/* text block — exact absolute layout (md+) */}
@@ -191,7 +234,7 @@ function StackCard({
                 {description}
               </p>
               <div className="absolute" style={{ left: spec.descLeft, top: "28.194cqw" }}>
-                <ReadMoreButton label={data.buttonLabel} href={data.buttonLink} />
+                <ReadMoreButton label={data.buttonLabel} onClick={openModal} />
               </div>
             </div>
           </motion.div>
@@ -204,6 +247,8 @@ function StackCard({
 
 export default function Portfolio({ content }: { content?: unknown } = {}) {
   const data = sectionContent("portfolio", content);
+  const [active, setActive] = useState<{ project: CardProject; rect: DOMRect } | null>(null);
+  const closeModal = useCallback(() => setActive(null), []);
   return (
     <section id="portfolio" className="relative bg-white">
       {/* background texture: grid + sky mist (Figma treatment), full-bleed */}
@@ -250,10 +295,31 @@ export default function Portfolio({ content }: { content?: unknown } = {}) {
         {/* cards — 1300px wide at 1440, gap 91px */}
         <div className="relative z-10 mx-auto mt-[5.7222cqw] w-[90.278cqw] pb-[6cqw]">
           {data.cards.map((b, i) => (
-            <StackCard key={i} banner={b as Banner} index={i} total={data.cards.length} data={data} />
+            <StackCard
+              key={i}
+              banner={b as Banner}
+              index={i}
+              total={data.cards.length}
+              data={data}
+              onOpen={(project, rect) => setActive({ project, rect })}
+            />
           ))}
         </div>
       </div>
+
+      {/* Case-study popup (portaled to <body> so the section's @container
+          containment doesn't trap the fixed overlay). */}
+      {active &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <ProjectModal
+            key={`${active.project.accent}-${active.project.heading}`}
+            project={active.project}
+            originRect={active.rect}
+            onClose={closeModal}
+          />,
+          document.body,
+        )}
     </section>
   );
 }

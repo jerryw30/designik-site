@@ -176,6 +176,10 @@ export const sectionDefaults = {
         heading: "Actually Enjoy",
         description:
           "Fast, intuitive product experiences built to turn first taps into daily habits.",
+        year: "2024",
+        tags: ["Mobile App", "UX / UI", "Product Design"],
+        longDescription:
+          "We designed and shipped a mobile experience built around one idea: make the everyday effortless. From onboarding to the core loop, every screen is tuned for speed and clarity — the kind of product that turns a curious first tap into a daily habit.",
       },
       {
         background: "/figma/individual/rectangle-39515--221-1382.png",
@@ -186,6 +190,10 @@ export const sectionDefaults = {
         heading: "Work the Room",
         description:
           "Bold digital spaces that explain the value, earn the trust and move people forward.",
+        year: "2024",
+        tags: ["Web Design", "Development", "Conversion"],
+        longDescription:
+          "A bold, high-conversion website that does the talking. We paired a confident visual language with a fast, accessible build — clearly explaining the value, earning trust in seconds and guiding every visitor toward the next step.",
       },
       {
         background: "/figma/individual/rectangle-39359--221-1398.png",
@@ -196,6 +204,10 @@ export const sectionDefaults = {
         heading: "Stick Around",
         description:
           "Identity systems with enough personality to get noticed and enough logic to stay useful.",
+        year: "2023",
+        tags: ["Brand Identity", "Strategy", "Design System"],
+        longDescription:
+          "A complete identity system with enough personality to get noticed and enough logic to stay useful. Logo, type, color and a flexible toolkit — everything a growing brand needs to look consistent everywhere and still feel unmistakably itself.",
       },
     ],
   },
