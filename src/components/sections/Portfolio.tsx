@@ -9,7 +9,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/utils";
 import { sectionContent } from "@/cms/section-defaults";
 import PendulumSwing from "@/components/ui/PendulumSwing";
-import ProjectModal, { type CardProject } from "@/components/sections/ProjectModal";
+import ProjectModal, { type CardProject, type StorySection } from "@/components/sections/ProjectModal";
 
 /**
  * Pixel-exact port of the Figma "Designik Design Portfolio" section.
@@ -28,7 +28,7 @@ type Banner = {
   description?: string;
   // Case-study popup content (all optional — falls back to the card fields).
   longDescription?: string;
-  gallery?: readonly string[];
+  story?: readonly StorySection[];
   tags?: readonly string[];
   year?: string;
   link?: string;
@@ -126,19 +126,32 @@ function StackCard({
     const el = ref.current?.querySelector("article") ?? ref.current;
     const rect = el?.getBoundingClientRect();
     if (!rect) return;
+    const story: readonly StorySection[] =
+      banner.story && banner.story.length
+        ? banner.story
+        : [
+            {
+              image: banner.device,
+              kicker: "01 · Overview",
+              title: `${accent} ${heading}`,
+              body: banner.longDescription || description,
+            },
+            {
+              image: banner.background,
+              kicker: "02 · In Context",
+              title: "Made with intent",
+              body: description,
+            },
+          ];
     onOpen(
       {
         accent,
         heading,
         description,
-        longDescription: banner.longDescription,
-        gallery:
-          banner.gallery && banner.gallery.length
-            ? banner.gallery
-            : [banner.device, banner.background].filter(Boolean),
         tags: banner.tags,
         year: banner.year,
         link: banner.link,
+        story,
       },
       rect,
     );

@@ -180,6 +180,36 @@ export const sectionDefaults = {
         tags: ["Mobile App", "UX / UI", "Product Design"],
         longDescription:
           "We designed and shipped a mobile experience built around one idea: make the everyday effortless. From onboarding to the core loop, every screen is tuned for speed and clarity — the kind of product that turns a curious first tap into a daily habit.",
+        story: [
+          {
+            image: "/figma/individual/image-213--221-1366.png",
+            kicker: "01 · The Brief",
+            title: "Get more people off the bench",
+            body: "Our client wanted to turn casual interest in local sport into real, recurring games. The old flow buried the one thing that mattered — finding a match near you tonight — under menus and sign-up walls. We rebuilt the whole experience around a single promise: open the app, see a game you can join, tap once.",
+            highlights: ["Find a joinable game in under five seconds", "One-tap join — no sign-up wall"],
+          },
+          {
+            image: "/figma/individual/rectangle-39359--221-1364.png",
+            kicker: "02 · The Challenge",
+            title: "Speed beats features",
+            body: "Pickup sport runs on momentum. If finding a game takes more than a few seconds, people give up and fall back to the group chat. The hard part was never adding features — it was removing everything between opening the app and joining a match, while still surfacing price, time, venue and who's already playing on a single card.",
+            highlights: ["Ruthless focus on the core loop", "Every detail visible at a glance"],
+          },
+          {
+            image: "/figma/individual/image-213--221-1366.png",
+            kicker: "03 · What We Designed",
+            title: "A home screen that does the work",
+            body: "We led with a live feed of games happening near you — each card carrying the time, venue, spots left and price, anchored by one bright Join Game button. A date rail lets players plan the week ahead, popular teams build a sense of belonging, and a thumb-friendly bottom nav keeps discovery, bookings and profile one tap away.",
+            highlights: ["Live ‘games near you’ feed", "Plan-ahead date rail and teams"],
+          },
+          {
+            image: "/figma/individual/rectangle-39359--221-1364.png",
+            kicker: "04 · The Outcome",
+            title: "Tap once, you're in",
+            body: "The result feels less like a booking system and more like an invitation. First-time users reach a joinable game in seconds, and the daily-habit loop — see a game, join, show up, repeat — is baked into the very first screen. Fast, intuitive and built to turn a curious first tap into a standing Friday-night ritual.",
+            highlights: ["Seconds to a first joinable game", "A habit loop from screen one"],
+          },
+        ],
       },
       {
         background: "/figma/individual/rectangle-39515--221-1382.png",
@@ -194,6 +224,36 @@ export const sectionDefaults = {
         tags: ["Web Design", "Development", "Conversion"],
         longDescription:
           "A bold, high-conversion website that does the talking. We paired a confident visual language with a fast, accessible build — clearly explaining the value, earning trust in seconds and guiding every visitor toward the next step.",
+        story: [
+          {
+            image: "/figma/individual/image-photoroom-24-1-1--221-1395.png",
+            kicker: "01 · The Brief",
+            title: "Sell luxury without saying luxury",
+            body: "A fine-jewellery brand shipping nationwide needed a storefront that felt like the product: considered, warm and quietly expensive. The ask was to move beyond a generic template and build a site that reads as editorial — one that explains the craft, earns trust in seconds and turns admiration into an order.",
+            highlights: ["Editorial, not template", "Designed to convert browsers to buyers"],
+          },
+          {
+            image: "/figma/individual/rectangle-39515--221-1382.png",
+            kicker: "02 · The Challenge",
+            title: "Trust in the first five seconds",
+            body: "Buying jewellery online is an act of faith. Shoppers can't hold the piece, so the site has to carry the weight — conveying materials, craftsmanship and provenance instantly, without a wall of text. Everything had to feel premium and load fast, because a slow, uncertain page is a closed tab.",
+            highlights: ["Craft and provenance made obvious", "Premium feel, fast load"],
+          },
+          {
+            image: "/figma/individual/image-photoroom-24-1-1--221-1395.png",
+            kicker: "03 · What We Designed",
+            title: "An editorial storefront",
+            body: "A cinematic hero sets the tone, then confident typography and generous space let each piece breathe. Product spotlights, clear pricing and gentle motion guide the eye down the page toward a single, obvious next step. Under the surface it's a fast, accessible build that performs as well as it looks.",
+            highlights: ["Cinematic hero, product spotlights", "Fast, accessible, one clear path to buy"],
+          },
+          {
+            image: "/figma/individual/rectangle-39515--221-1382.png",
+            kicker: "04 · The Outcome",
+            title: "A shop that closes",
+            body: "The finished storefront does the selling — it explains the value, earns the trust and moves people forward without ever feeling pushy. Bold where it needs impact, restrained where it needs elegance, it gives a growing brand a home that looks the part and quietly gets to work.",
+            highlights: ["Explains value, earns trust, converts", "A home that looks the part"],
+          },
+        ],
       },
       {
         background: "/figma/individual/rectangle-39359--221-1398.png",
@@ -208,6 +268,36 @@ export const sectionDefaults = {
         tags: ["Brand Identity", "Strategy", "Design System"],
         longDescription:
           "A complete identity system with enough personality to get noticed and enough logic to stay useful. Logo, type, color and a flexible toolkit — everything a growing brand needs to look consistent everywhere and still feel unmistakably itself.",
+        story: [
+          {
+            image: "/figma/individual/image-214--221-1411.png",
+            kicker: "01 · The Brief",
+            title: "Give a movement a face",
+            body: "A fast-growing community initiative had energy and a story, but no visual language to hold it together. Every post looked like it came from a different organisation. They needed a brand with enough personality to get noticed in a busy feed and enough structure to stay coherent as more hands started using it.",
+            highlights: ["A recognisable face for the mission", "Built to be used by many hands"],
+          },
+          {
+            image: "/figma/individual/rectangle-39359--221-1398.png",
+            kicker: "02 · The Challenge",
+            title: "Personality that scales",
+            body: "Identity is easy to make and hard to keep. The system had to survive dozens of posts a week, made by volunteers and staff who aren't designers, and still look unmistakably like one brand. That meant rules simple enough to follow instinctively — and flexible enough not to feel like a straitjacket.",
+            highlights: ["Consistent across dozens of posts", "Simple enough for non-designers"],
+          },
+          {
+            image: "/figma/individual/image-214--221-1411.png",
+            kicker: "03 · What We Designed",
+            title: "A flexible toolkit",
+            body: "We built the full kit: a confident logo, a type system, a warm colour palette and a library of social templates that snap together in minutes. The result is a design language with clear guardrails and room to improvise — a brand anyone on the team can pick up and get right the first time.",
+            highlights: ["Logo, type, colour and templates", "Guardrails with room to improvise"],
+          },
+          {
+            image: "/figma/individual/rectangle-39359--221-1398.png",
+            kicker: "04 · The Outcome",
+            title: "Unmistakably itself",
+            body: "Now the initiative looks like one voice everywhere it shows up — in the feed, on the ground and in print. The identity has enough character to get noticed and enough logic to stay useful long after handoff, growing with the movement instead of holding it back.",
+            highlights: ["One coherent voice everywhere", "A system that grows with them"],
+          },
+        ],
       },
     ],
   },
