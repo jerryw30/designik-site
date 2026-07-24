@@ -111,8 +111,8 @@ export default function ProjectModal({
           </svg>
         </button>
 
-        {/* scroll area */}
-        <div className="h-full overflow-y-auto overscroll-contain">
+        {/* scroll area (data-lenis-prevent so Lenis doesn't steal the wheel) */}
+        <div data-lenis-prevent className="h-full overflow-y-auto overscroll-contain">
           <div className="flex flex-col-reverse md:flex-row md:items-start">
             {/* LEFT — gallery that scrolls */}
             <div className="w-full space-y-4 bg-[#f3f3f8] p-4 sm:p-6 md:w-[56%] md:space-y-6 md:p-7">

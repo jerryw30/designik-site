@@ -81,6 +81,7 @@ export default function GetStartedModal() {
             exit={{ opacity: 0, y: 24, scale: 0.95 }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             onClick={(e) => e.stopPropagation()}
+            data-lenis-prevent
             className="relative max-h-[92vh] w-full max-w-[440px] overflow-y-auto rounded-[28px] bg-white shadow-[0_40px_90px_rgba(0,0,0,0.4)]"
           >
             {/* header band */}
