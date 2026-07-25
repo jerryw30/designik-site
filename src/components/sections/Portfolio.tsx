@@ -318,6 +318,21 @@ export default function Portfolio({ content }: { content?: unknown } = {}) {
             />
           ))}
         </div>
+
+        {/* View more — opens the full portfolio page */}
+        <div className="relative z-10 flex justify-center pb-[7cqw]">
+          <a
+            href="/portfolio"
+            className="group inline-flex items-center gap-3 rounded-full bg-wine-500 px-8 py-4 font-display text-[15px] font-semibold uppercase tracking-[0.03em] text-white shadow-[0_18px_44px_-18px_rgba(161,1,64,0.75)] transition-transform duration-300 hover:scale-[1.04] md:gap-[0.9cqw] md:px-[2.7cqw] md:py-[1.15cqw] md:text-[1.15cqw]"
+          >
+            View More Work
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-wine-500 transition-transform duration-300 group-hover:rotate-45 md:h-[2.1cqw] md:w-[2.1cqw]">
+              <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4 md:h-[44%] md:w-[44%]" aria-hidden>
+                <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+          </a>
+        </div>
       </div>
 
       {/* Case-study popup (portaled to <body> so the section's @container

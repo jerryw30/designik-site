@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
     deviceSizes: [390, 640, 768, 1080, 1440, 1920],
     minimumCacheTTL: 2678400,
   },
+  // Serve the standalone portfolio page (public/portfolio/index.html) at a
+  // clean /portfolio URL on both dev and Vercel.
+  async rewrites() {
+    return [{ source: "/portfolio", destination: "/portfolio/index.html" }];
+  },
 };
 
 export default nextConfig;
