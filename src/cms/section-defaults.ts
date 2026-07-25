@@ -86,6 +86,24 @@ export const sectionDefaults = {
         photo: "/figma/team/team-phill.png",
         background: "#8d5bff",
       },
+      {
+        name: "Abraham Kay",
+        role: "Design/Dev Strategist",
+        photo: "/figma/team/team-abraham.png",
+        background: "#35c759",
+      },
+      {
+        name: "Frank Scott",
+        role: "Client Success Executive",
+        photo: "/figma/team/team-frank.png",
+        background: "#ff5f9e",
+      },
+      {
+        name: "Jack Riley",
+        role: "SEO & Growth Executive",
+        photo: "/figma/team/team-jack.png",
+        background: "#22b8cf",
+      },
     ],
   },
   testimonials: {
