@@ -99,8 +99,13 @@ export default function ChatClient({ adminName }: { adminName: string }) {
     return () => clearInterval(id);
   }, [loadConversations, loadMessages]);
 
+  // Conversations this team member has opened — their ring stops for those
+  // even before they reply (other members keep ringing until they open it).
+  const ackWaiting = useRef<Set<string>>(new Set());
+
   const openConversation = useCallback(
     (id: string) => {
+      ackWaiting.current.add(id);
       setActiveId(id);
       loadMessages(id);
       setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, unreadAdmin: 0 } : c)));
@@ -122,15 +127,12 @@ export default function ChatClient({ adminName }: { adminName: string }) {
     if (nearBottom) requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight }));
   }, [messages]);
 
-  const send = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      const text = reply.trim();
+  const deliverReply = useCallback(
+    async (text: string) => {
       if (!text || !activeId || sending) return;
       setSending(true);
-      const optimistic: Msg = { id: `tmp-${Date.now()}`, sender: "admin", body: text, createdAt: new Date().toISOString() };
+      const optimistic: Msg = { id: `tmp-${Date.now()}`, sender: "admin", senderName: adminName, body: text, createdAt: new Date().toISOString() };
       setMessages((prev) => [...prev, optimistic]);
-      setReply("");
       try {
         const res = await fetch(`/api/admin/chat/${activeId}`, {
           method: "POST",
@@ -139,8 +141,9 @@ export default function ChatClient({ adminName }: { adminName: string }) {
         });
         const data = await res.json();
         if (data.message) setMessages((prev) => prev.map((m) => (m.id === optimistic.id ? data.message : m)));
-        // The server disables IKORA on human reply — mirror that locally.
-        setConversations((prev) => prev.map((c) => (c.id === activeId ? { ...c, aiEnabled: false } : c)));
+        // The server disables IKORA + clears the WAITING queue on human
+        // reply — mirror both locally (also stops the ringing).
+        setConversations((prev) => prev.map((c) => (c.id === activeId ? { ...c, aiEnabled: false, status: "OPEN" } : c)));
         loadConversations();
       } catch {
         /* keep optimistic */
@@ -148,7 +151,18 @@ export default function ChatClient({ adminName }: { adminName: string }) {
         setSending(false);
       }
     },
-    [reply, activeId, sending, loadConversations],
+    [activeId, sending, adminName, loadConversations],
+  );
+
+  const send = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      const text = reply.trim();
+      if (!text) return;
+      setReply("");
+      deliverReply(text);
+    },
+    [reply, deliverReply],
   );
 
   const toggleImportant = useCallback(async (id: string, value: boolean) => {
@@ -192,8 +206,9 @@ export default function ChatClient({ adminName }: { adminName: string }) {
   }, []);
 
   // Someone is in line waiting for a human — ring like an incoming call
-  // until a team member replies (status flips to OPEN) or the sound is muted.
-  const anyWaiting = conversations.some((c) => c.status === "WAITING");
+  // until this member opens the chat, a reply flips status to OPEN, or the
+  // sound is muted.
+  const anyWaiting = conversations.some((c) => c.status === "WAITING" && !ackWaiting.current.has(c.id));
   useEffect(() => {
     if (!anyWaiting || ringMuted) return;
     playRing();
@@ -411,7 +426,38 @@ export default function ChatClient({ adminName }: { adminName: string }) {
                 </div>
               ))}
             </div>
-            <form onSubmit={send} className="flex items-center gap-2 border-t px-4 py-3">
+            {active.status === "WAITING" && (
+              <div className="border-t bg-emerald-50/70 px-4 py-2.5">
+                <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  </span>
+                  Visitor is in line — suggested intro, one click to send
+                </p>
+                <button
+                  onClick={() =>
+                    deliverReply(
+                      `Hi${active.name ? ` ${active.name}` : ""}, I'm ${adminName} from the Designik team. Give me a minute to read through your chat so I can catch up on what you need, and I'll be right with you.`,
+                    )
+                  }
+                  disabled={sending}
+                  className="group flex w-full items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-white px-3.5 py-2.5 text-left text-[13px] leading-snug text-neutral-700 transition hover:border-emerald-400 hover:shadow-sm disabled:opacity-50"
+                >
+                  <span>
+                    Hi{active.name ? ` ${active.name}` : ""}, I&rsquo;m {adminName} from the Designik team. Give me a
+                    minute to read through your chat so I can catch up on what you need, and I&rsquo;ll be right with
+                    you.
+                  </span>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white transition group-hover:scale-105">
+                    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
+                      <path d="M4 12l16-8-6 16-3-6-7-2Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                </button>
+              </div>
+            )}
+            <form onSubmit={send} className={`flex items-center gap-2 px-4 py-3 ${active.status === "WAITING" ? "" : "border-t"}`}>
               <input
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}

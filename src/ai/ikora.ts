@@ -197,15 +197,18 @@ Before replying, silently verify:
 /**
  * Condensed IKORA prompt for token-limited providers (Groq free tier).
  * Same identity, rules, and voice as the full knowledge base — compact.
+ * `origin` is the running site's own domain so links stay correct when the
+ * site moves hosts (Vercel today, Hostinger later).
  */
-const LITE_PROMPT = `You are IKORA (pronounced eye-KOR-ah), Designik Agency's AI project concierge on the designik.agency website chat.
+const litePrompt = (origin: string) => `You are IKORA (pronounced eye-KOR-ah), Designik Agency's AI project concierge on the Designik website chat.
 
 IDENTITY
 You communicate in the style of Luke Carter, Founder and CEO of Designik Agency: human, calm, direct, commercially sharp, technically informed, strategy-first, conversion-focused. You are NOT Luke and not a human. If asked, say: "I'm IKORA, Designik's AI project concierge." Never claim you booked a call, saved details, or sent anything to Luke — no tools are connected. Direct visitors to the site's Start a Project button or Luke@designik.agency, and note that a human team member also reads this chat and can take over.
 
 COMPANY
 Designik Agency — premium, strategy-led digital agency in Pittsburgh, Pennsylvania, working with clients across the US and beyond.
-Website: https://designik.agency | Email: Luke@designik.agency | Portfolio: https://work.designik.agency/designik-portfolio/#portfolio
+Website: https://designik.agency | Email: Luke@designik.agency
+Portfolio: ${origin}/portfolio — ALWAYS share exactly this link when a visitor asks to see work, projects, examples, or the portfolio. Never use any other portfolio URL.
 Book a call with Luke: https://calendly.com/luke-designingenious/ (share this link whenever a visitor wants a meeting or call — they pick a time themselves)
 
 SERVICES (recommend the smallest sensible engagement that achieves the goal)
@@ -256,7 +259,8 @@ const GROQ_DEFAULT_MODEL = "llama-3.3-70b-versatile";
 /** Map chat rows to role/content turns shared by both providers. */
 function buildTurns(
   history: IkoraTurn[],
-  visitor?: { name?: string | null; email?: string | null },
+  visitor: { name?: string | null; email?: string | null } | undefined,
+  origin: string,
 ): { role: "user" | "assistant"; content: string }[] {
   // Admin (human) messages are prior assistant-side turns too — IKORA must
   // not contradict or repeat what the team already said.
@@ -272,12 +276,16 @@ function buildTurns(
     }));
   if (!turns.length || turns[0].role !== "user") return [];
 
-  // Known visitor details ride along inside the first user turn (after any
-  // cached system prefix, so per-conversation data never breaks the cache).
-  if (visitor?.name || visitor?.email) {
-    const session = `<session>Visitor name: ${visitor.name || "unknown"}. Visitor email: ${visitor.email || "unknown"}.</session>\n\n`;
-    turns[0] = { role: "user", content: session + turns[0].content };
-  }
+  // Session context rides inside the first user turn (after any cached
+  // system prefix, so per-conversation data never breaks the cache). The
+  // portfolio note keeps links on the site's own domain across hosts.
+  const session =
+    `<session>Website origin: ${origin}. The site's own portfolio page is ${origin}/portfolio — always share exactly that link for portfolio/work requests, never any other portfolio URL.` +
+    (visitor?.name || visitor?.email
+      ? ` Visitor name: ${visitor?.name || "unknown"}. Visitor email: ${visitor?.email || "unknown"}.`
+      : "") +
+    `</session>\n\n`;
+  turns[0] = { role: "user", content: session + turns[0].content };
   return turns;
 }
 
@@ -290,6 +298,7 @@ function buildTurns(
 export async function generateIkoraReply(
   history: IkoraTurn[],
   visitor?: { name?: string | null; email?: string | null },
+  origin: string = "https://designik-site.vercel.app",
 ): Promise<string | null> {
   const provider = ikoraProvider();
   if (!provider) {
@@ -297,7 +306,7 @@ export async function generateIkoraReply(
     return null;
   }
 
-  const turns = buildTurns(history, visitor);
+  const turns = buildTurns(history, visitor, origin);
   if (!turns.length) return null;
 
   try {
@@ -339,7 +348,7 @@ export async function generateIkoraReply(
       model: process.env.IKORA_MODEL || GROQ_DEFAULT_MODEL,
       max_tokens: 400,
       temperature: 0.6,
-      messages: [{ role: "system", content: LITE_PROMPT }, ...merged],
+      messages: [{ role: "system", content: litePrompt(origin) }, ...merged],
     });
     const reply = completion.choices[0]?.message?.content?.trim();
     return reply || null;

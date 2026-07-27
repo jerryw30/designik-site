@@ -119,7 +119,10 @@ export async function POST(request: Request) {
           console.info("[ikora] superseded by a newer message — skipping");
           return;
         }
-        const reply = await generateIkoraReply(history, { name: conv.name, email: conv.email });
+        // Origin from the live request — links IKORA shares (e.g. /portfolio)
+        // follow the domain the site is actually running on.
+        const origin = new URL(request.url).origin;
+        const reply = await generateIkoraReply(history, { name: conv.name, email: conv.email }, origin);
         if (!reply) {
           console.warn(`[ikora] no reply generated (${Date.now() - started}ms) — see earlier error for cause`);
           return;

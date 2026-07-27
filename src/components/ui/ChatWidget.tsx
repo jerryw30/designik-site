@@ -10,10 +10,12 @@ import { Linkified } from "@/components/ui/Linkify";
 type Msg = { id: string; sender: "visitor" | "admin" | "assistant"; senderName?: string | null; body: string; createdAt: string };
 type Mode = "chat" | "team" | "rating" | "ended";
 
-// The quick actions only appear once the visitor shows intent to reach a
-// human (or IKORA offers the handoff) — not from the first message.
-const HUMAN_INTENT_RE =
-  /(real person|human|someone|team|agent|support|speak|talk to|call|meeting|meet|schedule|book|luke|contact|quote|proposal|hire)/i;
+// Quick actions appear per intent — the team chip when the visitor wants a
+// person, the meeting chip when they want a call with Luke. Each hides
+// again once clicked.
+const TEAM_INTENT_RE =
+  /(real person|human|someone|team|agent|support|speak|talk to|contact|representative|quote|proposal|hire)/i;
+const MEET_INTENT_RE = /(meeting|meet with|meet luke|call|schedule|book|calendly|appointment|luke)/i;
 
 const STORAGE_KEY = "designik_chat_conversation";
 const CALENDLY_URL = "https://calendly.com/luke-designingenious/";
@@ -66,7 +68,8 @@ export default function ChatWidget() {
   const [teamBusy, setTeamBusy] = useState(false);
   const [teamError, setTeamError] = useState("");
   const [hoverStar, setHoverStar] = useState(0);
-  const [showActions, setShowActions] = useState(false); // human-intent detected
+  const [showTeam, setShowTeam] = useState(false); // talk-to-team chip
+  const [showMeet, setShowMeet] = useState(false); // meet-with-Luke chip
   const [waitingHuman, setWaitingHuman] = useState(false); // in line for the team
   const convId = useRef<string | null>(null);
   const lastTs = useRef<string | null>(null);
@@ -101,9 +104,12 @@ export default function ChatWidget() {
           }
           // A real person joined — the visitor is out of the queue.
           if (fresh.some((m) => m.sender === "admin")) setWaitingHuman(false);
-          // IKORA offered the handoff/booking — surface the quick actions.
-          if (fresh.some((m) => m.sender === "assistant" && (m.body.includes("calendly.com") || HUMAN_INTENT_RE.test(m.body))))
-            setShowActions(true);
+          // IKORA offered the handoff/booking — surface the matching action.
+          const assistantText = fresh.filter((m) => m.sender === "assistant").map((m) => m.body).join(" ");
+          if (assistantText) {
+            if (assistantText.includes("calendly.com") || MEET_INTENT_RE.test(assistantText)) setShowMeet(true);
+            if (TEAM_INTENT_RE.test(assistantText)) setShowTeam(true);
+          }
           setMessages((prev) => [...prev, ...fresh]);
         }
       }
@@ -146,8 +152,9 @@ export default function ChatWidget() {
       if (!body || sending) return;
       setSending(true);
       setSendError(false);
-      // Visitor wants to reach a person/meeting — show the quick actions.
-      if (HUMAN_INTENT_RE.test(body)) setShowActions(true);
+      // Visitor wants to reach a person / book a meeting — show the match.
+      if (TEAM_INTENT_RE.test(body)) setShowTeam(true);
+      if (MEET_INTENT_RE.test(body)) setShowMeet(true);
       const optimistic: Msg = { id: `tmp-${Date.now()}`, sender: "visitor", body, createdAt: new Date().toISOString() };
       setMessages((prev) => [...prev, optimistic]);
       try {
@@ -218,7 +225,7 @@ export default function ChatWidget() {
         }
         setTyping(false);
         setWaitingHuman(true); // in line until a team member replies
-        setShowActions(false);
+        setShowTeam(false);
         setMode("chat");
         // Poll picks up the marker + confirmation messages.
         poll();
@@ -259,7 +266,8 @@ export default function ChatWidget() {
     setSendError(false);
     setTeam({ name: "", email: "" });
     setHoverStar(0);
-    setShowActions(false);
+    setShowTeam(false);
+    setShowMeet(false);
     setWaitingHuman(false);
     setMode("chat");
   }, []);
@@ -472,10 +480,14 @@ export default function ChatWidget() {
                     </p>
                   </div>
                 )}
-                {showActions && !waitingHuman && (
+                {(showTeam || showMeet) && !waitingHuman && (
                 <div className="flex gap-2 border-t bg-white px-3 pt-2.5">
+                  {showTeam && (
                   <button
-                    onClick={() => setMode("team")}
+                    onClick={() => {
+                      setShowTeam(false); // one-shot suggestion
+                      setMode("team");
+                    }}
                     className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-wine-500/25 bg-wine-500/5 px-3 py-2 font-display text-[11px] font-semibold uppercase tracking-wide text-wine-500 transition hover:bg-wine-500/10"
                   >
                     <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" aria-hidden>
@@ -485,10 +497,13 @@ export default function ChatWidget() {
                     </svg>
                     Talk to the team
                   </button>
+                  )}
+                  {showMeet && (
                   <a
                     href={CALENDLY_URL}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => setShowMeet(false)} // one-shot suggestion
                     className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-wine-500/25 bg-wine-500/5 px-3 py-2 font-display text-[11px] font-semibold uppercase tracking-wide text-wine-500 transition hover:bg-wine-500/10"
                   >
                     <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" aria-hidden>
@@ -498,9 +513,10 @@ export default function ChatWidget() {
                     </svg>
                     Meet with Luke
                   </a>
+                  )}
                 </div>
                 )}
-                <form onSubmit={send} className={`flex items-center gap-2 bg-white px-3 py-3 ${!showActions && !waitingHuman ? "border-t" : ""}`}>
+                <form onSubmit={send} className={`flex items-center gap-2 bg-white px-3 py-3 ${!(showTeam || showMeet) && !waitingHuman ? "border-t" : ""}`}>
                   <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
