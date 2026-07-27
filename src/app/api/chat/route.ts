@@ -22,6 +22,7 @@ export async function POST(request: Request) {
 
   let conversationId = body.conversationId;
   let conversation: { id: string; name: string | null; email: string | null; aiEnabled: boolean } | undefined;
+  let isNewConversation = false;
 
   // Validate an existing conversation, or create a new one.
   if (conversationId) {
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
       });
     conversation = conv;
     conversationId = conv.id;
+    isNewConversation = true;
   }
 
   const [message] = await db
@@ -69,22 +71,26 @@ export async function POST(request: Request) {
     })
     .where(eq(chatConversations.id, conversationId));
 
-  // Notify the team by email (best-effort — never blocks the chat reply).
-  const who = body.name?.trim() || conversation.name || body.email?.trim() || conversation.email || "A website visitor";
-  await sendNotification({
-    subject: `New Designik chat message from ${who}`,
-    text: [
-      `${who} sent a message via the website chat:`,
-      "",
-      text,
-      "",
-      body.email ? `Visitor email: ${body.email}` : null,
-      `Reply in the admin: Chat → this conversation.`,
-    ]
-      .filter(Boolean)
-      .join("\n"),
-    replyTo: body.email?.trim() || undefined,
-  });
+  // Notify the team by email — ONCE per conversation, when it starts.
+  // Follow-up messages show up in the admin panel (unread badge + chime)
+  // without flooding the inbox.
+  if (isNewConversation) {
+    const who = body.name?.trim() || conversation.name || body.email?.trim() || conversation.email || "A website visitor";
+    await sendNotification({
+      subject: `New Designik chat started by ${who}`,
+      text: [
+        `${who} started a conversation via the website chat:`,
+        "",
+        text,
+        "",
+        body.email ? `Visitor email: ${body.email}` : null,
+        `Follow-up messages in this conversation won't be emailed — reply in the admin: Chat → this conversation.`,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+      replyTo: body.email?.trim() || undefined,
+    });
+  }
 
   // IKORA answers in the background after the response is sent, so the
   // visitor's send never waits on the model. The widget's poll picks the
