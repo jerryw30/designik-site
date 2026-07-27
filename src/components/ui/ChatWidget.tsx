@@ -5,10 +5,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import { playChime } from "@/lib/chime";
+import { Linkified } from "@/components/ui/Linkify";
 
 type Msg = { id: string; sender: "visitor" | "admin" | "assistant"; body: string; createdAt: string };
+type Mode = "chat" | "team" | "rating" | "ended";
 
 const STORAGE_KEY = "designik_chat_conversation";
+const CALENDLY_URL = "https://calendly.com/luke-designingenious/";
 const GREETING: Msg = {
   id: "greeting",
   sender: "assistant",
@@ -16,14 +19,48 @@ const GREETING: Msg = {
   createdAt: "",
 };
 
+/** IKORA's bot avatar. */
+function BotAvatar({ size = 28 }: { size?: number }) {
+  return (
+    <span
+      className="flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 shadow-sm"
+      style={{ width: size, height: size }}
+    >
+      <svg viewBox="0 0 24 24" fill="none" style={{ width: size * 0.62, height: size * 0.62 }} className="text-white" aria-hidden>
+        <path d="M12 2.4v2.1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <circle cx="12" cy="2.2" r="1.1" fill="currentColor" />
+        <rect x="4.6" y="6" width="14.8" height="11" rx="4.2" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="9.3" cy="11" r="1.3" fill="currentColor" />
+        <circle cx="14.7" cy="11" r="1.3" fill="currentColor" />
+        <path d="M9.5 14.1c.7.6 1.6.9 2.5.9s1.8-.3 2.5-.9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+        <path d="M2.9 10.6v1.8M21.1 10.6v1.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+
+/** Human team avatar (Designik mark). */
+function TeamAvatar() {
+  return (
+    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-wine-500 shadow-sm">
+      <Image src={assets.logo} alt="" width={14} height={14} className="h-3.5 w-3.5" />
+    </span>
+  );
+}
+
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<Mode>("chat");
   const [messages, setMessages] = useState<Msg[]>([GREETING]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [unread, setUnread] = useState(0);
   const [typing, setTyping] = useState(false); // IKORA is composing a reply
   const [sendError, setSendError] = useState(false);
+  const [team, setTeam] = useState({ name: "", email: "" });
+  const [teamBusy, setTeamBusy] = useState(false);
+  const [teamError, setTeamError] = useState("");
+  const [hoverStar, setHoverStar] = useState(0);
   const convId = useRef<string | null>(null);
   const lastTs = useRef<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -36,7 +73,7 @@ export default function ChatWidget() {
   }, []);
 
   const poll = useCallback(async () => {
-    if (!convId.current) return;
+    if (!convId.current || mode === "ended") return;
     try {
       const url = `/api/chat?conversationId=${convId.current}${lastTs.current ? `&after=${encodeURIComponent(lastTs.current)}` : ""}`;
       const res = await fetch(url);
@@ -61,7 +98,7 @@ export default function ChatWidget() {
     } catch {
       /* ignore poll errors */
     }
-  }, [open]);
+  }, [open, mode]);
 
   // poll loop (faster when open)
   useEffect(() => {
@@ -88,23 +125,22 @@ export default function ChatWidget() {
     if (!el) return;
     const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 200;
     if (nearBottom) requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight }));
-  }, [messages, open, typing, sendError]);
+  }, [messages, open, typing, sendError, mode]);
 
-  const send = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      const text = input.trim();
-      if (!text || sending) return;
+  /** Deliver a message (typed or from a quick action). */
+  const deliver = useCallback(
+    async (text: string) => {
+      const body = text.trim();
+      if (!body || sending) return;
       setSending(true);
       setSendError(false);
-      const optimistic: Msg = { id: `tmp-${Date.now()}`, sender: "visitor", body: text, createdAt: new Date().toISOString() };
+      const optimistic: Msg = { id: `tmp-${Date.now()}`, sender: "visitor", body, createdAt: new Date().toISOString() };
       setMessages((prev) => [...prev, optimistic]);
-      setInput("");
       try {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ conversationId: convId.current, body: text }),
+          body: JSON.stringify({ conversationId: convId.current, body }),
           signal: AbortSignal.timeout(20000),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -132,8 +168,83 @@ export default function ChatWidget() {
         setSending(false);
       }
     },
-    [input, sending],
+    [sending],
   );
+
+  const send = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      const text = input.trim();
+      if (!text) return;
+      setInput("");
+      deliver(text);
+    },
+    [input, deliver],
+  );
+
+  /** Submit the connect-with-team form. */
+  const connectTeam = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (teamBusy) return;
+      setTeamBusy(true);
+      setTeamError("");
+      try {
+        const res = await fetch("/api/chat/connect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ conversationId: convId.current, name: team.name, email: team.email }),
+          signal: AbortSignal.timeout(20000),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || "Something went wrong.");
+        if (data.conversationId) {
+          convId.current = data.conversationId;
+          localStorage.setItem(STORAGE_KEY, data.conversationId);
+        }
+        setTyping(false);
+        setMode("chat");
+        // Poll picks up the marker + confirmation messages.
+        poll();
+      } catch (err) {
+        setTeamError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      } finally {
+        setTeamBusy(false);
+      }
+    },
+    [team, teamBusy, poll],
+  );
+
+  /** End the chat, optionally with a star rating. */
+  const endChat = useCallback(async (rating?: number) => {
+    try {
+      if (convId.current) {
+        await fetch("/api/chat/end", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ conversationId: convId.current, rating }),
+          signal: AbortSignal.timeout(10000),
+        });
+      }
+    } catch {
+      /* ending is best-effort */
+    }
+    setMode("ended");
+  }, []);
+
+  /** Fresh conversation after ending. */
+  const startNewChat = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    convId.current = null;
+    lastTs.current = null;
+    knownIds.current = new Set([GREETING.id]);
+    setMessages([GREETING]);
+    setTyping(false);
+    setSendError(false);
+    setTeam({ name: "", email: "" });
+    setHoverStar(0);
+    setMode("chat");
+  }, []);
 
   return (
     <>
@@ -172,59 +283,62 @@ export default function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.96 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed bottom-24 right-6 z-[100] flex h-[500px] max-h-[calc(100dvh-120px)] w-[calc(100vw-48px)] max-w-[380px] flex-col overflow-hidden rounded-[24px] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.35)]"
+            className="fixed bottom-24 right-6 z-[100] flex h-[660px] max-h-[calc(100dvh-120px)] w-[calc(100vw-48px)] max-w-[430px] flex-col overflow-hidden rounded-[24px] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.35)]"
           >
             {/* header */}
             <div
               className="relative flex items-center gap-3 px-5 py-4 text-white"
               style={{ backgroundImage: "linear-gradient(135deg, #8e0038 0%, #a10140 60%, #c4136a 130%)" }}
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15">
-                <Image src={assets.logo} alt="" width={22} height={22} className="h-6 w-6" />
-              </span>
+              <BotAvatar size={40} />
               <div className="flex-1">
                 <p className="font-display text-[15px] font-semibold uppercase leading-tight">Designik Chat</p>
                 <p className="flex items-center gap-1.5 text-[12px] text-white/75">
                   <span className="h-2 w-2 rounded-full bg-emerald-400" /> IKORA is online
                 </p>
               </div>
+              {mode !== "ended" && (
+                <button
+                  onClick={() => setMode(mode === "rating" ? "chat" : "rating")}
+                  className="rounded-full bg-white/15 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/90 transition hover:bg-white/25"
+                >
+                  {mode === "rating" ? "Back" : "End chat"}
+                </button>
+              )}
             </div>
 
             {/* messages */}
             <div ref={scrollRef} data-lenis-prevent className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-neutral-50 px-4 py-4">
               {messages.map((m) => (
                 <div key={m.id} className={m.sender === "visitor" ? "flex justify-end" : "flex justify-start"}>
-                  <div className={m.sender === "visitor" ? "max-w-[78%]" : "max-w-[78%]"}>
-                    {m.sender !== "visitor" && (
-                      <span className="mb-0.5 ml-1 block font-display text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
-                        {m.sender === "assistant" ? "IKORA" : "Designik Team"}
-                      </span>
-                    )}
-                    <div
-                      className={`whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-[14px] leading-relaxed ${
-                        m.sender === "visitor"
-                          ? "rounded-br-md bg-wine-500 text-white"
-                          : "rounded-bl-md bg-white text-ink shadow-sm ring-1 ring-black/5"
-                      }`}
-                    >
-                      {m.body}
+                  {m.sender === "visitor" ? (
+                    <div className="max-w-[80%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-wine-500 px-3.5 py-2.5 text-[14px] leading-relaxed text-white">
+                      <Linkified text={m.body} linkClass="text-white" />
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex max-w-[86%] items-end gap-2">
+                      {m.sender === "assistant" ? <BotAvatar /> : <TeamAvatar />}
+                      <div className="min-w-0">
+                        <span className="mb-0.5 ml-1 block font-display text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+                          {m.sender === "assistant" ? "IKORA" : "Designik Team"}
+                        </span>
+                        <div className="whitespace-pre-wrap break-words rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 text-[14px] leading-relaxed text-ink shadow-sm ring-1 ring-black/5">
+                          <Linkified text={m.body} linkClass="text-wine-500" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
 
               {/* IKORA typing indicator */}
-              {typing && (
-                <div className="flex justify-start">
-                  <div className="max-w-[78%]">
-                    <span className="mb-0.5 ml-1 block font-display text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
-                      IKORA
-                    </span>
-                    <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-sm ring-1 ring-black/5">
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-300 [animation-delay:0ms]" />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-300 [animation-delay:150ms]" />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-300 [animation-delay:300ms]" />
-                    </div>
+              {typing && mode === "chat" && (
+                <div className="flex items-end gap-2">
+                  <BotAvatar />
+                  <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-sm ring-1 ring-black/5">
+                    <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-300 [animation-delay:0ms]" />
+                    <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-300 [animation-delay:150ms]" />
+                    <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-300 [animation-delay:300ms]" />
                   </div>
                 </div>
               )}
@@ -235,28 +349,147 @@ export default function ChatWidget() {
                   Your message could not be sent. Please check your connection and try again.
                 </p>
               )}
+
+              {/* connect-with-team form */}
+              {mode === "team" && (
+                <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+                  <p className="font-display text-[13px] font-semibold uppercase text-ink">Talk to a real person</p>
+                  <p className="mt-1 text-[12px] text-neutral-500">
+                    Leave your details and the team will reply right here or by email.
+                  </p>
+                  <form onSubmit={connectTeam} className="mt-3 space-y-2">
+                    <input
+                      value={team.name}
+                      onChange={(e) => setTeam((t) => ({ ...t, name: e.target.value }))}
+                      placeholder="Your name"
+                      required
+                      className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-3.5 py-2.5 text-[13px] text-ink outline-none placeholder:text-neutral-400 focus:border-wine-500"
+                    />
+                    <input
+                      type="email"
+                      value={team.email}
+                      onChange={(e) => setTeam((t) => ({ ...t, email: e.target.value }))}
+                      placeholder="Email address"
+                      required
+                      className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-3.5 py-2.5 text-[13px] text-ink outline-none placeholder:text-neutral-400 focus:border-wine-500"
+                    />
+                    {teamError && <p className="text-[12px] text-red-500">{teamError}</p>}
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="submit"
+                        disabled={teamBusy}
+                        className="flex-1 rounded-full bg-wine-500 py-2.5 font-display text-[12px] font-semibold uppercase text-white transition hover:brightness-110 disabled:opacity-50"
+                      >
+                        {teamBusy ? "Connecting…" : "Connect me"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMode("chat")}
+                        className="rounded-full border border-neutral-200 px-4 py-2.5 font-display text-[12px] font-semibold uppercase text-neutral-500 transition hover:bg-neutral-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* rating card */}
+              {mode === "rating" && (
+                <div className="rounded-2xl bg-white p-4 text-center shadow-sm ring-1 ring-black/5">
+                  <p className="font-display text-[13px] font-semibold uppercase text-ink">Before you go…</p>
+                  <p className="mt-1 text-[12px] text-neutral-500">How was your chat with IKORA?</p>
+                  <div className="mt-2 flex justify-center gap-1" onMouseLeave={() => setHoverStar(0)}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        onClick={() => endChat(n)}
+                        onMouseEnter={() => setHoverStar(n)}
+                        aria-label={`Rate ${n} star${n > 1 ? "s" : ""}`}
+                        className={`text-[26px] leading-none transition-transform hover:scale-110 ${
+                          n <= hoverStar ? "text-amber-400" : "text-neutral-300"
+                        }`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => endChat()}
+                    className="mt-2 text-[12px] text-neutral-400 underline underline-offset-2 hover:text-neutral-600"
+                  >
+                    Skip and end chat
+                  </button>
+                </div>
+              )}
+
+              {/* ended card */}
+              {mode === "ended" && (
+                <div className="rounded-2xl bg-white p-4 text-center shadow-sm ring-1 ring-black/5">
+                  <p className="font-display text-[13px] font-semibold uppercase text-ink">Chat ended</p>
+                  <p className="mt-1 text-[12px] text-neutral-500">
+                    Thanks for stopping by! The team can still reach you by email if you left your details.
+                  </p>
+                  <button
+                    onClick={startNewChat}
+                    className="mt-3 rounded-full bg-wine-500 px-6 py-2.5 font-display text-[12px] font-semibold uppercase text-white transition hover:brightness-110"
+                  >
+                    Start a new chat
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* input */}
-            <form onSubmit={send} className="flex items-center gap-2 border-t bg-white px-3 py-3">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type a message…"
-                aria-label="Message"
-                className="min-w-0 flex-1 rounded-full bg-neutral-100 px-4 py-2.5 text-[14px] text-ink outline-none placeholder:text-neutral-400 focus:bg-neutral-50 focus:ring-2 focus:ring-wine-500/20"
-              />
-              <button
-                type="submit"
-                disabled={sending || !input.trim()}
-                aria-label="Send"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-wine-500 text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-40"
-              >
-                <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
-                  <path d="M4 12l16-8-6 16-3-6-7-2Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-                </svg>
-              </button>
-            </form>
+            {/* quick actions + input */}
+            {mode === "chat" && (
+              <>
+                <div className="flex gap-2 border-t bg-white px-3 pt-2.5">
+                  <button
+                    onClick={() => setMode("team")}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-wine-500/25 bg-wine-500/5 px-3 py-2 font-display text-[11px] font-semibold uppercase tracking-wide text-wine-500 transition hover:bg-wine-500/10"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" aria-hidden>
+                      <path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                      <circle cx="9.5" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.8" />
+                      <path d="M17.2 11.2a3.2 3.2 0 1 0-2.4-5.7M21 19v-1a4 4 0 0 0-3-3.85" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                    </svg>
+                    Talk to the team
+                  </button>
+                  <a
+                    href={CALENDLY_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-wine-500/25 bg-wine-500/5 px-3 py-2 font-display text-[11px] font-semibold uppercase tracking-wide text-wine-500 transition hover:bg-wine-500/10"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" aria-hidden>
+                      <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
+                      <path d="M3.5 9.5h17M8 2.8V6M16 2.8V6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                      <path d="m9.5 14.5 1.8 1.8 3.4-3.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Meet with Luke
+                  </a>
+                </div>
+                <form onSubmit={send} className="flex items-center gap-2 bg-white px-3 py-3">
+                  <input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Type a message…"
+                    aria-label="Message"
+                    className="min-w-0 flex-1 rounded-full bg-neutral-100 px-4 py-2.5 text-[14px] text-ink outline-none placeholder:text-neutral-400 focus:bg-neutral-50 focus:ring-2 focus:ring-wine-500/20"
+                  />
+                  <button
+                    type="submit"
+                    disabled={sending || !input.trim()}
+                    aria-label="Send"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-wine-500 text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-40"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
+                      <path d="M4 12l16-8-6 16-3-6-7-2Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </form>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

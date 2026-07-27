@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { playChime } from "@/lib/chime";
+import { Linkified } from "@/components/ui/Linkify";
 
 type Conversation = {
   id: string;
@@ -10,6 +11,7 @@ type Conversation = {
   status: string;
   important: boolean;
   aiEnabled: boolean;
+  rating: number | null;
   unreadAdmin: number;
   lastMessageAt: string;
   createdAt: string;
@@ -250,7 +252,12 @@ export default function ChatClient({ adminName }: { adminName: string }) {
                     </span>
                     <span className="shrink-0 text-[11px] text-neutral-400">{timeAgo(c.lastMessageAt)}</span>
                   </span>
-                  <span className="truncate text-xs text-neutral-500">{c.email || "No email provided"}</span>
+                  <span className="flex items-center gap-1.5 truncate text-xs text-neutral-500">
+                    {c.rating != null && (
+                      <span className="shrink-0 rounded bg-amber-50 px-1 font-medium text-amber-600">★ {c.rating}</span>
+                    )}
+                    <span className="truncate">{c.email || "No email provided"}</span>
+                  </span>
                 </span>
                 {c.unreadAdmin > 0 && (
                   <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-pink-600 px-1 text-[11px] font-bold text-white">
@@ -326,7 +333,7 @@ export default function ChatClient({ adminName }: { adminName: string }) {
                       </span>
                     )}
                     <div
-                      className={`whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed ${
+                      className={`whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed ${
                         m.sender === "admin"
                           ? "rounded-br-md bg-wine-500 text-white"
                           : m.sender === "assistant"
@@ -334,7 +341,7 @@ export default function ChatClient({ adminName }: { adminName: string }) {
                             : "rounded-bl-md bg-white text-[#202126] shadow-sm ring-1 ring-black/5"
                       }`}
                     >
-                      {m.body}
+                      <Linkified text={m.body} linkClass={m.sender === "admin" ? "text-white" : "text-wine-500"} />
                       <span className={`mt-1 block text-[10px] ${m.sender === "admin" ? "text-white/60" : "text-neutral-400"}`}>
                         {new Date(m.createdAt).toLocaleString("en-US", { hour: "numeric", minute: "2-digit", month: "short", day: "numeric" })}
                       </span>

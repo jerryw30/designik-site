@@ -162,6 +162,8 @@ export const chatConversations = pgTable("chat_conversations", {
   important: boolean("important").default(false).notNull(),
   // IKORA answers while true; flips false when a human admin takes over.
   aiEnabled: boolean("ai_enabled").default(true).notNull(),
+  // Visitor's 1-5 rating of the chat, collected when they end it.
+  rating: integer("rating"),
   unreadAdmin: integer("unread_admin").default(0).notNull(),
   lastMessageAt: timestamp("last_message_at", { withTimezone: true })
     .defaultNow()
