@@ -6,13 +6,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import { playChime } from "@/lib/chime";
 
-type Msg = { id: string; sender: "visitor" | "admin"; body: string; createdAt: string };
+type Msg = { id: string; sender: "visitor" | "admin" | "assistant"; body: string; createdAt: string };
 
 const STORAGE_KEY = "designik_chat_conversation";
 const GREETING: Msg = {
   id: "greeting",
-  sender: "admin",
-  body: "Hey there! 👋 Got a project in mind or a quick question? We usually reply in a few minutes.",
+  sender: "assistant",
+  body: "Hey, I'm IKORA, Designik's AI project concierge. I can help you figure out the right direction for your website, app, brand, marketing, or automation project. What are you looking to build or improve?",
   createdAt: "",
 };
 
@@ -44,10 +44,10 @@ export default function ChatWidget() {
         const fresh = incoming.filter((m) => !knownIds.current.has(m.id));
         if (fresh.length) {
           fresh.forEach((m) => knownIds.current.add(m.id));
-          const adminMsgs = fresh.filter((m) => m.sender === "admin").length;
-          if (adminMsgs > 0) {
+          const teamMsgs = fresh.filter((m) => m.sender !== "visitor").length;
+          if (teamMsgs > 0) {
             playChime();
-            if (!open) setUnread((u) => u + adminMsgs);
+            if (!open) setUnread((u) => u + teamMsgs);
           }
           setMessages((prev) => [...prev, ...fresh]);
         }
@@ -168,7 +168,7 @@ export default function ChatWidget() {
               <div className="flex-1">
                 <p className="font-display text-[15px] font-semibold uppercase leading-tight">Designik Chat</p>
                 <p className="flex items-center gap-1.5 text-[12px] text-white/75">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400" /> Online now
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" /> IKORA is online
                 </p>
               </div>
             </div>
@@ -177,14 +177,21 @@ export default function ChatWidget() {
             <div ref={scrollRef} data-lenis-prevent className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-neutral-50 px-4 py-4">
               {messages.map((m) => (
                 <div key={m.id} className={m.sender === "visitor" ? "flex justify-end" : "flex justify-start"}>
-                  <div
-                    className={`max-w-[78%] rounded-2xl px-3.5 py-2.5 text-[14px] leading-relaxed ${
-                      m.sender === "visitor"
-                        ? "rounded-br-md bg-wine-500 text-white"
-                        : "rounded-bl-md bg-white text-ink shadow-sm ring-1 ring-black/5"
-                    }`}
-                  >
-                    {m.body}
+                  <div className={m.sender === "visitor" ? "max-w-[78%]" : "max-w-[78%]"}>
+                    {m.sender !== "visitor" && (
+                      <span className="mb-0.5 ml-1 block font-display text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+                        {m.sender === "assistant" ? "IKORA" : "Designik Team"}
+                      </span>
+                    )}
+                    <div
+                      className={`whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-[14px] leading-relaxed ${
+                        m.sender === "visitor"
+                          ? "rounded-br-md bg-wine-500 text-white"
+                          : "rounded-bl-md bg-white text-ink shadow-sm ring-1 ring-black/5"
+                      }`}
+                    >
+                      {m.body}
+                    </div>
                   </div>
                 </div>
               ))}

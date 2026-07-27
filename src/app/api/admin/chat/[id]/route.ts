@@ -60,9 +60,11 @@ export async function POST(
     .values({ conversationId: id, sender: "admin", body: text })
     .returning();
 
+  // Human takeover: the moment an admin replies, IKORA stops answering
+  // this conversation (re-enable via PATCH { ai: true }).
   await db
     .update(chatConversations)
-    .set({ lastMessageAt: new Date() })
+    .set({ lastMessageAt: new Date(), aiEnabled: false })
     .where(eq(chatConversations.id, id));
 
   return NextResponse.json({ message });
@@ -76,15 +78,16 @@ export async function PATCH(
   const user = await chatUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
-  let body: { important?: boolean; unread?: boolean };
+  let body: { important?: boolean; unread?: boolean; ai?: boolean };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
-  const patch: Partial<{ important: boolean; unreadAdmin: number }> = {};
+  const patch: Partial<{ important: boolean; unreadAdmin: number; aiEnabled: boolean }> = {};
   if (typeof body.important === "boolean") patch.important = body.important;
   if (typeof body.unread === "boolean") patch.unreadAdmin = body.unread ? 1 : 0;
+  if (typeof body.ai === "boolean") patch.aiEnabled = body.ai;
   if (!Object.keys(patch).length) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   const [conversation] = await db
     .update(chatConversations)

@@ -9,13 +9,14 @@ type Conversation = {
   email: string | null;
   status: string;
   important: boolean;
+  aiEnabled: boolean;
   unreadAdmin: number;
   lastMessageAt: string;
   createdAt: string;
 };
 
 type Filter = "all" | "unread" | "read" | "important";
-type Msg = { id: string; sender: "visitor" | "admin"; body: string; createdAt: string };
+type Msg = { id: string; sender: "visitor" | "admin" | "assistant"; body: string; createdAt: string };
 
 function timeAgo(iso: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -122,6 +123,8 @@ export default function ChatClient({ adminName }: { adminName: string }) {
         });
         const data = await res.json();
         if (data.message) setMessages((prev) => prev.map((m) => (m.id === optimistic.id ? data.message : m)));
+        // The server disables IKORA on human reply — mirror that locally.
+        setConversations((prev) => prev.map((c) => (c.id === activeId ? { ...c, aiEnabled: false } : c)));
         loadConversations();
       } catch {
         /* keep optimistic */
@@ -139,6 +142,19 @@ export default function ChatClient({ adminName }: { adminName: string }) {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ important: value }),
+      });
+    } catch {
+      /* optimistic */
+    }
+  }, []);
+
+  const toggleAi = useCallback(async (id: string, value: boolean) => {
+    setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, aiEnabled: value } : c)));
+    try {
+      await fetch(`/api/admin/chat/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ai: value }),
       });
     } catch {
       /* optimistic */
@@ -265,6 +281,18 @@ export default function ChatClient({ adminName }: { adminName: string }) {
               </div>
               <div className="ml-auto flex items-center gap-1">
                 <button
+                  onClick={() => toggleAi(active.id, !active.aiEnabled)}
+                  title={active.aiEnabled ? "IKORA is answering — click to take over" : "You have taken over — click to hand back to IKORA"}
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition ${
+                    active.aiEnabled
+                      ? "bg-violet-100 text-violet-700 hover:bg-violet-200"
+                      : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200"
+                  }`}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${active.aiEnabled ? "bg-violet-500" : "bg-neutral-400"}`} />
+                  {active.aiEnabled ? "IKORA on" : "IKORA off"}
+                </button>
+                <button
                   onClick={() => toggleImportant(active.id, !active.important)}
                   title={active.important ? "Remove from important" : "Mark as important"}
                   className={`rounded-lg p-2 text-[18px] leading-none transition ${
@@ -290,18 +318,27 @@ export default function ChatClient({ adminName }: { adminName: string }) {
             </div>
             <div ref={scrollRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-neutral-50 px-5 py-4">
               {messages.map((m) => (
-                <div key={m.id} className={m.sender === "admin" ? "flex justify-end" : "flex justify-start"}>
-                  <div
-                    className={`max-w-[70%] rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed ${
-                      m.sender === "admin"
-                        ? "rounded-br-md bg-wine-500 text-white"
-                        : "rounded-bl-md bg-white text-[#202126] shadow-sm ring-1 ring-black/5"
-                    }`}
-                  >
-                    {m.body}
-                    <span className={`mt-1 block text-[10px] ${m.sender === "admin" ? "text-white/60" : "text-neutral-400"}`}>
-                      {new Date(m.createdAt).toLocaleString("en-US", { hour: "numeric", minute: "2-digit", month: "short", day: "numeric" })}
-                    </span>
+                <div key={m.id} className={m.sender === "visitor" ? "flex justify-start" : "flex justify-end"}>
+                  <div className="max-w-[70%]">
+                    {m.sender === "assistant" && (
+                      <span className="mb-0.5 mr-1 block text-right text-[10px] font-semibold uppercase tracking-[0.08em] text-violet-500">
+                        IKORA · AI
+                      </span>
+                    )}
+                    <div
+                      className={`whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed ${
+                        m.sender === "admin"
+                          ? "rounded-br-md bg-wine-500 text-white"
+                          : m.sender === "assistant"
+                            ? "rounded-br-md bg-violet-50 text-[#202126] ring-1 ring-violet-200"
+                            : "rounded-bl-md bg-white text-[#202126] shadow-sm ring-1 ring-black/5"
+                      }`}
+                    >
+                      {m.body}
+                      <span className={`mt-1 block text-[10px] ${m.sender === "admin" ? "text-white/60" : "text-neutral-400"}`}>
+                        {new Date(m.createdAt).toLocaleString("en-US", { hour: "numeric", minute: "2-digit", month: "short", day: "numeric" })}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
