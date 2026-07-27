@@ -7,8 +7,13 @@ import { assets } from "@/lib/assets";
 import { playChime } from "@/lib/chime";
 import { Linkified } from "@/components/ui/Linkify";
 
-type Msg = { id: string; sender: "visitor" | "admin" | "assistant"; body: string; createdAt: string };
+type Msg = { id: string; sender: "visitor" | "admin" | "assistant"; senderName?: string | null; body: string; createdAt: string };
 type Mode = "chat" | "team" | "rating" | "ended";
+
+// The quick actions only appear once the visitor shows intent to reach a
+// human (or IKORA offers the handoff) — not from the first message.
+const HUMAN_INTENT_RE =
+  /(real person|human|someone|team|agent|support|speak|talk to|call|meeting|meet|schedule|book|luke|contact|quote|proposal|hire)/i;
 
 const STORAGE_KEY = "designik_chat_conversation";
 const CALENDLY_URL = "https://calendly.com/luke-designingenious/";
@@ -61,6 +66,8 @@ export default function ChatWidget() {
   const [teamBusy, setTeamBusy] = useState(false);
   const [teamError, setTeamError] = useState("");
   const [hoverStar, setHoverStar] = useState(0);
+  const [showActions, setShowActions] = useState(false); // human-intent detected
+  const [waitingHuman, setWaitingHuman] = useState(false); // in line for the team
   const convId = useRef<string | null>(null);
   const lastTs = useRef<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -92,6 +99,11 @@ export default function ChatWidget() {
             setTyping(false);
             if (typingTimer.current) clearTimeout(typingTimer.current);
           }
+          // A real person joined — the visitor is out of the queue.
+          if (fresh.some((m) => m.sender === "admin")) setWaitingHuman(false);
+          // IKORA offered the handoff/booking — surface the quick actions.
+          if (fresh.some((m) => m.sender === "assistant" && (m.body.includes("calendly.com") || HUMAN_INTENT_RE.test(m.body))))
+            setShowActions(true);
           setMessages((prev) => [...prev, ...fresh]);
         }
       }
@@ -134,6 +146,8 @@ export default function ChatWidget() {
       if (!body || sending) return;
       setSending(true);
       setSendError(false);
+      // Visitor wants to reach a person/meeting — show the quick actions.
+      if (HUMAN_INTENT_RE.test(body)) setShowActions(true);
       const optimistic: Msg = { id: `tmp-${Date.now()}`, sender: "visitor", body, createdAt: new Date().toISOString() };
       setMessages((prev) => [...prev, optimistic]);
       try {
@@ -203,6 +217,8 @@ export default function ChatWidget() {
           localStorage.setItem(STORAGE_KEY, data.conversationId);
         }
         setTyping(false);
+        setWaitingHuman(true); // in line until a team member replies
+        setShowActions(false);
         setMode("chat");
         // Poll picks up the marker + confirmation messages.
         poll();
@@ -243,6 +259,8 @@ export default function ChatWidget() {
     setSendError(false);
     setTeam({ name: "", email: "" });
     setHoverStar(0);
+    setShowActions(false);
+    setWaitingHuman(false);
     setMode("chat");
   }, []);
 
@@ -320,7 +338,7 @@ export default function ChatWidget() {
                       {m.sender === "assistant" ? <BotAvatar /> : <TeamAvatar />}
                       <div className="min-w-0">
                         <span className="mb-0.5 ml-1 block font-display text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
-                          {m.sender === "assistant" ? "IKORA" : "Designik Team"}
+                          {m.sender === "assistant" ? "IKORA" : m.senderName || "Designik Team"}
                         </span>
                         <div className="whitespace-pre-wrap break-words rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 text-[14px] leading-relaxed text-ink shadow-sm ring-1 ring-black/5">
                           <Linkified text={m.body} linkClass="text-wine-500" />
@@ -443,6 +461,18 @@ export default function ChatWidget() {
             {/* quick actions + input */}
             {mode === "chat" && (
               <>
+                {waitingHuman && (
+                  <div className="flex items-center justify-center gap-2 border-t bg-emerald-50 px-3 py-2">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                    </span>
+                    <p className="text-[12px] font-medium text-emerald-700">
+                      You&rsquo;re in line — a team member will join shortly
+                    </p>
+                  </div>
+                )}
+                {showActions && !waitingHuman && (
                 <div className="flex gap-2 border-t bg-white px-3 pt-2.5">
                   <button
                     onClick={() => setMode("team")}
@@ -469,7 +499,8 @@ export default function ChatWidget() {
                     Meet with Luke
                   </a>
                 </div>
-                <form onSubmit={send} className="flex items-center gap-2 bg-white px-3 py-3">
+                )}
+                <form onSubmit={send} className={`flex items-center gap-2 bg-white px-3 py-3 ${!showActions && !waitingHuman ? "border-t" : ""}`}>
                   <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}

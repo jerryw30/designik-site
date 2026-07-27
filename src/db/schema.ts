@@ -178,7 +178,9 @@ export const chatMessages = pgTable("chat_messages", {
   conversationId: uuid("conversation_id")
     .references(() => chatConversations.id, { onDelete: "cascade" })
     .notNull(),
-  sender: text("sender").notNull(), // 'visitor' | 'admin'
+  sender: text("sender").notNull(), // 'visitor' | 'admin' | 'assistant'
+  // Professional display name for admin messages (e.g. "Luke Carter").
+  senderName: text("sender_name"),
   body: text("body").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()

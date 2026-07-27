@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { playChime } from "@/lib/chime";
+import { playChime, playRing } from "@/lib/chime";
 import { Linkified } from "@/components/ui/Linkify";
 
 type Conversation = {
@@ -18,7 +18,9 @@ type Conversation = {
 };
 
 type Filter = "all" | "unread" | "read" | "important";
-type Msg = { id: string; sender: "visitor" | "admin" | "assistant"; body: string; createdAt: string };
+type Msg = { id: string; sender: "visitor" | "admin" | "assistant"; senderName?: string | null; body: string; createdAt: string };
+
+const RING_MUTE_KEY = "designik_chat_ring_muted";
 
 function timeAgo(iso: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -41,9 +43,21 @@ export default function ChatClient({ adminName }: { adminName: string }) {
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
+  const [ringMuted, setRingMuted] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<string | null>(null);
   activeRef.current = activeId;
+
+  // restore ring-mute preference
+  useEffect(() => {
+    setRingMuted(localStorage.getItem(RING_MUTE_KEY) === "1");
+  }, []);
+  const toggleRingMuted = useCallback(() => {
+    setRingMuted((v) => {
+      localStorage.setItem(RING_MUTE_KEY, v ? "0" : "1");
+      return !v;
+    });
+  }, []);
 
   const prevUnread = useRef<number | null>(null);
   const loadConversations = useCallback(async () => {
@@ -177,6 +191,16 @@ export default function ChatClient({ adminName }: { adminName: string }) {
     }
   }, []);
 
+  // Someone is in line waiting for a human — ring like an incoming call
+  // until a team member replies (status flips to OPEN) or the sound is muted.
+  const anyWaiting = conversations.some((c) => c.status === "WAITING");
+  useEffect(() => {
+    if (!anyWaiting || ringMuted) return;
+    playRing();
+    const id = setInterval(playRing, 3200);
+    return () => clearInterval(id);
+  }, [anyWaiting, ringMuted]);
+
   const active = conversations.find((c) => c.id === activeId);
   const visible = conversations.filter((c) =>
     filter === "unread" ? c.unreadAdmin > 0 : filter === "read" ? c.unreadAdmin === 0 : filter === "important" ? c.important : true,
@@ -195,9 +219,36 @@ export default function ChatClient({ adminName }: { adminName: string }) {
         <div className="border-b">
           <div className="flex items-center justify-between px-5 pb-2 pt-4">
             <h2 className="font-semibold">Conversations</h2>
-            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500">
-              {conversations.length}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={toggleRingMuted}
+                title={ringMuted ? "Ring sound is OFF — click to enable" : "Ring sound is ON — click to mute"}
+                className={`rounded-lg p-1.5 transition ${
+                  ringMuted
+                    ? "text-neutral-300 hover:bg-neutral-100 hover:text-neutral-500"
+                    : anyWaiting
+                      ? "animate-pulse bg-emerald-50 text-emerald-600"
+                      : "text-neutral-400 hover:bg-neutral-100"
+                }`}
+              >
+                {ringMuted ? (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-[17px] w-[17px]" aria-hidden>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    <path d="M18.63 13A17.9 17.9 0 0 1 18 8a6 6 0 0 0-9.33-5" />
+                    <path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14" />
+                    <path d="m2 2 20 20" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-[17px] w-[17px]" aria-hidden>
+                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+                  </svg>
+                )}
+              </button>
+              <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500">
+                {conversations.length}
+              </span>
+            </div>
           </div>
           {/* filter tabs */}
           <div className="flex gap-1 px-3 pb-2.5">
@@ -253,6 +304,15 @@ export default function ChatClient({ adminName }: { adminName: string }) {
                     <span className="shrink-0 text-[11px] text-neutral-400">{timeAgo(c.lastMessageAt)}</span>
                   </span>
                   <span className="flex items-center gap-1.5 truncate text-xs text-neutral-500">
+                    {c.status === "WAITING" && (
+                      <span className="flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-px font-semibold text-emerald-600">
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        </span>
+                        In line
+                      </span>
+                    )}
                     {c.rating != null && (
                       <span className="shrink-0 rounded bg-amber-50 px-1 font-medium text-amber-600">★ {c.rating}</span>
                     )}
@@ -343,6 +403,7 @@ export default function ChatClient({ adminName }: { adminName: string }) {
                     >
                       <Linkified text={m.body} linkClass={m.sender === "admin" ? "text-white" : "text-wine-500"} />
                       <span className={`mt-1 block text-[10px] ${m.sender === "admin" ? "text-white/60" : "text-neutral-400"}`}>
+                        {m.sender === "admin" && m.senderName ? `${m.senderName} · ` : ""}
                         {new Date(m.createdAt).toLocaleString("en-US", { hour: "numeric", minute: "2-digit", month: "short", day: "numeric" })}
                       </span>
                     </div>

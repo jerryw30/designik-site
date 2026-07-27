@@ -27,3 +27,40 @@ export function playChime() {
     /* audio not available / blocked — silently skip */
   }
 }
+
+/** Phone-style "ring-ring" burst — repeat on an interval for a call effect. */
+export function playRing() {
+  try {
+    type AudioCtor = typeof AudioContext;
+    const Ctx: AudioCtor | undefined =
+      window.AudioContext || (window as unknown as { webkitAudioContext?: AudioCtor }).webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const burst = (start: number) => {
+      // Classic telephone ring: two detuned tones warbling together.
+      for (const freq of [1000, 1250] as const) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        const t = ctx.currentTime + start;
+        gain.gain.setValueAtTime(0, t);
+        // tremolo-ish envelope: pulse the gain for the warble
+        for (let i = 0; i < 8; i++) {
+          gain.gain.linearRampToValueAtTime(0.09, t + i * 0.05 + 0.015);
+          gain.gain.linearRampToValueAtTime(0.015, t + i * 0.05 + 0.045);
+        }
+        gain.gain.linearRampToValueAtTime(0.0001, t + 0.45);
+        osc.start(t);
+        osc.stop(t + 0.5);
+      }
+    };
+    burst(0);
+    burst(0.65); // "ring-ring"
+    window.setTimeout(() => void ctx.close(), 1600);
+  } catch {
+    /* audio not available / blocked — silently skip */
+  }
+}

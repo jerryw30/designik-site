@@ -57,14 +57,16 @@ export async function POST(
 
   const [message] = await db
     .insert(chatMessages)
-    .values({ conversationId: id, sender: "admin", body: text })
+    // Professional name so the visitor sees who they're talking to.
+    .values({ conversationId: id, sender: "admin", senderName: user.name, body: text })
     .returning();
 
   // Human takeover: the moment an admin replies, IKORA stops answering
-  // this conversation (re-enable via PATCH { ai: true }).
+  // this conversation (re-enable via PATCH { ai: true }) and the WAITING
+  // queue state clears — which also stops the dashboard ringing.
   await db
     .update(chatConversations)
-    .set({ lastMessageAt: new Date(), aiEnabled: false })
+    .set({ lastMessageAt: new Date(), aiEnabled: false, status: "OPEN" })
     .where(eq(chatConversations.id, id));
 
   return NextResponse.json({ message });

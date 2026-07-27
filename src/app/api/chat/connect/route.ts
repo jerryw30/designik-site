@@ -45,14 +45,15 @@ export async function POST(request: Request) {
     conversationId = conv.id;
   }
 
-  // Human mode: the team owns this conversation now.
+  // Human mode + the visitor enters the queue: WAITING makes the admin
+  // dashboard ring until a team member replies.
   await db
     .update(chatConversations)
     .set({
       name,
       email,
       aiEnabled: false,
-      status: "OPEN",
+      status: "WAITING",
       lastMessageAt: new Date(),
       unreadAdmin: sql`${chatConversations.unreadAdmin} + 1`,
     })
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
     .values({
       conversationId,
       sender: "assistant",
-      body: `Thanks ${name}! The Designik team has been notified and a real person will reply right here or at ${email}. You can keep chatting in the meantime, or book a call with Luke directly: ${CALENDLY_URL}`,
+      body: `Thanks ${name}! You're in line — a real person from the Designik team has been notified and will join you right here (or reply at ${email}). While you wait, you can keep chatting with me or book a call with Luke directly: ${CALENDLY_URL}`,
     })
     .returning();
 
