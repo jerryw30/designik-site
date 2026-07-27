@@ -90,23 +90,43 @@ export async function POST(request: Request) {
   // visitor's send never waits on the model. The widget's poll picks the
   // reply up within a few seconds. Skipped once a human has taken over.
   const conv = conversation;
-  if (conv.aiEnabled && process.env.ANTHROPIC_API_KEY) {
+  const aiActive = conv.aiEnabled && Boolean(process.env.ANTHROPIC_API_KEY);
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.warn("[ikora] SKIPPED — ANTHROPIC_API_KEY is not set in this deployment");
+  } else if (!conv.aiEnabled) {
+    console.info(`[ikora] skipped — human has taken over conversation ${conv.id.slice(0, 8)}`);
+  }
+  if (aiActive) {
     after(async () => {
+      const started = Date.now();
       try {
         const history = await db
-          .select({ sender: chatMessages.sender, body: chatMessages.body })
+          .select({ id: chatMessages.id, sender: chatMessages.sender, body: chatMessages.body })
           .from(chatMessages)
           .where(eq(chatMessages.conversationId, conv.id))
           .orderBy(asc(chatMessages.createdAt));
+        // Freshness guard: if the visitor already sent a newer message, let
+        // that request's run answer with the fuller context instead of
+        // producing two replies.
+        if (history[history.length - 1]?.id !== message.id) {
+          console.info("[ikora] superseded by a newer message — skipping");
+          return;
+        }
         const reply = await generateIkoraReply(history, { name: conv.name, email: conv.email });
-        if (!reply) return;
+        if (!reply) {
+          console.warn(`[ikora] no reply generated (${Date.now() - started}ms) — see earlier error for cause`);
+          return;
+        }
         // A human may have joined while the model was thinking — re-check.
         const [fresh] = await db
           .select({ aiEnabled: chatConversations.aiEnabled })
           .from(chatConversations)
           .where(eq(chatConversations.id, conv.id))
           .limit(1);
-        if (!fresh?.aiEnabled) return;
+        if (!fresh?.aiEnabled) {
+          console.info("[ikora] human took over mid-generation — discarding reply");
+          return;
+        }
         await db
           .insert(chatMessages)
           .values({ conversationId: conv.id, sender: "assistant", body: reply });
@@ -114,13 +134,14 @@ export async function POST(request: Request) {
           .update(chatConversations)
           .set({ lastMessageAt: new Date() })
           .where(eq(chatConversations.id, conv.id));
+        console.info(`[ikora] replied in ${Date.now() - started}ms (${reply.length} chars)`);
       } catch (err) {
         console.error("[ikora] background reply failed:", err);
       }
     });
   }
 
-  return NextResponse.json({ conversationId, message });
+  return NextResponse.json({ conversationId, message, aiActive });
 }
 
 /** Visitor polls for new messages after a timestamp. */

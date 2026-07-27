@@ -197,7 +197,10 @@ export async function generateIkoraReply(
   history: IkoraTurn[],
   visitor?: { name?: string | null; email?: string | null },
 ): Promise<string | null> {
-  if (!process.env.ANTHROPIC_API_KEY) return null;
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.warn("[ikora] ANTHROPIC_API_KEY not set — skipping reply generation");
+    return null;
+  }
 
   const client = new Anthropic();
 

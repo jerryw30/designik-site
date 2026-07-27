@@ -22,10 +22,13 @@ export default function ChatWidget() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [typing, setTyping] = useState(false); // IKORA is composing a reply
+  const [sendError, setSendError] = useState(false);
   const convId = useRef<string | null>(null);
   const lastTs = useRef<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const knownIds = useRef<Set<string>>(new Set([GREETING.id]));
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // restore conversation id
   useEffect(() => {
@@ -48,6 +51,9 @@ export default function ChatWidget() {
           if (teamMsgs > 0) {
             playChime();
             if (!open) setUnread((u) => u + teamMsgs);
+            // The awaited reply arrived — stop the typing indicator.
+            setTyping(false);
+            if (typingTimer.current) clearTimeout(typingTimer.current);
           }
           setMessages((prev) => [...prev, ...fresh]);
         }
@@ -82,7 +88,7 @@ export default function ChatWidget() {
     if (!el) return;
     const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 200;
     if (nearBottom) requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight }));
-  }, [messages, open]);
+  }, [messages, open, typing, sendError]);
 
   const send = useCallback(
     async (e: React.FormEvent) => {
@@ -90,6 +96,7 @@ export default function ChatWidget() {
       const text = input.trim();
       if (!text || sending) return;
       setSending(true);
+      setSendError(false);
       const optimistic: Msg = { id: `tmp-${Date.now()}`, sender: "visitor", body: text, createdAt: new Date().toISOString() };
       setMessages((prev) => [...prev, optimistic]);
       setInput("");
@@ -98,7 +105,9 @@ export default function ChatWidget() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ conversationId: convId.current, body: text }),
+          signal: AbortSignal.timeout(20000),
         });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (data.conversationId) {
           convId.current = data.conversationId;
@@ -109,8 +118,16 @@ export default function ChatWidget() {
           knownIds.current.add(data.message.id);
           setMessages((prev) => prev.map((m) => (m.id === optimistic.id ? data.message : m)));
         }
+        // Server says IKORA is composing — show typing until the reply
+        // arrives via poll (or give up after 60s and let a human follow up).
+        if (data.aiActive) {
+          setTyping(true);
+          if (typingTimer.current) clearTimeout(typingTimer.current);
+          typingTimer.current = setTimeout(() => setTyping(false), 60000);
+        }
       } catch {
-        /* keep optimistic message */
+        // Keep the optimistic bubble but tell the visitor it didn't go through.
+        setSendError(true);
       } finally {
         setSending(false);
       }
@@ -195,6 +212,29 @@ export default function ChatWidget() {
                   </div>
                 </div>
               ))}
+
+              {/* IKORA typing indicator */}
+              {typing && (
+                <div className="flex justify-start">
+                  <div className="max-w-[78%]">
+                    <span className="mb-0.5 ml-1 block font-display text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+                      IKORA
+                    </span>
+                    <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-sm ring-1 ring-black/5">
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-300 [animation-delay:0ms]" />
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-300 [animation-delay:150ms]" />
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-300 [animation-delay:300ms]" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* send failure notice */}
+              {sendError && (
+                <p className="px-2 text-center text-[12px] text-red-400">
+                  Your message could not be sent. Please check your connection and try again.
+                </p>
+              )}
             </div>
 
             {/* input */}
