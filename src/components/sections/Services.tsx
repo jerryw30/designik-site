@@ -1,8 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
 import { assets } from "@/lib/assets";
 import PendulumSwing from "@/components/ui/PendulumSwing";
 import { sectionContent } from "@/cms/section-defaults";
@@ -13,8 +11,6 @@ function Lines({ text }: { text: string }) {
 
 export default function Services({ content }: { content?: unknown } = {}) {
   const data = sectionContent("services", content);
-  const seoRef = useRef<HTMLElement>(null);
-  const seoInView = useInView(seoRef, { margin: "15% 0px 15% 0px" });
 
   return (
     <section id="services" className="relative bg-white">
@@ -64,14 +60,13 @@ export default function Services({ content }: { content?: unknown } = {}) {
 
         <Image src="/figma/group1261153735.svg" alt="View all services" width={81} height={81} className="absolute left-[1219px] top-[359px] h-[80.618px] w-[80.618px] [animation:spin360_14s_linear_infinite]" />
 
-        <motion.article
-          ref={seoRef}
-          animate={seoInView ? { y: [0, 162, 0] } : { y: 0 }}
-          transition={seoInView ? { duration: 5.5, repeat: Infinity, ease: "easeInOut" } : { duration: 0.3 }}
-          className="group absolute left-[1px] top-[407px] h-[178px] w-[171px] overflow-hidden rounded-[20px] bg-[#ffefef] transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
-          <h3 className="absolute inset-x-0 top-[29px] z-10 text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-black">{data.cards.seo.title}</h3>
-          <Image src={data.cards.seo.image || assets.seo} alt="SEO" width={155} height={98} className="absolute left-[16px] top-[73px] h-[98px] w-[155px] max-w-none transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.018]" />
-        </motion.article>
+        <article className="group absolute left-[1px] top-[407px] h-[340px] w-[171px] overflow-hidden rounded-[20px] bg-[#fbe9eb] transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+          <span className="absolute inset-x-0 top-[24px] z-10 text-center font-display text-[10px] font-medium uppercase tracking-[0.14em] leading-[12px] text-wine-500">{data.eyebrow}</span>
+          <h3 className="absolute inset-x-0 top-[37px] z-10 text-center font-display text-[46px] font-semibold uppercase leading-[54px] text-black">{data.cards.seo.title}</h3>
+          <div className="absolute inset-x-0 bottom-[10px] top-[112px]">
+            <Image src={data.cards.seo.image || assets.seo} alt="SEO" fill className="object-contain object-bottom transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]" sizes="171px" />
+          </div>
+        </article>
 
         <article className="group absolute left-[192px] top-[407px] h-[340px] w-[287.202px] overflow-hidden rounded-[20px] bg-[#fff3e9] transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
           <span className="absolute inset-x-0 top-[50px] text-center font-display text-[15.319px] font-normal uppercase leading-[18.027px] text-wine-500">{data.eyebrow}</span>
@@ -128,10 +123,11 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <Image src={data.cards.digital.image || assets.digitalMarketing} alt="" width={287} height={250} className="absolute left-[39%] top-[64%] h-[90%] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 object-contain object-center" />
         </article>
 
-        {/* SEO — image bottom-center */}
-        <article className="group relative min-h-[320px] overflow-hidden rounded-[20px] bg-blush-100 shadow-sm">
-          <h3 className="relative z-10 px-6 pt-7 text-center font-display text-[26px] font-medium uppercase leading-tight text-black">{data.cards.seo.title}</h3>
-          <Image src={data.cards.seo.image || assets.seo} alt="SEO" width={155} height={98} className="absolute inset-x-0 bottom-10 mx-auto w-[68%] object-contain" />
+        {/* SEO — eyebrow + heading, rocket bottom-center */}
+        <article className="group relative min-h-[360px] overflow-hidden rounded-[20px] bg-[#fbe9eb] shadow-sm">
+          <span className="relative z-10 block pt-7 text-center font-display text-xs font-medium uppercase tracking-[0.14em] text-wine-500">{data.eyebrow}</span>
+          <h3 className="relative z-10 mt-1 px-6 text-center font-display text-[40px] font-semibold uppercase leading-tight text-black">{data.cards.seo.title}</h3>
+          <Image src={data.cards.seo.image || assets.seo} alt="SEO" width={308} height={552} className="absolute inset-x-0 bottom-4 mx-auto h-[58%] w-auto object-contain object-bottom" />
         </article>
 
         {/* Mobile App — hand overflowing from the bottom-right */}

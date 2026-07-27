@@ -333,7 +333,7 @@ export const sectionDefaults = {
         title: "Mobile app\nDevelopment",
         image: "/figma/individual/image-236--221-1591.png",
       },
-      seo: { title: "SEO", image: "/figma/individual/image-235--173-175.png" },
+      seo: { title: "SEO", image: "/figma/individual/seo-rocket.png" },
       website: {
         title: "Website\nDevelopment",
         icons: [
