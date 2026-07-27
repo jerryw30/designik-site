@@ -124,10 +124,10 @@ export default function Services({ content }: { content?: unknown } = {}) {
         </article>
 
         {/* SEO — eyebrow + heading, rocket bottom-center */}
-        <article className="group relative min-h-[360px] overflow-hidden rounded-[20px] bg-[#fbe9eb] shadow-sm">
+        <article className="group relative min-h-[430px] overflow-hidden rounded-[20px] bg-[#fbe9eb] shadow-sm">
           <span className="relative z-10 block pt-7 text-center font-display text-xs font-medium uppercase tracking-[0.14em] text-wine-500">{data.eyebrow}</span>
           <h3 className="relative z-10 mt-1 px-6 text-center font-display text-[40px] font-semibold uppercase leading-tight text-black">{data.cards.seo.title}</h3>
-          <Image src={data.cards.seo.image || assets.seo} alt="SEO" width={308} height={552} className="absolute inset-x-0 bottom-4 mx-auto h-[58%] w-auto object-contain object-bottom" />
+          <Image src={data.cards.seo.image || assets.seo} alt="SEO" width={308} height={552} className="absolute inset-x-0 bottom-3 mx-auto h-[74%] w-auto object-contain object-bottom" />
         </article>
 
         {/* Mobile App — hand overflowing from the bottom-right */}
