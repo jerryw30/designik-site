@@ -68,22 +68,12 @@ export default function Services({ content }: { content?: unknown } = {}) {
           </div>
         </article>
 
-        <article className="group absolute left-[192px] top-[407px] h-[340px] w-[287.202px] overflow-hidden rounded-[20px] bg-[#fff3e9] transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
-          <span className="absolute inset-x-0 top-[50px] text-center font-display text-[15.319px] font-normal uppercase leading-[18.027px] text-wine-500">{data.eyebrow}</span>
-          <div className="absolute left-[34px] top-[127px] flex items-center gap-[9px]">
-            {data.cards.website.icons.map((src, index) => (
-              <span key={src} className={`flex items-center justify-center rounded-full bg-white ${index === 1 ? "h-[86px] w-[86px]" : "h-[58px] w-[58px]"}`}>
-                <Image
-                  src={src}
-                  alt=""
-                  width={32}
-                  height={32}
-                  className={`object-contain ${index === 0 ? "h-[22px] w-[22px]" : index === 1 ? "h-[32px] w-[32px]" : "h-[25px] w-[25px]"}`}
-                />
-              </span>
-            ))}
+        <article className="group absolute left-[192px] top-[407px] h-[340px] w-[287.202px] overflow-hidden rounded-[20px] bg-[#fbe9eb] transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+          <span className="absolute inset-x-0 top-[26px] z-10 text-center font-display text-[10px] font-medium uppercase tracking-[0.14em] leading-[12px] text-wine-500">{data.eyebrow}</span>
+          <div className="absolute inset-x-[15px] top-[50px] h-[172px]">
+            <Image src={data.cards.website.image} alt="Website development" fill className="object-contain object-top transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]" sizes="258px" />
           </div>
-          <h3 className="absolute inset-x-0 top-[226px] text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-black">
+          <h3 className="absolute inset-x-0 top-[240px] z-10 text-center font-display text-[28px] font-semibold uppercase leading-[32px] text-black">
             <Lines text={data.cards.website.title} />
           </h3>
         </article>
@@ -136,17 +126,11 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <Image src={data.cards.mobile.image || assets.mobileAppHand} alt="" width={257} height={254} className="absolute bottom-[-4%] left-[31%] h-[120%] w-auto max-w-none -translate-x-[33%] translate-y-[17%] object-contain object-left-bottom" />
         </article>
 
-        {/* Website Development — the three service icons */}
-        <article className="group relative flex min-h-[320px] flex-col items-center justify-center gap-6 overflow-hidden rounded-[20px] bg-cream-100 p-6 shadow-sm">
-          <span className="font-display text-xs uppercase tracking-wide text-wine-500">{data.eyebrow}</span>
-          <div className="flex items-center gap-3">
-            {data.cards.website.icons.map((src, index) => (
-              <span key={src} className={`flex items-center justify-center rounded-full bg-white shadow-sm ${index === 1 ? "h-[76px] w-[76px]" : "h-[54px] w-[54px]"}`}>
-                <Image src={src} alt="" width={32} height={32} className={`object-contain ${index === 0 ? "h-5 w-5" : index === 1 ? "h-8 w-8" : "h-6 w-6"}`} />
-              </span>
-            ))}
-          </div>
-          <h3 className="text-center font-display text-[26px] font-medium uppercase leading-tight text-black"><Lines text={data.cards.website.title} /></h3>
+        {/* Website Development — eyebrow + mockup + heading */}
+        <article className="group relative flex min-h-[340px] flex-col items-center justify-center gap-5 overflow-hidden rounded-[20px] bg-[#fbe9eb] p-6 shadow-sm">
+          <span className="font-display text-xs font-medium uppercase tracking-[0.14em] text-wine-500">{data.eyebrow}</span>
+          <Image src={data.cards.website.image} alt="Website development" width={452} height={339} className="w-[88%] object-contain" />
+          <h3 className="text-center font-display text-[26px] font-semibold uppercase leading-tight text-black"><Lines text={data.cards.website.title} /></h3>
         </article>
 
         {/* Brand Identity — wine gradient, hanging tag + big brand strip like desktop */}

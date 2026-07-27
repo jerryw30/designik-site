@@ -336,6 +336,7 @@ export const sectionDefaults = {
       seo: { title: "SEO", image: "/figma/individual/seo-rocket.png" },
       website: {
         title: "Website\nDevelopment",
+        image: "/figma/individual/website-mockup.png",
         icons: [
           "/figma/individual/developer-1--221-1593.png",
           "/figma/individual/web-development-1--221-1592.png",
