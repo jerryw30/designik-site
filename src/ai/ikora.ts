@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import Groq from "groq-sdk";
+import OpenAI from "openai";
 import { IKORA_KNOWLEDGE } from "@/ai/ikora-knowledge";
 
 /**
@@ -248,12 +249,14 @@ American English. Short paragraphs, natural contractions. 20-100 words per reply
 export type IkoraTurn = { sender: string; body: string };
 
 /** Which AI provider is active for this deployment. */
-export function ikoraProvider(): "anthropic" | "groq" | null {
+export function ikoraProvider(): "anthropic" | "deepseek" | "groq" | null {
   if (process.env.ANTHROPIC_API_KEY) return "anthropic";
+  if (process.env.DEEPSEEK_API_KEY) return "deepseek";
   if (process.env.GROQ_API_KEY) return "groq";
   return null;
 }
 
+const DEEPSEEK_DEFAULT_MODEL = "deepseek-chat";
 const GROQ_DEFAULT_MODEL = "llama-3.3-70b-versatile";
 
 /** Map chat rows to role/content turns shared by both providers. */
@@ -337,15 +340,41 @@ export async function generateIkoraReply(
       return text || null;
     }
 
-    // Groq (OpenAI-compatible). Merge consecutive same-role turns — Llama
-    // chat templates expect strict user/assistant alternation.
+    // DeepSeek / Groq (both OpenAI-compatible). Merge consecutive same-role
+    // turns — chat templates expect strict user/assistant alternation.
     const merged: { role: "user" | "assistant"; content: string }[] = [];
     for (const t of turns) {
       const last = merged[merged.length - 1];
       if (last && last.role === t.role) last.content += `\n\n${t.content}`;
       else merged.push({ ...t });
     }
-    return await groqReply(merged, origin);
+
+    if (provider === "deepseek") {
+      const started = Date.now();
+      try {
+        const ds = new OpenAI({
+          baseURL: "https://api.deepseek.com",
+          apiKey: process.env.DEEPSEEK_API_KEY,
+          maxRetries: 1,
+        });
+        const completion = await ds.chat.completions.create({
+          model: process.env.IKORA_MODEL || DEEPSEEK_DEFAULT_MODEL,
+          max_tokens: 300, // replies are 20-100 words
+          temperature: 0.7,
+          messages: [{ role: "system", content: litePrompt(origin) }, ...merged],
+        });
+        const reply = completion.choices[0]?.message?.content?.trim();
+        if (reply) return reply;
+      } catch (err) {
+        const status = err instanceof OpenAI.APIError ? err.status : "network";
+        console.warn(`[ikora] deepseek failed (${status}) after ${Date.now() - started}ms${process.env.GROQ_API_KEY ? " — falling back to groq" : ""}`);
+      }
+      // DeepSeek down or out of balance — Groq (free) keeps the chat alive.
+      if (process.env.GROQ_API_KEY) return await groqReply(merged, origin, false);
+      return null;
+    }
+
+    return await groqReply(merged, origin, true);
   } catch (err) {
     console.error(`[ikora] ${provider} reply generation failed:`, err);
     return null;
@@ -362,9 +391,12 @@ const BUSY_REPLY =
 async function groqReply(
   merged: { role: "user" | "assistant"; content: string }[],
   origin: string,
+  // IKORA_MODEL names the PRIMARY provider's model — ignore it when Groq
+  // runs as the fallback behind DeepSeek.
+  preferEnvModel: boolean,
 ): Promise<string | null> {
   const groq = new Groq({ maxRetries: 1 });
-  const models = [process.env.IKORA_MODEL || GROQ_DEFAULT_MODEL, GROQ_FALLBACK_MODEL];
+  const models = [preferEnvModel ? process.env.IKORA_MODEL || GROQ_DEFAULT_MODEL : GROQ_DEFAULT_MODEL, GROQ_FALLBACK_MODEL];
   for (const model of models) {
     const started = Date.now();
     try {

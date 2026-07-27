@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import Groq from "groq-sdk";
+import OpenAI from "openai";
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
 import { ikoraProvider } from "@/ai/ikora";
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
   const provider = ikoraProvider();
   const model =
     process.env.IKORA_MODEL ||
-    (provider === "groq" ? "llama-3.3-70b-versatile" : "claude-opus-4-8");
+    (provider === "deepseek" ? "deepseek-chat" : provider === "groq" ? "llama-3.3-70b-versatile" : "claude-opus-4-8");
 
   let dbOk = false;
   try {
@@ -56,6 +57,14 @@ export async function GET(request: Request) {
         });
         const text = res.content.find((b) => b.type === "text");
         reply = text && "text" in text ? text.text : "";
+      } else if (provider === "deepseek") {
+        const ds = new OpenAI({ baseURL: "https://api.deepseek.com", apiKey: process.env.DEEPSEEK_API_KEY });
+        const res = await ds.chat.completions.create({
+          model,
+          max_tokens: 16,
+          messages: [{ role: "user", content: "Reply with exactly: OK" }],
+        });
+        reply = res.choices[0]?.message?.content || "";
       } else {
         const groq = new Groq();
         const res = await groq.chat.completions.create({
@@ -73,7 +82,7 @@ export async function GET(request: Request) {
       report.pingOk = false;
       report.pingLatencyMs = Date.now() - started;
       // Sanitized error — status + type only, never headers/keys.
-      if (err instanceof Anthropic.APIError || err instanceof Groq.APIError) {
+      if (err instanceof Anthropic.APIError || err instanceof Groq.APIError || err instanceof OpenAI.APIError) {
         report.pingError = `${provider} API ${err.status}: ${err.name}`;
       } else {
         report.pingError = err instanceof Error ? err.name : "unknown error";
