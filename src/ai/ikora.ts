@@ -266,7 +266,9 @@ function buildTurns(
   // not contradict or repeat what the team already said.
   const turns = history
     .filter((m) => m.body.trim())
-    .slice(-40) // bound the context
+    // Tight context cap: every extra turn is re-billed on EVERY request and
+    // free-tier tokens-per-minute is the chat's scarcest resource.
+    .slice(-16)
     .map((m) => ({
       role: m.sender === "visitor" ? ("user" as const) : ("assistant" as const),
       content:
@@ -343,17 +345,49 @@ export async function generateIkoraReply(
       if (last && last.role === t.role) last.content += `\n\n${t.content}`;
       else merged.push({ ...t });
     }
-    const groq = new Groq();
-    const completion = await groq.chat.completions.create({
-      model: process.env.IKORA_MODEL || GROQ_DEFAULT_MODEL,
-      max_tokens: 400,
-      temperature: 0.6,
-      messages: [{ role: "system", content: litePrompt(origin) }, ...merged],
-    });
-    const reply = completion.choices[0]?.message?.content?.trim();
-    return reply || null;
+    return await groqReply(merged, origin);
   } catch (err) {
     console.error(`[ikora] ${provider} reply generation failed:`, err);
     return null;
   }
+}
+
+// Groq free-tier quotas are per-model pools (70B: 12k tokens/min, 1k
+// req/day; 8B-instant: 6k tokens/min, 14.4k req/day). Under load the
+// primary hits 429s — falling back to the 8B pool keeps the chat alive.
+const GROQ_FALLBACK_MODEL = "llama-3.1-8b-instant";
+const BUSY_REPLY =
+  "I'm handling a lot of chats right now, so I'm replying slower than usual. Give me a minute and send that again, or tap Talk to the team and a real person will step in.";
+
+async function groqReply(
+  merged: { role: "user" | "assistant"; content: string }[],
+  origin: string,
+): Promise<string | null> {
+  const groq = new Groq({ maxRetries: 1 });
+  const models = [process.env.IKORA_MODEL || GROQ_DEFAULT_MODEL, GROQ_FALLBACK_MODEL];
+  for (const model of models) {
+    const started = Date.now();
+    try {
+      const completion = await groq.chat.completions.create({
+        model,
+        max_tokens: 300, // replies are 20-100 words
+        temperature: 0.6,
+        messages: [{ role: "system", content: litePrompt(origin) }, ...merged],
+      });
+      const reply = completion.choices[0]?.message?.content?.trim();
+      if (reply) {
+        if (model !== models[0]) console.info(`[ikora] served by fallback ${model} in ${Date.now() - started}ms`);
+        return reply;
+      }
+    } catch (err) {
+      const status = err instanceof Groq.APIError ? err.status : undefined;
+      const retryable = status === 429 || status === 498 || (typeof status === "number" && status >= 500);
+      console.warn(`[ikora] groq ${model} failed (${status ?? "network"}) after ${Date.now() - started}ms${retryable ? " — trying fallback" : ""}`);
+      if (!retryable) return null;
+      // else: loop tries the next model in its own quota pool
+    }
+  }
+  // Every pool is exhausted — answer honestly instead of endless "typing".
+  console.warn("[ikora] all groq models rate-limited — sending busy reply");
+  return BUSY_REPLY;
 }
