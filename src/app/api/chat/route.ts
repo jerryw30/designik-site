@@ -3,7 +3,7 @@ import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { chatConversations, chatMessages } from "@/db/schema";
 import { sendNotification } from "@/lib/mailer";
-import { generateIkoraReply } from "@/ai/ikora";
+import { generateIkoraReply, ikoraProvider } from "@/ai/ikora";
 
 export const dynamic = "force-dynamic";
 // Headroom for the background IKORA reply after the response is sent.
@@ -90,9 +90,10 @@ export async function POST(request: Request) {
   // visitor's send never waits on the model. The widget's poll picks the
   // reply up within a few seconds. Skipped once a human has taken over.
   const conv = conversation;
-  const aiActive = conv.aiEnabled && Boolean(process.env.ANTHROPIC_API_KEY);
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.warn("[ikora] SKIPPED — ANTHROPIC_API_KEY is not set in this deployment");
+  const provider = ikoraProvider();
+  const aiActive = conv.aiEnabled && provider !== null;
+  if (!provider) {
+    console.warn("[ikora] SKIPPED — no AI key set (add ANTHROPIC_API_KEY or GROQ_API_KEY)");
   } else if (!conv.aiEnabled) {
     console.info(`[ikora] skipped — human has taken over conversation ${conv.id.slice(0, 8)}`);
   }
