@@ -26,33 +26,20 @@ const GREETING: Msg = {
   createdAt: "",
 };
 
-/** IKORA's avatar — friendly character bot in Designik's wine/pink theme. */
+/** IKORA's avatar — her portrait, in a brand-gradient ring. */
 function BotAvatar({ size = 28 }: { size?: number }) {
   return (
     <span
-      className="flex shrink-0 items-center justify-center rounded-full shadow-sm ring-1 ring-white/50"
+      className="flex shrink-0 items-center justify-center rounded-full p-[2px] shadow-sm"
       style={{ width: size, height: size, backgroundImage: "linear-gradient(135deg, #a10140 0%, #db2f73 100%)" }}
     >
-      <svg viewBox="0 0 48 48" style={{ width: size * 0.8, height: size * 0.8 }} aria-hidden>
-        {/* antenna with glowing tip */}
-        <path d="M24 10v4" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
-        <circle cx="24" cy="8" r="2.8" fill="#FFC94D" />
-        {/* little side ears */}
-        <rect x="4.8" y="21.5" width="3.4" height="8" rx="1.7" fill="#fff" opacity="0.85" />
-        <rect x="39.8" y="21.5" width="3.4" height="8" rx="1.7" fill="#fff" opacity="0.85" />
-        {/* head */}
-        <rect x="8.5" y="13" width="31" height="25" rx="12.5" fill="#fff" />
-        {/* big friendly eyes */}
-        <circle cx="18.5" cy="24.5" r="3.5" fill="#7a0030" />
-        <circle cx="29.5" cy="24.5" r="3.5" fill="#7a0030" />
-        <circle cx="19.7" cy="23.3" r="1.2" fill="#fff" />
-        <circle cx="30.7" cy="23.3" r="1.2" fill="#fff" />
-        {/* blush */}
-        <ellipse cx="13.8" cy="29.8" rx="2.4" ry="1.5" fill="#f9a8c9" opacity="0.9" />
-        <ellipse cx="34.2" cy="29.8" rx="2.4" ry="1.5" fill="#f9a8c9" opacity="0.9" />
-        {/* smile */}
-        <path d="M19.5 31c1.4 1.7 3 2.5 4.5 2.5s3.1-.8 4.5-2.5" stroke="#7a0030" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-      </svg>
+      <Image
+        src="/ikora-avatar.png"
+        alt="IKORA"
+        width={size - 4}
+        height={size - 4}
+        className="h-full w-full rounded-full object-cover"
+      />
     </span>
   );
 }
