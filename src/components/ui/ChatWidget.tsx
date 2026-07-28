@@ -34,7 +34,7 @@ function BotAvatar({ size = 28 }: { size?: number }) {
       style={{ width: size, height: size, backgroundImage: "linear-gradient(135deg, #a10140 0%, #db2f73 100%)" }}
     >
       <Image
-        src="/ikora-avatar.png"
+        src="/ikora-avatar-2.png"
         alt="IKORA"
         width={size - 4}
         height={size - 4}
