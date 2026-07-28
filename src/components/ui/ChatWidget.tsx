@@ -26,21 +26,32 @@ const GREETING: Msg = {
   createdAt: "",
 };
 
-/** IKORA's bot avatar. */
+/** IKORA's avatar — friendly character bot in Designik's wine/pink theme. */
 function BotAvatar({ size = 28 }: { size?: number }) {
   return (
     <span
-      className="flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 shadow-sm"
-      style={{ width: size, height: size }}
+      className="flex shrink-0 items-center justify-center rounded-full shadow-sm ring-1 ring-white/50"
+      style={{ width: size, height: size, backgroundImage: "linear-gradient(135deg, #a10140 0%, #db2f73 100%)" }}
     >
-      <svg viewBox="0 0 24 24" fill="none" style={{ width: size * 0.62, height: size * 0.62 }} className="text-white" aria-hidden>
-        <path d="M12 2.4v2.1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        <circle cx="12" cy="2.2" r="1.1" fill="currentColor" />
-        <rect x="4.6" y="6" width="14.8" height="11" rx="4.2" stroke="currentColor" strokeWidth="1.6" />
-        <circle cx="9.3" cy="11" r="1.3" fill="currentColor" />
-        <circle cx="14.7" cy="11" r="1.3" fill="currentColor" />
-        <path d="M9.5 14.1c.7.6 1.6.9 2.5.9s1.8-.3 2.5-.9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-        <path d="M2.9 10.6v1.8M21.1 10.6v1.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <svg viewBox="0 0 48 48" style={{ width: size * 0.8, height: size * 0.8 }} aria-hidden>
+        {/* antenna with glowing tip */}
+        <path d="M24 10v4" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
+        <circle cx="24" cy="8" r="2.8" fill="#FFC94D" />
+        {/* little side ears */}
+        <rect x="4.8" y="21.5" width="3.4" height="8" rx="1.7" fill="#fff" opacity="0.85" />
+        <rect x="39.8" y="21.5" width="3.4" height="8" rx="1.7" fill="#fff" opacity="0.85" />
+        {/* head */}
+        <rect x="8.5" y="13" width="31" height="25" rx="12.5" fill="#fff" />
+        {/* big friendly eyes */}
+        <circle cx="18.5" cy="24.5" r="3.5" fill="#7a0030" />
+        <circle cx="29.5" cy="24.5" r="3.5" fill="#7a0030" />
+        <circle cx="19.7" cy="23.3" r="1.2" fill="#fff" />
+        <circle cx="30.7" cy="23.3" r="1.2" fill="#fff" />
+        {/* blush */}
+        <ellipse cx="13.8" cy="29.8" rx="2.4" ry="1.5" fill="#f9a8c9" opacity="0.9" />
+        <ellipse cx="34.2" cy="29.8" rx="2.4" ry="1.5" fill="#f9a8c9" opacity="0.9" />
+        {/* smile */}
+        <path d="M19.5 31c1.4 1.7 3 2.5 4.5 2.5s3.1-.8 4.5-2.5" stroke="#7a0030" strokeWidth="2.2" strokeLinecap="round" fill="none" />
       </svg>
     </span>
   );
@@ -71,6 +82,8 @@ export default function ChatWidget() {
   const [showTeam, setShowTeam] = useState(false); // talk-to-team chip
   const [showMeet, setShowMeet] = useState(false); // meet-with-Luke chip
   const [waitingHuman, setWaitingHuman] = useState(false); // in line for the team
+  const [teaserReady, setTeaserReady] = useState(false); // small entrance delay
+  const [teaserDismissed, setTeaserDismissed] = useState(false);
   const convId = useRef<string | null>(null);
   const lastTs = useRef<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -80,6 +93,12 @@ export default function ChatWidget() {
   // restore conversation id
   useEffect(() => {
     convId.current = localStorage.getItem(STORAGE_KEY);
+  }, []);
+
+  // teaser slides in shortly after the page loads
+  useEffect(() => {
+    const t = setTimeout(() => setTeaserReady(true), 2200);
+    return () => clearTimeout(t);
   }, []);
 
   const poll = useCallback(async () => {
@@ -97,7 +116,10 @@ export default function ChatWidget() {
           const teamMsgs = fresh.filter((m) => m.sender !== "visitor").length;
           if (teamMsgs > 0) {
             playChime();
-            if (!open) setUnread((u) => u + teamMsgs);
+            if (!open) {
+              setUnread((u) => u + teamMsgs);
+              setTeaserDismissed(false); // new message re-surfaces the teaser
+            }
             // The awaited reply arrived — stop the typing indicator.
             setTyping(false);
             if (typingTimer.current) clearTimeout(typingTimer.current);
@@ -272,8 +294,52 @@ export default function ChatWidget() {
     setMode("chat");
   }, []);
 
+  // Latest message from IKORA / the team — previewed in the teaser bubble
+  // (falls back to the greeting on a fresh visit; survives refresh because
+  // the poll reloads the conversation history).
+  const lastIncoming = [...messages].reverse().find((m) => m.sender !== "visitor");
+
   return (
     <>
+      {/* teaser bubble — visible while the chat is closed */}
+      <AnimatePresence>
+        {teaserReady && !open && !teaserDismissed && mode !== "ended" && lastIncoming && (
+          <motion.div
+            initial={{ opacity: 0, y: 16, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.96 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            onClick={() => setOpen(true)}
+            role="button"
+            aria-label="Open chat"
+            className="fixed bottom-24 right-6 z-[99] w-[calc(100vw-48px)] max-w-[300px] cursor-pointer rounded-2xl bg-white p-3.5 shadow-[0_18px_50px_rgba(0,0,0,0.25)] ring-1 ring-black/5 transition-transform hover:scale-[1.02]"
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setTeaserDismissed(true);
+              }}
+              aria-label="Dismiss"
+              className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-neutral-700 text-white shadow transition hover:bg-neutral-900"
+            >
+              <svg viewBox="0 0 16 16" fill="none" className="h-3 w-3" aria-hidden>
+                <path d="M4 4l8 8M12 4 4 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </button>
+            <div className="flex items-start gap-2.5">
+              <BotAvatar size={34} />
+              <div className="min-w-0">
+                <p className="font-display text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+                  {lastIncoming.sender === "assistant" ? "IKORA" : lastIncoming.senderName || "Designik Team"}
+                </p>
+                <p className="mt-0.5 line-clamp-2 text-[13px] leading-snug text-ink">{lastIncoming.body}</p>
+                <p className="mt-1 text-[11px] font-medium text-wine-500">Click to reply</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* launcher */}
       <div className="fixed bottom-6 right-6 z-[100]">
         <button
