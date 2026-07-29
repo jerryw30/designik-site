@@ -55,7 +55,9 @@ export default function AgencyMarquee({
       className={cn(
         // Figma tilts the band -0.38deg; oversize it slightly so the rotated
         // ends never reveal gaps at the viewport edges.
-        "relative z-[5] my-[-0.35%] flex w-[104%] -ml-[2%] -rotate-[0.38deg] items-center overflow-hidden py-3 md:h-[91px] md:py-0",
+        // z-[30] keeps the band above the hanging-tag claws (z-5/z-20) so they
+        // read as hanging from BEHIND the marquee.
+        "relative z-[30] my-[-0.35%] flex w-[104%] -ml-[2%] -rotate-[0.38deg] items-center overflow-hidden py-3 md:h-[91px] md:py-0",
         className
       )}
       style={{ backgroundColor: figmaGray ? "#d9d9d9" : data.backgroundColor, color: data.textColor }}
