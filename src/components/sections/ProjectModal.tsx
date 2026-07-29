@@ -19,6 +19,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type StorySection = {
   image: string;
+  /** Solid pane color behind the image — lets a landscape tile read as full-bleed. */
+  bg?: string;
   kicker?: string;
   title: string;
   body: string;
@@ -149,10 +151,13 @@ export default function ProjectModal({
             {/* LEFT — full-height pinned image that changes on scroll */}
             <div
               className="sticky top-0 z-0 h-[40vh] w-full overflow-hidden md:h-[90vh] md:w-[54%]"
-              style={{ background: "linear-gradient(160deg,#241c20 0%,#141013 100%)" }}
+              style={{ background: story[active]?.bg || "linear-gradient(160deg,#241c20 0%,#141013 100%)" }}
             >
               {story.map((s, i) => {
                 const cover = isScene(s.image);
+                // Tiles that carry their own solid background sit flush (no padding)
+                // so they merge seamlessly with the pane color.
+                const flush = !!s.bg;
                 return (
                   <div
                     key={i}
@@ -166,7 +171,7 @@ export default function ProjectModal({
                     {cover ? (
                       <Image src={s.image} alt={s.title} fill className="object-cover" sizes="(max-width:768px) 100vw, 640px" />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center p-6 md:p-12">
+                      <div className={`absolute inset-0 flex items-center justify-center ${flush ? "" : "p-6 md:p-12"}`}>
                         <div className="relative h-full w-full">
                           <Image src={s.image} alt={s.title} fill className="object-contain" sizes="(max-width:768px) 100vw, 620px" />
                         </div>
@@ -207,7 +212,7 @@ export default function ProjectModal({
                   {i === 0 ? (
                     <header>
                       <p className="font-display text-[12px] font-semibold uppercase tracking-[0.22em] text-wine-500">
-                        {project.year ? `Case Study · ${project.year}` : "Case Study"}
+                        {story[0]?.kicker || (project.year ? `Case Study · ${project.year}` : "Case Study")}
                       </p>
                       <h2 className="mt-4 font-display text-[34px] font-semibold uppercase leading-[1.02] text-wine-500 sm:text-[42px]">
                         {project.accent}
