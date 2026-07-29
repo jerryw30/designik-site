@@ -117,7 +117,7 @@ function SmallQuoteCard({
       <p className="absolute left-[2.1528cqw] top-[17.0833cqw] font-display text-[0.9722cqw] font-normal capitalize leading-[1.5469cqw] text-white">
         {data.role}
       </p>
-      <Stars className={cn("absolute top-[15.3472cqw]", tone === "wine" ? "left-[10.3472cqw]" : "left-[12.4306cqw]")} />
+      <Stars className="absolute right-[1.7361cqw] top-[15.3472cqw]" />
     </motion.article>
   );
 }
