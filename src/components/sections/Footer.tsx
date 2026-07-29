@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import FigmaNewsletterForm from "@/components/ui/FigmaNewsletterForm";
+import TermsModal from "@/components/ui/TermsModal";
 import { sectionContent } from "@/cms/section-defaults";
 import PendulumSwing from "@/components/ui/PendulumSwing";
 
@@ -29,9 +31,11 @@ const FOOTER_HREFS: Record<string, string> = {
   blog: "/blog",
 };
 const footerHref = (label: string) => FOOTER_HREFS[label.toLowerCase().trim()] || "/";
+const isTermsLink = (label: string) => /terms|privacy/i.test(label);
 
 export default function Footer({ content }: { content?: unknown } = {}) {
   const data = sectionContent("footer", content);
+  const [termsOpen, setTermsOpen] = useState(false);
   const globalStyle = (
     content as { _globalStyle?: Record<string, unknown> } | undefined
   )?._globalStyle;
@@ -171,15 +175,26 @@ export default function Footer({ content }: { content?: unknown } = {}) {
               className="absolute top-[25.1042cqw] z-10 flex flex-col"
               style={{ left: `${[6.2847, 20.4167, 34.5833][c]}cqw` }}
             >
-              {links.map((l, r) => (
-                <a
-                  key={l + r}
-                  href={footerHref(l)}
-                  className="whitespace-nowrap font-display text-[1.2902cqw] font-medium leading-[2.1528cqw] tracking-[-0.0348em] text-white transition-opacity hover:opacity-70"
-                >
-                  {l}
-                </a>
-              ))}
+              {links.map((l, r) =>
+                isTermsLink(l) ? (
+                  <button
+                    key={l + r}
+                    type="button"
+                    onClick={() => setTermsOpen(true)}
+                    className="whitespace-nowrap text-left font-display text-[1.2902cqw] font-medium leading-[2.1528cqw] tracking-[-0.0348em] text-white transition-opacity hover:opacity-70"
+                  >
+                    {l}
+                  </button>
+                ) : (
+                  <a
+                    key={l + r}
+                    href={footerHref(l)}
+                    className="whitespace-nowrap font-display text-[1.2902cqw] font-medium leading-[2.1528cqw] tracking-[-0.0348em] text-white transition-opacity hover:opacity-70"
+                  >
+                    {l}
+                  </a>
+                ),
+              )}
             </motion.nav>
           ))}
 
@@ -247,11 +262,17 @@ export default function Footer({ content }: { content?: unknown } = {}) {
           <div className="relative z-10 mt-8 grid grid-cols-2 gap-6 border-t border-black/25 pt-8">
             {data.columns.map((links, i) => (
               <nav key={i} className="flex flex-col gap-2">
-                {links.map((l) => (
-                  <a key={l} href={footerHref(l)} className="font-display text-[15px] font-medium text-white/90">
-                    {l}
-                  </a>
-                ))}
+                {links.map((l) =>
+                  isTermsLink(l) ? (
+                    <button key={l} type="button" onClick={() => setTermsOpen(true)} className="text-left font-display text-[15px] font-medium text-white/90">
+                      {l}
+                    </button>
+                  ) : (
+                    <a key={l} href={footerHref(l)} className="font-display text-[15px] font-medium text-white/90">
+                      {l}
+                    </a>
+                  ),
+                )}
               </nav>
             ))}
           </div>
@@ -271,6 +292,8 @@ export default function Footer({ content }: { content?: unknown } = {}) {
           </p>
         </div>
       </div>
+
+      <TermsModal open={termsOpen} onClose={() => setTermsOpen(false)} />
     </footer>
   );
 }
