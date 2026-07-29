@@ -30,7 +30,7 @@ const PILLS = [
 const ARROWS = [
   { x: 478, y: 244, w: 101, src: assets.expArrow208 },
   { x: 798, y: 272, w: 101, src: assets.expArrow207 },
-  { x: 365, y: 420, w: 93.9, src: assets.expSwirl },
+  { x: 365, y: 420, w: 93.9, src: assets.expSwirl, rotate: 180 },
   { x: 915, y: 377, w: 122, src: assets.expArrow205 },
   { x: 408, y: 616, w: 51, src: assets.expArrow209 },
   { x: 943, y: 615, w: 51, src: assets.expArrow210 },
@@ -154,7 +154,14 @@ export default function Experience({ content }: { content?: unknown } = {}) {
                 className="pointer-events-none absolute z-[15]"
                 style={{ left: q(a.x), top: q(a.y), width: q(a.w) }}
               >
-                <Image src={a.src} alt="" width={125} height={123} className="h-auto w-full" />
+                <Image
+                  src={a.src}
+                  alt=""
+                  width={125}
+                  height={123}
+                  className="h-auto w-full"
+                  style={"rotate" in a && a.rotate ? { transform: `rotate(${a.rotate}deg)` } : undefined}
+                />
               </motion.div>
             ))}
 
