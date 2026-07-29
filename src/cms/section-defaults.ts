@@ -227,7 +227,7 @@ export const sectionDefaults = {
       {
         background: "/figma/individual/pf-card2-bg--544-47.jpg",
         device: "/figma/individual/pf-card2-laptop--544-60.png",
-        deviceSide: "right",
+        deviceSide: "left",
         light: true,
         accent: "Tanna\u2019s Botannas",
         heading: "Bold Flavor. Bigger Personality.",
@@ -277,7 +277,7 @@ export const sectionDefaults = {
       {
         background: "/figma/individual/pf-card1-bg--538-113.jpg",
         device: "/figma/individual/pf-card1-laptop--541-187.png",
-        deviceSide: "left",
+        deviceSide: "right",
         light: false,
         accent: "Kindro",
         heading: "Turning Kindness Into Action",
