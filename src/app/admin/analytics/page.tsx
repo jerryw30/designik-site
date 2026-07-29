@@ -209,11 +209,18 @@ export default async function AnalyticsPage({
         </div>
         <div className="flex h-48 items-end gap-1 overflow-x-auto px-5 pb-4 pt-6 sm:gap-1.5">
           {series.map((s) => (
-            <div key={s.key} className="group flex min-w-[10px] flex-1 flex-col items-center gap-1.5" title={`${s.label}: ${s.views} views`}>
+            <div
+              key={s.key}
+              className="group flex h-full min-w-[10px] flex-1 flex-col items-center justify-end gap-1.5"
+              title={`${s.label}: ${s.views} views`}
+            >
               <span className="text-[10px] tabular-nums text-neutral-400 opacity-0 transition group-hover:opacity-100">{s.views}</span>
+              {/* Pixel heights — percentage bars collapse inside auto-height flex columns. */}
               <div
-                className="w-full rounded-t-md bg-gradient-to-t from-[#a10140] to-[#db2f73] transition-opacity group-hover:opacity-80"
-                style={{ height: `${Math.max(3, (s.views / maxDay) * 100)}%` }}
+                className={`w-full rounded-t-md transition-opacity group-hover:opacity-80 ${
+                  s.views > 0 ? "bg-gradient-to-t from-[#a10140] to-[#db2f73]" : "bg-neutral-200"
+                }`}
+                style={{ height: `${s.views > 0 ? Math.max(6, Math.round((s.views / maxDay) * 118)) : 3}px` }}
               />
               <span className={`truncate text-[9.5px] text-neutral-400 ${series.length > 20 && !monthly ? "hidden sm:block" : ""}`}>
                 {series.length > 40 && !monthly ? "" : s.label}
