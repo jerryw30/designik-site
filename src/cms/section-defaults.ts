@@ -47,13 +47,13 @@ export const sectionDefaults = {
       {
         name: "Luke Carter",
         role: "Founder",
-        photo: "/figma/team/team-luke.png",
+        photo: "/figma/team/team-luke-2.png",
         background: "#ffc226",
       },
       {
         name: "Ashley Miller",
         role: "Account Executive",
-        photo: "/figma/team/team-ashley-2.png",
+        photo: "/figma/team/team-ashley-3.png",
         background: "#ff6b6b",
       },
       {
