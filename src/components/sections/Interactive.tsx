@@ -34,10 +34,10 @@ export default function Interactive({ content }: { content?: unknown } = {}) {
           <Reveal delay={0.1} className="mt-4 flex justify-center">
             <a
               href={data.buttonLink}
-              className="group inline-flex h-9 items-center gap-2 rounded-full bg-white px-4"
+              className="group inline-flex h-11 items-center gap-2 rounded-full bg-white pl-5 pr-2 shadow-sm transition-transform duration-300 hover:scale-[1.04]"
             >
-              <span className="font-sans text-[12px] font-semibold leading-none text-wine-500">{data.buttonLabel}</span>
-              <span className="flex size-6 items-center justify-center rounded-full bg-wine-500 text-white">
+              <span className="font-display text-[13px] font-semibold uppercase leading-none text-wine-500">{data.buttonLabel}</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-wine-500 text-white transition-transform duration-300 group-hover:rotate-45">
                 <svg viewBox="0 0 16 16" fill="none" className="h-[44%] w-[44%]" aria-hidden>
                   <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -170,12 +170,12 @@ export default function Interactive({ content }: { content?: unknown } = {}) {
             <Reveal delay={0.1} className="mt-[max(18px,3.1389cqw)] flex justify-center">
               <a
                 href={data.buttonLink}
-                className="group inline-flex items-center gap-[max(6px,0.5701cqw)] rounded-full bg-white px-[max(14px,1.5204cqw)] h-[max(32px,2.4655cqw)]"
+                className="group inline-flex h-[max(44px,3.8194cqw)] items-center gap-[max(8px,0.9236cqw)] whitespace-nowrap rounded-full bg-white pl-[max(20px,2.3764cqw)] pr-[max(9px,1.0806cqw)] shadow-sm transition-transform duration-300 hover:scale-[1.04]"
               >
-                <span className="font-sans font-semibold text-wine-500 text-[max(11px,0.8272cqw)] leading-none">
+                <span className="font-display text-[max(13px,1.2928cqw)] font-semibold uppercase leading-none text-wine-500">
                   {data.buttonLabel}
                 </span>
-                <span className="flex size-[max(20px,1.5204cqw)] items-center justify-center rounded-full bg-wine-500 text-white transition-transform duration-300 group-hover:rotate-45">
+                <span className="flex size-[max(28px,2.3764cqw)] items-center justify-center rounded-full bg-wine-500 text-white transition-transform duration-300 group-hover:rotate-45">
                   <svg viewBox="0 0 16 16" fill="none" className="h-[44%] w-[44%]" aria-hidden>
                     <path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
