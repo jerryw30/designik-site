@@ -53,7 +53,7 @@ export const sectionDefaults = {
       {
         name: "Ashley Miller",
         role: "Account Executive",
-        photo: "/figma/team/team-ashley.png",
+        photo: "/figma/team/team-ashley-2.png",
         background: "#ff6b6b",
       },
       {
@@ -67,6 +67,12 @@ export const sectionDefaults = {
         role: "Head of Development and Support",
         photo: "/figma/team/team-ray.png",
         background: "#4f8ef7",
+      },
+      {
+        name: "Kelly Rogers",
+        role: "Billing and Accounts",
+        photo: "/figma/team/team-kelly.png",
+        background: "#d9a066",
       },
       {
         name: "Jerry Wayne",
