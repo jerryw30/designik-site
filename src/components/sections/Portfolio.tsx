@@ -37,20 +37,20 @@ type Banner = {
 // Per-card geometry from Figma (card-local px / 14.4 = cqw)
 const CARD_SPECS = [
   {
-    // Card 1 — green Kindro scene, laptop left, text right (x=675)
-    textLeft: "46.875cqw",
-    descLeft: "46.8056cqw",
-    device: { left: "2.0833cqw", top: "4.1667cqw", w: "45.1794cqw", h: "33.0145cqw" },
-    overlay: false,
-    glass: "rgba(255,255,255,0.1)",
-    deviceShadow: false,
-  },
-  {
-    // Card 2 — sunset Tanna's scene, text left (x=111), laptop right
+    // Card 1 — sunset Tanna's scene, text left (x=111), laptop right
     textLeft: "7.7083cqw",
     descLeft: "7.7083cqw",
     device: { left: "44.0972cqw", top: "3.8194cqw", w: "40.5686cqw", h: "33.3525cqw" },
     overlay: true, // Figma: black 11% wash over background
+    glass: "rgba(255,255,255,0.1)",
+    deviceShadow: false,
+  },
+  {
+    // Card 2 — green Kindro scene, laptop left, text right (x=675)
+    textLeft: "46.875cqw",
+    descLeft: "46.8056cqw",
+    device: { left: "2.0833cqw", top: "4.1667cqw", w: "45.1794cqw", h: "33.0145cqw" },
+    overlay: false,
     glass: "rgba(255,255,255,0.1)",
     deviceShadow: false,
   },

@@ -186,46 +186,6 @@ export const sectionDefaults = {
     buttonLink: "#contact",
     cards: [
       {
-        background: "/figma/individual/pf-card1-bg--538-113.jpg",
-        device: "/figma/individual/pf-card1-laptop--541-187.png",
-        deviceSide: "left",
-        light: false,
-        year: "2025",
-        tags: ["Web App", "UX / UI", "Community"],
-        longDescription:
-          "Kindro is a neighborhood support platform with one job: make asking for help and offering it equally effortless. We designed the brand, the product experience, and the build around a single warm, human front door.",
-        story: [
-          {
-            image: "/figma/individual/pf-card1-laptop--541-187.png",
-            kicker: "01 \u00b7 The Brief",
-            title: "Make helping feel human",
-            body: "Kindro connects people who need a hand with neighbors who are ready to give one. The platform had the heart, but not the interface: two very different audiences were landing on the same page and neither knew where to start. The brief was to design one front door that welcomes both.",
-            highlights: ["One platform, two audiences", "Warm, human-first design"],
-          },
-          {
-            image: "/figma/individual/pf-card1-bg--538-113.jpg",
-            kicker: "02 \u00b7 The Challenge",
-            title: "Two journeys, zero friction",
-            body: "Someone asking for support is in a very different headspace than someone offering it. The experience had to split those paths instantly, without forms, jargon, or guilt. Every extra click was a neighbor who never got helped.",
-            highlights: ["Instant path split", "No forms before value"],
-          },
-          {
-            image: "/figma/individual/pf-card1-laptop--541-187.png",
-            kicker: "03 \u00b7 What We Designed",
-            title: "A split-path home",
-            body: "The homepage leads with two clear doors: I Need Support and I Want To Help. Friendly mascots and soft, organic colors take the edge off asking, while live community cards show real requests and drop-offs happening nearby, proof the platform is alive.",
-            highlights: ["Two-door homepage", "Live community activity cards"],
-          },
-          {
-            image: "/figma/individual/pf-card1-bg--538-113.jpg",
-            kicker: "04 \u00b7 The Outcome",
-            title: "Neighbors, connected",
-            body: "Kindro now feels less like software and more like a community noticeboard. Both audiences reach their first meaningful action in seconds, and the warmth of the brand carries through every screen, from the first visit to the thank-you message.",
-            highlights: ["Seconds to the first action", "Warmth carried through the product"],
-          },
-        ],
-      },
-      {
         background: "/figma/individual/pf-card2-bg--544-47.jpg",
         device: "/figma/individual/pf-card2-laptop--544-60.png",
         deviceSide: "right",
@@ -262,6 +222,46 @@ export const sectionDefaults = {
             title: "A brand world, not a template",
             body: "The store now feels like stepping into the brand itself. Every scroll reinforces the personality, and the shop flow stays out of the way, so the craving the design creates has nowhere to go but the cart.",
             highlights: ["Unmistakable brand world", "Design that drives the cart"],
+          },
+        ],
+      },
+      {
+        background: "/figma/individual/pf-card1-bg--538-113.jpg",
+        device: "/figma/individual/pf-card1-laptop--541-187.png",
+        deviceSide: "left",
+        light: false,
+        year: "2025",
+        tags: ["Web App", "UX / UI", "Community"],
+        longDescription:
+          "Kindro is a neighborhood support platform with one job: make asking for help and offering it equally effortless. We designed the brand, the product experience, and the build around a single warm, human front door.",
+        story: [
+          {
+            image: "/figma/individual/pf-card1-laptop--541-187.png",
+            kicker: "01 \u00b7 The Brief",
+            title: "Make helping feel human",
+            body: "Kindro connects people who need a hand with neighbors who are ready to give one. The platform had the heart, but not the interface: two very different audiences were landing on the same page and neither knew where to start. The brief was to design one front door that welcomes both.",
+            highlights: ["One platform, two audiences", "Warm, human-first design"],
+          },
+          {
+            image: "/figma/individual/pf-card1-bg--538-113.jpg",
+            kicker: "02 \u00b7 The Challenge",
+            title: "Two journeys, zero friction",
+            body: "Someone asking for support is in a very different headspace than someone offering it. The experience had to split those paths instantly, without forms, jargon, or guilt. Every extra click was a neighbor who never got helped.",
+            highlights: ["Instant path split", "No forms before value"],
+          },
+          {
+            image: "/figma/individual/pf-card1-laptop--541-187.png",
+            kicker: "03 \u00b7 What We Designed",
+            title: "A split-path home",
+            body: "The homepage leads with two clear doors: I Need Support and I Want To Help. Friendly mascots and soft, organic colors take the edge off asking, while live community cards show real requests and drop-offs happening nearby, proof the platform is alive.",
+            highlights: ["Two-door homepage", "Live community activity cards"],
+          },
+          {
+            image: "/figma/individual/pf-card1-bg--538-113.jpg",
+            kicker: "04 \u00b7 The Outcome",
+            title: "Neighbors, connected",
+            body: "Kindro now feels less like software and more like a community noticeboard. Both audiences reach their first meaningful action in seconds, and the warmth of the brand carries through every screen, from the first visit to the thank-you message.",
+            highlights: ["Seconds to the first action", "Warmth carried through the product"],
           },
         ],
       },
