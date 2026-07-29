@@ -55,9 +55,13 @@ export async function PUT(request: Request) {
   }
 
   if (body.popups) {
+    const cleanList = (v: unknown, fallback: string[]) =>
+      Array.isArray(v) ? v.map((s) => String(s).trim()).filter(Boolean).slice(0, 20) : fallback;
     const popups: PopupSettings = {
       getStartedTitle: body.popups.getStartedTitle?.toString().slice(0, 200) || current.popups.getStartedTitle,
       getStartedSuccess: body.popups.getStartedSuccess?.toString().slice(0, 500) || current.popups.getStartedSuccess,
+      budgetOptions: cleanList(body.popups.budgetOptions, current.popups.budgetOptions),
+      serviceOptions: cleanList(body.popups.serviceOptions, current.popups.serviceOptions),
       termsTitle: body.popups.termsTitle?.toString().slice(0, 200) || current.popups.termsTitle,
       termsUpdated: body.popups.termsUpdated?.toString().slice(0, 100) || current.popups.termsUpdated,
       termsBody: typeof body.popups.termsBody === "string" ? body.popups.termsBody.slice(0, 40000) : current.popups.termsBody,

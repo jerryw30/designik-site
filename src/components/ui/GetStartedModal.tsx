@@ -20,6 +20,16 @@ export default function GetStartedModal() {
   const [copy, setCopy] = useState({
     title: "Let's build\nsomething great",
     success: "Thanks for reaching out — we'll get back to you within 24 hours.",
+    budgets: ["Under $1,000", "$1,000 – $5,000", "$5,000 – $10,000", "$10,000+"],
+    services: [
+      "Product Design",
+      "Website Development",
+      "Mobile App Development",
+      "Brand Identity & Design",
+      "Digital Marketing",
+      "SEO",
+      "Something else",
+    ],
   });
 
   useEffect(() => {
@@ -30,15 +40,18 @@ export default function GetStartedModal() {
       fetch("/api/site-config")
         .then((r) => (r.ok ? r.json() : null))
         .then((c) => {
-          if (c?.popups?.getStartedTitle) {
-            setCopy({ title: c.popups.getStartedTitle, success: c.popups.getStartedSuccess || copy.success });
-          }
+          if (!c?.popups) return;
+          setCopy((prev) => ({
+            title: c.popups.getStartedTitle || prev.title,
+            success: c.popups.getStartedSuccess || prev.success,
+            budgets: Array.isArray(c.popups.budgetOptions) && c.popups.budgetOptions.length ? c.popups.budgetOptions : prev.budgets,
+            services: Array.isArray(c.popups.serviceOptions) && c.popups.serviceOptions.length ? c.popups.serviceOptions : prev.services,
+          }));
         })
         .catch(() => {});
     };
     window.addEventListener("open-get-started", openHandler);
     return () => window.removeEventListener("open-get-started", openHandler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -207,10 +220,9 @@ export default function GetStartedModal() {
                           <option value="" disabled>
                             Budget
                           </option>
-                          <option>Under $1,000</option>
-                          <option>$1,000 – $5,000</option>
-                          <option>$5,000 – $10,000</option>
-                          <option>$10,000+</option>
+                          {copy.budgets.map((b) => (
+                            <option key={b}>{b}</option>
+                          ))}
                         </select>
                         <svg viewBox="0 0 16 16" fill="none" className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" aria-hidden>
                           <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -227,13 +239,9 @@ export default function GetStartedModal() {
                         <option value="" disabled>
                           What do you need?
                         </option>
-                        <option>Product Design</option>
-                        <option>Website Development</option>
-                        <option>Mobile App Development</option>
-                        <option>Brand Identity &amp; Design</option>
-                        <option>Digital Marketing</option>
-                        <option>SEO</option>
-                        <option>Something else</option>
+                        {copy.services.map((s) => (
+                          <option key={s}>{s}</option>
+                        ))}
                       </select>
                       <svg viewBox="0 0 16 16" fill="none" className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" aria-hidden>
                         <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />

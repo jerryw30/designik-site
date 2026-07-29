@@ -42,9 +42,15 @@ export default async function FormsPage() {
 
   // The forms built into the website itself — their submissions land in Leads.
   const BUILT_IN = [
-    { source: "get-started", name: "Start a Project popup", where: "Header · Hero · Footer Contact · Case studies" },
-    { source: "newsletter", name: "Newsletter signup", where: "Footer" },
-    { source: "contact", name: "Contact form", where: "Site-wide" },
+    {
+      source: "get-started",
+      name: "Start a Project popup",
+      where: "Header · Hero · Footer Contact · Case studies",
+      editHref: "/admin/popups#start-a-project",
+      editLabel: "Edit form",
+    },
+    { source: "newsletter", name: "Newsletter signup", where: "Footer", editHref: null, editLabel: null },
+    { source: "contact", name: "Contact form", where: "Site-wide", editHref: null, editLabel: null },
   ];
   const bySource = new Map(siteForms.map((s) => [s.source || "contact", s]));
   return (
@@ -87,6 +93,11 @@ export default async function FormsPage() {
                     {stat?.total || 0} submissions
                     {stat?.latest ? ` · last ${wpDate(stat.latest)}` : ""}
                   </span>
+                  {f.editHref && (
+                    <Link href={f.editHref} className={T.link}>
+                      {f.editLabel}
+                    </Link>
+                  )}
                   <Link href="/admin/leads" className={T.link}>
                     View in Leads
                   </Link>

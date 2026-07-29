@@ -17,6 +17,10 @@ export type ChatSettings = {
 export type PopupSettings = {
   getStartedTitle: string;
   getStartedSuccess: string;
+  /** Budget dropdown options in the Start a Project form. */
+  budgetOptions: string[];
+  /** "What do you need?" dropdown options in the Start a Project form. */
+  serviceOptions: string[];
   termsTitle: string;
   termsUpdated: string;
   /** Simple markup: "## Section title" starts a section, "- item" is a bullet. Empty → built-in default terms. */
@@ -37,6 +41,16 @@ export const DEFAULT_CONFIG: SiteConfig = {
   popups: {
     getStartedTitle: "Let's build\nsomething great",
     getStartedSuccess: "Thanks for reaching out — we'll get back to you within 24 hours.",
+    budgetOptions: ["Under $1,000", "$1,000 – $5,000", "$5,000 – $10,000", "$10,000+"],
+    serviceOptions: [
+      "Product Design",
+      "Website Development",
+      "Mobile App Development",
+      "Brand Identity & Design",
+      "Digital Marketing",
+      "SEO",
+      "Something else",
+    ],
     termsTitle: "Terms & Conditions",
     termsUpdated: "August 10, 2026",
     termsBody: "",

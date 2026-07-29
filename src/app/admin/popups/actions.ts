@@ -13,21 +13,48 @@ async function requireEditor() {
   return user;
 }
 
+const lines = (v: FormDataEntryValue | null, fallback: string[]) => {
+  if (typeof v !== "string") return fallback;
+  const list = v
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 20);
+  return list.length ? list : fallback;
+};
+
 export async function savePopupSettings(formData: FormData) {
   const user = await requireEditor();
   const current = await getSiteConfig();
   await saveSiteSetting(
     "popup_settings",
     {
+      ...current.popups,
       getStartedTitle: String(formData.get("getStartedTitle") || "").slice(0, 200) || current.popups.getStartedTitle,
       getStartedSuccess: String(formData.get("getStartedSuccess") || "").slice(0, 500) || current.popups.getStartedSuccess,
+      budgetOptions: lines(formData.get("budgetOptions"), current.popups.budgetOptions),
+      serviceOptions: lines(formData.get("serviceOptions"), current.popups.serviceOptions),
+    },
+    user.id,
+  );
+  await logActivity(user, "settings", "updated", "Start a Project popup", "popup-settings");
+  revalidatePath("/admin/popups");
+}
+
+export async function saveTermsSettings(formData: FormData) {
+  const user = await requireEditor();
+  const current = await getSiteConfig();
+  await saveSiteSetting(
+    "popup_settings",
+    {
+      ...current.popups,
       termsTitle: String(formData.get("termsTitle") || "").slice(0, 200) || current.popups.termsTitle,
       termsUpdated: String(formData.get("termsUpdated") || "").slice(0, 100) || current.popups.termsUpdated,
       termsBody: String(formData.get("termsBody") || "").slice(0, 40000),
     },
     user.id,
   );
-  await logActivity(user, "settings", "updated", "site popups", "popup-settings");
+  await logActivity(user, "settings", "updated", "Terms & Conditions popup", "popup-settings");
   revalidatePath("/admin/popups");
 }
 

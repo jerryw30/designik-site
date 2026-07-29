@@ -4,7 +4,7 @@ import { canViewArea } from "@/lib/roles";
 import { getSiteConfig } from "@/lib/site-config";
 import { AdminShell } from "../admin-shell";
 import { T } from "../theme";
-import { saveContactSettings, savePopupSettings } from "./actions";
+import { saveContactSettings, savePopupSettings, saveTermsSettings } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -77,58 +77,76 @@ export default async function PopupsPage() {
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-2">
-        {/* Start a Project */}
-        <section className={T.card}>
-          <div className={T.cardHeader}>
-            <h3 className="text-[15px] font-semibold">Start a Project form</h3>
-            <p className="text-[12px] text-neutral-400">
-              Opens from: header button, hero &ldquo;Start Something&rdquo;, footer Contact, case-study popups
-            </p>
-          </div>
-          <form action={savePopupSettings} className="space-y-4 p-5">
-            <div>
-              <label className={label}>Heading (one line per row)</label>
-              <textarea name="getStartedTitle" rows={2} defaultValue={config.popups.getStartedTitle} className={`${T.input} mt-1.5 w-full`} />
-            </div>
-            <div>
-              <label className={label}>Success message</label>
-              <textarea name="getStartedSuccess" rows={2} defaultValue={config.popups.getStartedSuccess} className={`${T.input} mt-1.5 w-full`} />
-            </div>
-
-            <div className="border-t pt-4">
-              <h4 className="text-[14px] font-semibold">Terms &amp; Conditions popup</h4>
-              <p className={hint}>Opens from: footer &ldquo;Terms and Conditions&rdquo;</p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className={label}>Title</label>
-                <input name="termsTitle" defaultValue={config.popups.termsTitle} className={`${T.input} mt-1.5 w-full`} />
-              </div>
-              <div>
-                <label className={label}>&ldquo;Last updated&rdquo; date</label>
-                <input name="termsUpdated" defaultValue={config.popups.termsUpdated} className={`${T.input} mt-1.5 w-full`} />
-              </div>
-            </div>
-            <div>
-              <label className={label}>Terms content</label>
-              <p className={hint}>
-                Start a section with <code className="rounded bg-neutral-100 px-1">## Heading</code>, bullets with{" "}
-                <code className="rounded bg-neutral-100 px-1">- item</code>. Plain lines become paragraphs.
+        <div className="space-y-5">
+          {/* Start a Project */}
+          <section id="start-a-project" className={T.card}>
+            <div className={T.cardHeader}>
+              <h3 className="text-[15px] font-semibold">Start a Project form</h3>
+              <p className="text-[12px] text-neutral-400">
+                Opens from: header button, hero &ldquo;Start Something&rdquo;, footer Contact, case-study popups
               </p>
-              <textarea
-                name="termsBody"
-                rows={16}
-                defaultValue={config.popups.termsBody || DEFAULT_TERMS_TEXT}
-                className={`${T.input} mt-1.5 w-full font-mono text-[12px] leading-relaxed`}
-              />
             </div>
-            <button className={T.btnPrimary}>Save popups</button>
-          </form>
-        </section>
+            <form action={savePopupSettings} className="space-y-4 p-5">
+              <div>
+                <label className={label}>Heading (one line per row)</label>
+                <textarea name="getStartedTitle" rows={2} defaultValue={config.popups.getStartedTitle} className={`${T.input} mt-1.5 w-full`} />
+              </div>
+              <div>
+                <label className={label}>Success message</label>
+                <textarea name="getStartedSuccess" rows={2} defaultValue={config.popups.getStartedSuccess} className={`${T.input} mt-1.5 w-full`} />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className={label}>Budget options (one per line)</label>
+                  <textarea name="budgetOptions" rows={5} defaultValue={config.popups.budgetOptions.join("\n")} className={`${T.input} mt-1.5 w-full`} />
+                </div>
+                <div>
+                  <label className={label}>Service options (one per line)</label>
+                  <textarea name="serviceOptions" rows={5} defaultValue={config.popups.serviceOptions.join("\n")} className={`${T.input} mt-1.5 w-full`} />
+                </div>
+              </div>
+              <button className={T.btnPrimary}>Save Start a Project form</button>
+            </form>
+          </section>
+
+          {/* Terms & Conditions */}
+          <section id="terms" className={T.card}>
+            <div className={T.cardHeader}>
+              <h3 className="text-[15px] font-semibold">Terms &amp; Conditions popup</h3>
+              <p className="text-[12px] text-neutral-400">Opens from: footer &ldquo;Terms and Conditions&rdquo;</p>
+            </div>
+            <form action={saveTermsSettings} className="space-y-4 p-5">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className={label}>Title</label>
+                  <input name="termsTitle" defaultValue={config.popups.termsTitle} className={`${T.input} mt-1.5 w-full`} />
+                </div>
+                <div>
+                  <label className={label}>&ldquo;Last updated&rdquo; date</label>
+                  <input name="termsUpdated" defaultValue={config.popups.termsUpdated} className={`${T.input} mt-1.5 w-full`} />
+                </div>
+              </div>
+              <div>
+                <label className={label}>Terms content</label>
+                <p className={hint}>
+                  Start a section with <code className="rounded bg-neutral-100 px-1">## Heading</code>, bullets with{" "}
+                  <code className="rounded bg-neutral-100 px-1">- item</code>. Plain lines become paragraphs.
+                </p>
+                <textarea
+                  name="termsBody"
+                  rows={16}
+                  defaultValue={config.popups.termsBody || DEFAULT_TERMS_TEXT}
+                  className={`${T.input} mt-1.5 w-full font-mono text-[12px] leading-relaxed`}
+                />
+              </div>
+              <button className={T.btnPrimary}>Save Terms &amp; Conditions</button>
+            </form>
+          </section>
+        </div>
 
         <div className="space-y-5">
           {/* Booking + phone */}
-          <section className={T.card}>
+          <section id="booking" className={T.card}>
             <div className={T.cardHeader}>
               <h3 className="text-[15px] font-semibold">Booking popup &amp; phone</h3>
               <p className="text-[12px] text-neutral-400">
@@ -157,18 +175,20 @@ export default async function PopupsPage() {
             </div>
             <ul className="divide-y">
               {[
-                { name: "Start a Project form", where: "Header · Hero · Footer Contact · Case studies", edit: "This page" },
-                { name: "Booking (Calendly)", where: "Hero · Footer Book a Call · Chat", edit: "This page" },
-                { name: "Terms & Conditions", where: "Footer", edit: "This page" },
-                { name: "Case-study popups", where: "Portfolio cards", edit: "Pages → Home → Portfolio section" },
-                { name: "Chat widget", where: "Every page (bottom right)", edit: "Chat → Settings" },
+                { name: "Start a Project form", where: "Header · Hero · Footer Contact · Case studies", edit: "Edit", href: "#start-a-project" },
+                { name: "Booking (Calendly)", where: "Hero · Footer Book a Call · Chat", edit: "Edit", href: "#booking" },
+                { name: "Terms & Conditions", where: "Footer", edit: "Edit", href: "#terms" },
+                { name: "Case-study popups", where: "Portfolio cards", edit: "Edit in Pages", href: "/admin/pages" },
+                { name: "Chat widget", where: "Every page (bottom right)", edit: "Chat settings", href: "/admin/chat" },
               ].map((p) => (
                 <li key={p.name} className="flex items-center justify-between gap-3 px-5 py-3">
                   <div>
                     <p className="text-[13.5px] font-medium">{p.name}</p>
                     <p className="text-[12px] text-neutral-400">{p.where}</p>
                   </div>
-                  <span className="shrink-0 text-[12px] text-neutral-500">{p.edit}</span>
+                  <a href={p.href} className={`shrink-0 text-[12.5px] font-medium ${T.link}`}>
+                    {p.edit}
+                  </a>
                 </li>
               ))}
             </ul>
