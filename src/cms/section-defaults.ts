@@ -51,6 +51,12 @@ export const sectionDefaults = {
         background: "#ffc226",
       },
       {
+        name: "Ashley Miller",
+        role: "Account Executive",
+        photo: "/figma/team/team-ashley.png",
+        background: "#ff6b6b",
+      },
+      {
         name: "Lucas Scott",
         role: "Head of Business Development",
         photo: "/figma/team/team-lucas.png",
