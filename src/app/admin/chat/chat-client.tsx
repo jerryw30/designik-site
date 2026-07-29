@@ -12,12 +12,16 @@ type Conversation = {
   important: boolean;
   aiEnabled: boolean;
   rating: number | null;
+  countryCode: string | null;
+  city: string | null;
+  ip: string | null;
   unreadAdmin: number;
   lastMessageAt: string;
   createdAt: string;
 };
 
-type Filter = "all" | "unread" | "read" | "important";
+type Filter = "all" | "unread" | "read" | "important" | "spam";
+type ChatSettings = { enabled: boolean; teaser: boolean; sound: boolean };
 type Msg = { id: string; sender: "visitor" | "admin" | "assistant"; senderName?: string | null; body: string; createdAt: string };
 
 const RING_MUTE_KEY = "designik_chat_ring_muted";
@@ -32,8 +36,45 @@ function timeAgo(iso: string) {
   return `${Math.floor(h / 24)}d`;
 }
 
+/** Country code → flag emoji (regional indicator letters). */
+function flagEmoji(code: string | null | undefined) {
+  if (!code || code.length !== 2) return "";
+  return String.fromCodePoint(...[...code.toUpperCase()].map((c) => 0x1f1a5 + c.charCodeAt(0)));
+}
+
+const COUNTRY_NAMES =
+  typeof Intl !== "undefined" && "DisplayNames" in Intl
+    ? new Intl.DisplayNames(["en"], { type: "region" })
+    : null;
+function countryName(code: string | null | undefined) {
+  if (!code) return "";
+  try {
+    return COUNTRY_NAMES?.of(code.toUpperCase()) || code.toUpperCase();
+  } catch {
+    return code.toUpperCase();
+  }
+}
+
+/** Where the visitor is chatting from, e.g. "🇺🇸 Pittsburgh, United States". */
+function geoLabel(c: Conversation) {
+  if (!c.countryCode) return "";
+  const flag = flagEmoji(c.countryCode);
+  const place = [c.city, countryName(c.countryCode)].filter(Boolean).join(", ");
+  return `${flag} ${place}`.trim();
+}
+
 function label(c: Conversation) {
-  return c.name?.trim() || c.email?.trim() || `Visitor ${c.id.slice(0, 6)}`;
+  const named = c.name?.trim() || c.email?.trim();
+  if (named) return named;
+  // Anonymous visitor — show where they're from instead of a random code.
+  return geoLabel(c) || `Visitor ${c.id.slice(0, 6)}`;
+}
+
+/** Avatar text: initials for named visitors, their flag for anonymous ones. */
+function initials(c: Conversation) {
+  const named = c.name?.trim() || c.email?.trim();
+  if (named) return named.slice(0, 2).toUpperCase();
+  return flagEmoji(c.countryCode) || "V";
 }
 
 export default function ChatClient({ adminName }: { adminName: string }) {
@@ -44,6 +85,10 @@ export default function ChatClient({ adminName }: { adminName: string }) {
   const [sending, setSending] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [ringMuted, setRingMuted] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [chatSettings, setChatSettings] = useState<ChatSettings | null>(null);
+  const [settingsSaving, setSettingsSaving] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<string | null>(null);
   activeRef.current = activeId;
@@ -51,6 +96,89 @@ export default function ChatClient({ adminName }: { adminName: string }) {
   // restore ring-mute preference
   useEffect(() => {
     setRingMuted(localStorage.getItem(RING_MUTE_KEY) === "1");
+  }, []);
+
+  // site-wide chat settings (enable/disable etc.)
+  useEffect(() => {
+    fetch("/api/admin/site-config")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((c) => c?.chat && setChatSettings(c.chat))
+      .catch(() => {});
+  }, []);
+  const saveChatSettings = useCallback(async (patch: Partial<ChatSettings>) => {
+    setChatSettings((prev) => (prev ? { ...prev, ...patch } : prev));
+    setSettingsSaving(true);
+    try {
+      await fetch("/api/admin/site-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat: patch }),
+      });
+    } catch {
+      /* optimistic */
+    } finally {
+      setSettingsSaving(false);
+    }
+  }, []);
+
+  // bulk selection + actions
+  const toggleSelected = useCallback((id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+  const bulkAction = useCallback(
+    async (action: "delete" | "spam" | "not-spam" | "read") => {
+      const ids = [...selected];
+      if (!ids.length) return;
+      if (action === "delete" && !window.confirm(`Delete ${ids.length} conversation${ids.length > 1 ? "s" : ""} permanently?`)) return;
+      setSelected(new Set());
+      setConversations((prev) =>
+        action === "delete"
+          ? prev.filter((c) => !ids.includes(c.id))
+          : prev.map((c) =>
+              ids.includes(c.id)
+                ? {
+                    ...c,
+                    ...(action === "spam" ? { status: "SPAM", aiEnabled: false, unreadAdmin: 0 } : {}),
+                    ...(action === "not-spam" ? { status: "OPEN" } : {}),
+                    ...(action === "read" ? { unreadAdmin: 0 } : {}),
+                  }
+                : c,
+            ),
+      );
+      if (action === "delete" && activeRef.current && ids.includes(activeRef.current)) {
+        setActiveId(null);
+        setMessages([]);
+      }
+      try {
+        await fetch("/api/admin/chat/bulk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids, action }),
+        });
+      } catch {
+        /* the poll re-syncs */
+      }
+    },
+    [selected],
+  );
+  const setSpam = useCallback(async (id: string, spam: boolean) => {
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, status: spam ? "SPAM" : "OPEN", ...(spam ? { aiEnabled: false, unreadAdmin: 0 } : {}) } : c)),
+    );
+    try {
+      await fetch(`/api/admin/chat/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: spam ? "SPAM" : "OPEN" }),
+      });
+    } catch {
+      /* optimistic */
+    }
   }, []);
   const toggleRingMuted = useCallback(() => {
     setRingMuted((v) => {
@@ -217,14 +345,19 @@ export default function ChatClient({ adminName }: { adminName: string }) {
   }, [anyWaiting, ringMuted]);
 
   const active = conversations.find((c) => c.id === activeId);
-  const visible = conversations.filter((c) =>
-    filter === "unread" ? c.unreadAdmin > 0 : filter === "read" ? c.unreadAdmin === 0 : filter === "important" ? c.important : true,
-  );
+  const notSpam = conversations.filter((c) => c.status !== "SPAM");
+  const visible =
+    filter === "spam"
+      ? conversations.filter((c) => c.status === "SPAM")
+      : notSpam.filter((c) =>
+          filter === "unread" ? c.unreadAdmin > 0 : filter === "read" ? c.unreadAdmin === 0 : filter === "important" ? c.important : true,
+        );
   const filterCounts: Record<Filter, number> = {
-    all: conversations.length,
-    unread: conversations.filter((c) => c.unreadAdmin > 0).length,
-    read: conversations.filter((c) => c.unreadAdmin === 0).length,
-    important: conversations.filter((c) => c.important).length,
+    all: notSpam.length,
+    unread: notSpam.filter((c) => c.unreadAdmin > 0).length,
+    read: notSpam.filter((c) => c.unreadAdmin === 0).length,
+    important: notSpam.filter((c) => c.important).length,
+    spam: conversations.filter((c) => c.status === "SPAM").length,
   };
 
   return (
@@ -260,11 +393,85 @@ export default function ChatClient({ adminName }: { adminName: string }) {
                   </svg>
                 )}
               </button>
+              <button
+                onClick={() => setSettingsOpen((v) => !v)}
+                title="Chat settings"
+                className={`rounded-lg p-1.5 transition ${settingsOpen ? "bg-neutral-100 text-neutral-600" : "text-neutral-400 hover:bg-neutral-100"}`}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-[17px] w-[17px]" aria-hidden>
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+                </svg>
+              </button>
               <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500">
                 {conversations.length}
               </span>
             </div>
           </div>
+
+          {/* chat settings */}
+          {settingsOpen && (
+            <div className="space-y-2.5 border-b bg-neutral-50 px-5 py-3.5">
+              {chatSettings === null ? (
+                <p className="text-[12px] text-neutral-400">Loading settings…</p>
+              ) : (
+                <>
+                  {(
+                    [
+                      ["enabled", "Chat widget on the website", "Turns the whole chat bubble on or off for visitors"],
+                      ["teaser", "Message preview bubble", "The small preview that pops up next to the chat bubble"],
+                      ["sound", "Visitor sound", "Chime on the visitor side when a reply arrives"],
+                    ] as [keyof ChatSettings, string, string][]
+                  ).map(([key, title, sub]) => (
+                    <label key={key} className="flex cursor-pointer items-center justify-between gap-3">
+                      <span>
+                        <span className="block text-[12.5px] font-medium text-[#202126]">{title}</span>
+                        <span className="block text-[11px] text-neutral-400">{sub}</span>
+                      </span>
+                      <button
+                        role="switch"
+                        aria-checked={chatSettings[key]}
+                        onClick={() => saveChatSettings({ [key]: !chatSettings[key] })}
+                        className={`relative h-5 w-9 shrink-0 rounded-full transition ${chatSettings[key] ? "bg-emerald-500" : "bg-neutral-300"}`}
+                      >
+                        <span
+                          className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${chatSettings[key] ? "left-[18px]" : "left-0.5"}`}
+                        />
+                      </button>
+                    </label>
+                  ))}
+                  <p className="text-[11px] text-neutral-400">
+                    {settingsSaving ? "Saving…" : "Changes go live within a minute. Booking link & phone: Popups screen."}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* bulk actions for selected conversations */}
+          {selected.size > 0 && (
+            <div className="flex flex-wrap items-center gap-2 border-b bg-pink-50/60 px-4 py-2">
+              <span className="text-[12px] font-semibold text-[#a10140]">{selected.size} selected</span>
+              <button onClick={() => bulkAction("read")} className="rounded-full bg-white px-2.5 py-1 text-[11.5px] font-medium text-neutral-600 ring-1 ring-neutral-200 hover:bg-neutral-50">
+                Mark read
+              </button>
+              {filter === "spam" ? (
+                <button onClick={() => bulkAction("not-spam")} className="rounded-full bg-white px-2.5 py-1 text-[11.5px] font-medium text-neutral-600 ring-1 ring-neutral-200 hover:bg-neutral-50">
+                  Not spam
+                </button>
+              ) : (
+                <button onClick={() => bulkAction("spam")} className="rounded-full bg-white px-2.5 py-1 text-[11.5px] font-medium text-amber-600 ring-1 ring-amber-200 hover:bg-amber-50">
+                  Spam
+                </button>
+              )}
+              <button onClick={() => bulkAction("delete")} className="rounded-full bg-white px-2.5 py-1 text-[11.5px] font-medium text-red-600 ring-1 ring-red-200 hover:bg-red-50">
+                Delete
+              </button>
+              <button onClick={() => setSelected(new Set())} className="ml-auto text-[11.5px] text-neutral-400 hover:text-neutral-600">
+                Clear
+              </button>
+            </div>
+          )}
           {/* filter tabs */}
           <div className="flex gap-1 px-3 pb-2.5">
             {(
@@ -273,6 +480,7 @@ export default function ChatClient({ adminName }: { adminName: string }) {
                 ["unread", "New"],
                 ["read", "Read"],
                 ["important", "★"],
+                ["spam", "Spam"],
               ] as [Filter, string][]
             ).map(([key, label]) => (
               <button
@@ -300,15 +508,26 @@ export default function ChatClient({ adminName }: { adminName: string }) {
             </p>
           ) : (
             visible.map((c) => (
-              <button
+              <div
                 key={c.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => openConversation(c.id)}
-                className={`flex w-full items-center gap-3 border-b px-4 py-3 text-left transition hover:bg-neutral-50 ${
+                onKeyDown={(e) => e.key === "Enter" && openConversation(c.id)}
+                className={`flex w-full cursor-pointer items-center gap-2.5 border-b px-3 py-3 text-left transition hover:bg-neutral-50 ${
                   activeId === c.id ? "bg-pink-50" : ""
                 }`}
               >
+                <input
+                  type="checkbox"
+                  checked={selected.has(c.id)}
+                  onChange={() => toggleSelected(c.id)}
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label={`Select ${label(c)}`}
+                  className="h-3.5 w-3.5 shrink-0 cursor-pointer accent-[#a10140]"
+                />
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#a10140] to-[#db2f73] text-sm font-semibold text-white">
-                  {label(c).slice(0, 2).toUpperCase()}
+                  {initials(c)}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center justify-between gap-2">
@@ -339,7 +558,7 @@ export default function ChatClient({ adminName }: { adminName: string }) {
                     {c.unreadAdmin}
                   </span>
                 )}
-              </button>
+              </div>
             ))
           )}
         </div>
@@ -351,15 +570,22 @@ export default function ChatClient({ adminName }: { adminName: string }) {
           <>
             <div className="flex items-center gap-3 border-b px-5 py-3.5">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#a10140] to-[#db2f73] text-sm font-semibold text-white">
-                {label(active).slice(0, 2).toUpperCase()}
+                {initials(active)}
               </span>
               <div className="min-w-0">
                 <p className="truncate font-semibold text-[#202126]">{label(active)}</p>
-                {active.email && (
-                  <a href={`mailto:${active.email}`} className="text-xs text-pink-600">
-                    {active.email}
-                  </a>
-                )}
+                <p className="flex items-center gap-2 text-xs">
+                  {active.email && (
+                    <a href={`mailto:${active.email}`} className="text-pink-600">
+                      {active.email}
+                    </a>
+                  )}
+                  {geoLabel(active) && (active.name?.trim() || active.email?.trim()) && (
+                    <span className="text-neutral-500" title={active.ip ? `IP: ${active.ip}` : undefined}>
+                      {geoLabel(active)}
+                    </span>
+                  )}
+                </p>
               </div>
               <div className="ml-auto flex items-center gap-1">
                 <button
@@ -382,6 +608,18 @@ export default function ChatClient({ adminName }: { adminName: string }) {
                   }`}
                 >
                   ★
+                </button>
+                <button
+                  onClick={() => setSpam(active.id, active.status !== "SPAM")}
+                  title={active.status === "SPAM" ? "Not spam — reopen this conversation" : "Mark as spam (blocks further messages)"}
+                  className={`rounded-lg p-2 transition ${
+                    active.status === "SPAM" ? "bg-amber-50 text-amber-600" : "text-neutral-400 hover:bg-amber-50 hover:text-amber-600"
+                  }`}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-[17px] w-[17px]" aria-hidden>
+                    <path d="M12 2 2 7v6c0 5 4 8 10 9 6-1 10-4 10-9V7l-10-5Z" />
+                    <path d="m5 5 14 14" />
+                  </svg>
                 </button>
                 <button
                   onClick={() => deleteConversation(active.id)}

@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import FigmaNewsletterForm from "@/components/ui/FigmaNewsletterForm";
 import TermsModal from "@/components/ui/TermsModal";
+import CalendlyModal from "@/components/ui/CalendlyModal";
 import { sectionContent } from "@/cms/section-defaults";
 import PendulumSwing from "@/components/ui/PendulumSwing";
 
@@ -31,11 +32,25 @@ const FOOTER_HREFS: Record<string, string> = {
   blog: "/blog",
 };
 const footerHref = (label: string) => FOOTER_HREFS[label.toLowerCase().trim()] || "/";
-const isTermsLink = (label: string) => /terms|privacy/i.test(label);
+// Labels that trigger popups instead of navigation
+type FooterAction = "terms" | "calendly" | "form" | null;
+const footerAction = (label: string): FooterAction => {
+  const l = label.toLowerCase();
+  if (/terms|privacy/.test(l)) return "terms";
+  if (/book a call/.test(l)) return "calendly";
+  if (/^contact$/.test(l.trim())) return "form";
+  return null;
+};
 
 export default function Footer({ content }: { content?: unknown } = {}) {
   const data = sectionContent("footer", content);
   const [termsOpen, setTermsOpen] = useState(false);
+  const [calendlyOpen, setCalendlyOpen] = useState(false);
+  const runAction = (action: FooterAction) => {
+    if (action === "terms") setTermsOpen(true);
+    else if (action === "calendly") setCalendlyOpen(true);
+    else if (action === "form") window.dispatchEvent(new CustomEvent("open-get-started"));
+  };
   const globalStyle = (
     content as { _globalStyle?: Record<string, unknown> } | undefined
   )?._globalStyle;
@@ -175,13 +190,14 @@ export default function Footer({ content }: { content?: unknown } = {}) {
               className="absolute top-[25.1042cqw] z-10 flex flex-col"
               style={{ left: `${[6.2847, 20.4167, 34.5833][c]}cqw` }}
             >
-              {links.map((l, r) =>
-                isTermsLink(l) ? (
+              {links.map((l, r) => {
+                const action = footerAction(l);
+                return action ? (
                   <button
                     key={l + r}
                     type="button"
-                    onClick={() => setTermsOpen(true)}
-                    className="whitespace-nowrap text-left font-display text-[1.2902cqw] font-medium leading-[2.1528cqw] tracking-[-0.0348em] text-white transition-opacity hover:opacity-70"
+                    onClick={() => runAction(action)}
+                    className="cursor-pointer whitespace-nowrap text-left font-display text-[1.2902cqw] font-medium leading-[2.1528cqw] tracking-[-0.0348em] text-white transition-opacity hover:opacity-70"
                   >
                     {l}
                   </button>
@@ -193,8 +209,8 @@ export default function Footer({ content }: { content?: unknown } = {}) {
                   >
                     {l}
                   </a>
-                ),
-              )}
+                );
+              })}
             </motion.nav>
           ))}
 
@@ -262,17 +278,18 @@ export default function Footer({ content }: { content?: unknown } = {}) {
           <div className="relative z-10 mt-8 grid grid-cols-2 gap-6 border-t border-black/25 pt-8">
             {data.columns.map((links, i) => (
               <nav key={i} className="flex flex-col gap-2">
-                {links.map((l) =>
-                  isTermsLink(l) ? (
-                    <button key={l} type="button" onClick={() => setTermsOpen(true)} className="text-left font-display text-[15px] font-medium text-white/90">
+                {links.map((l) => {
+                  const action = footerAction(l);
+                  return action ? (
+                    <button key={l} type="button" onClick={() => runAction(action)} className="cursor-pointer text-left font-display text-[15px] font-medium text-white/90">
                       {l}
                     </button>
                   ) : (
                     <a key={l} href={footerHref(l)} className="font-display text-[15px] font-medium text-white/90">
                       {l}
                     </a>
-                  ),
-                )}
+                  );
+                })}
               </nav>
             ))}
           </div>
@@ -294,6 +311,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
       </div>
 
       <TermsModal open={termsOpen} onClose={() => setTermsOpen(false)} />
+      <CalendlyModal open={calendlyOpen} onClose={() => setCalendlyOpen(false)} />
     </footer>
   );
 }

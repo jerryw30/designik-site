@@ -154,7 +154,12 @@ function WidgetView({
           src={widget.content}
           alt={String(widget.settings.alt || "")}
           fill
-          className="object-contain"
+          style={{
+            objectFit: (["contain", "cover", "fill"].includes(String(widget.settings.fit))
+              ? String(widget.settings.fit)
+              : "contain") as "contain" | "cover" | "fill",
+            objectPosition: String(widget.settings.position || "center"),
+          }}
         />
       </div>
     );

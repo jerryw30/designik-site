@@ -122,8 +122,52 @@ function CheckBullet({ lead, text }: Bullet) {
   );
 }
 
+/** Parse the admin-edited terms body ("## Section", "- bullet", paragraphs). */
+function parseTermsBody(body: string): TermSection[] {
+  const sections: TermSection[] = [];
+  let current: TermSection | null = null;
+  for (const rawLine of body.split("\n")) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    if (line.startsWith("## ")) {
+      current = { title: line.slice(3).trim(), paras: [], bullets: [] };
+      sections.push(current);
+    } else if (line.startsWith("- ")) {
+      if (!current) continue;
+      const text = line.slice(2).trim();
+      const lead = text.match(/^([^:]{2,40}:)\s+(.*)$/);
+      current.bullets!.push(lead ? { lead: lead[1], text: lead[2] } : { text });
+    } else if (current) {
+      current.paras!.push(line);
+    }
+  }
+  return sections.filter((s) => (s.paras?.length || 0) + (s.bullets?.length || 0) > 0);
+}
+
 export default function TermsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [closing, setClosing] = useState(false);
+  // Admin-editable overrides (Backend → Popups)
+  const [copy, setCopy] = useState<{ title: string; updated: string; sections: TermSection[] | null }>({
+    title: "Terms & Conditions",
+    updated: "August 10, 2026",
+    sections: null,
+  });
+
+  useEffect(() => {
+    if (!open) return;
+    fetch("/api/site-config")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((c) => {
+        if (!c?.popups) return;
+        const parsed = c.popups.termsBody ? parseTermsBody(c.popups.termsBody) : null;
+        setCopy({
+          title: c.popups.termsTitle || "Terms & Conditions",
+          updated: c.popups.termsUpdated || "August 10, 2026",
+          sections: parsed && parsed.length ? parsed : null,
+        });
+      })
+      .catch(() => {});
+  }, [open]);
 
   const handleClose = useCallback(() => {
     setClosing(true);
@@ -174,9 +218,17 @@ export default function TermsModal({ open, onClose }: { open: boolean; onClose: 
             Designik Agency
           </p>
           <h2 className="mt-2 font-display text-[30px] font-semibold uppercase leading-[1.05] text-ink sm:text-[38px]">
-            Terms <span className="text-wine-500">&amp;</span> Conditions
+            {copy.title.includes("&") ? (
+              <>
+                {copy.title.split("&")[0]}
+                <span className="text-wine-500">&amp;</span>
+                {copy.title.split("&").slice(1).join("&")}
+              </>
+            ) : (
+              copy.title
+            )}
           </h2>
-          <p className="mt-2 text-[13px] text-ink/60">Last Updated: August 10, 2025</p>
+          <p className="mt-2 text-[13px] text-ink/60">Last Updated: {copy.updated}</p>
         </header>
 
         {/* scrollable body */}
@@ -187,7 +239,7 @@ export default function TermsModal({ open, onClose }: { open: boolean; onClose: 
             (&ldquo;Client,&rdquo; &ldquo;you&rdquo;) agree to be bound by these Terms in their entirety. Please read them carefully.
           </p>
 
-          {SECTIONS.map((s, i) => (
+          {(copy.sections || SECTIONS).map((s, i) => (
             <section key={s.title} className="mt-8">
               <h3 className="flex items-baseline gap-3 font-display text-[18px] font-semibold uppercase leading-tight text-ink">
                 <span className="font-display text-[14px] font-semibold text-wine-500">
@@ -200,7 +252,7 @@ export default function TermsModal({ open, onClose }: { open: boolean; onClose: 
                   {p}
                 </p>
               ))}
-              {s.bullets && (
+              {s.bullets && s.bullets.length > 0 && (
                 <ul className="mt-4 space-y-2.5">
                   {s.bullets.map((b) => (
                     <CheckBullet key={b.text.slice(0, 24)} {...b} />

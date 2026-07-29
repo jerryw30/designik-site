@@ -16,15 +16,29 @@ export default function GetStartedModal() {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
   const [form, setForm] = useState({ name: "", email: "", phone: "", budget: "", service: "", message: "" });
+  // Admin-editable copy (Backend → Popups)
+  const [copy, setCopy] = useState({
+    title: "Let's build\nsomething great",
+    success: "Thanks for reaching out — we'll get back to you within 24 hours.",
+  });
 
   useEffect(() => {
     const openHandler = () => {
       setOpen(true);
       setStatus("idle");
       setError("");
+      fetch("/api/site-config")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((c) => {
+          if (c?.popups?.getStartedTitle) {
+            setCopy({ title: c.popups.getStartedTitle, success: c.popups.getStartedSuccess || copy.success });
+          }
+        })
+        .catch(() => {});
     };
     window.addEventListener("open-get-started", openHandler);
     return () => window.removeEventListener("open-get-started", openHandler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -109,9 +123,12 @@ export default function GetStartedModal() {
                 </p>
               </div>
               <h2 className="mt-4 font-display text-[34px] font-semibold uppercase leading-[1.05]">
-                Let&rsquo;s build
-                <br />
-                something great
+                {copy.title.split("\n").map((line, i, all) => (
+                  <span key={i}>
+                    {line}
+                    {i < all.length - 1 && <br />}
+                  </span>
+                ))}
               </h2>
               <button
                 onClick={() => setOpen(false)}
@@ -145,9 +162,7 @@ export default function GetStartedModal() {
                       </svg>
                     </motion.span>
                     <h3 className="mt-5 font-display text-[22px] font-semibold uppercase text-ink">Message sent!</h3>
-                    <p className="mt-2 max-w-[30ch] text-[14px] text-neutral-500">
-                      Thanks for reaching out — we&rsquo;ll get back to you within 24 hours.
-                    </p>
+                    <p className="mt-2 max-w-[30ch] text-[14px] text-neutral-500">{copy.success}</p>
                     <button
                       onClick={() => setOpen(false)}
                       className="mt-6 rounded-full bg-wine-500 px-7 py-2.5 font-display text-[13px] font-semibold uppercase text-white transition-transform hover:scale-105"

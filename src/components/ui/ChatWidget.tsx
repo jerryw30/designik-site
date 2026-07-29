@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import { playChime } from "@/lib/chime";
 import { Linkified } from "@/components/ui/Linkify";
+import CalendlyModal from "@/components/ui/CalendlyModal";
 
 type Msg = { id: string; sender: "visitor" | "admin" | "assistant"; senderName?: string | null; body: string; createdAt: string };
 type Mode = "chat" | "team" | "rating" | "ended";
@@ -19,6 +20,8 @@ const MEET_INTENT_RE = /(meeting|meet with|meet luke|call|schedule|book|calendly
 
 const STORAGE_KEY = "designik_chat_conversation";
 const CALENDLY_URL = "https://calendly.com/luke-designingenious/";
+const CALL_TEL = "tel:+14122061270";
+const CALL_DISPLAY = "412-206-1270";
 const GREETING: Msg = {
   id: "greeting",
   sender: "assistant",
@@ -69,6 +72,11 @@ export default function ChatWidget() {
   const [showTeam, setShowTeam] = useState(false); // talk-to-team chip
   const [showMeet, setShowMeet] = useState(false); // meet-with-Luke chip
   const [waitingHuman, setWaitingHuman] = useState(false); // in line for the team
+  const [calendlyOpen, setCalendlyOpen] = useState(false); // on-site booking popup
+  // Admin-controlled settings (chat on/off, teaser, booking link, phone)
+  const [config, setConfig] = useState({ enabled: true, teaser: true, sound: true, calendlyUrl: CALENDLY_URL, phone: CALL_DISPLAY });
+  const configRef = useRef(config);
+  configRef.current = config;
   const [teaserReady, setTeaserReady] = useState(false); // small entrance delay
   const [teaserDismissed, setTeaserDismissed] = useState(false);
   const convId = useRef<string | null>(null);
@@ -80,6 +88,23 @@ export default function ChatWidget() {
   // restore conversation id
   useEffect(() => {
     convId.current = localStorage.getItem(STORAGE_KEY);
+  }, []);
+
+  // admin-controlled chat settings
+  useEffect(() => {
+    fetch("/api/site-config")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((c) => {
+        if (!c) return;
+        setConfig({
+          enabled: c.chat?.enabled !== false,
+          teaser: c.chat?.teaser !== false,
+          sound: c.chat?.sound !== false,
+          calendlyUrl: c.calendlyUrl || CALENDLY_URL,
+          phone: c.phone || CALL_DISPLAY,
+        });
+      })
+      .catch(() => {});
   }, []);
 
   // teaser slides in shortly after the page loads
@@ -102,7 +127,7 @@ export default function ChatWidget() {
           fresh.forEach((m) => knownIds.current.add(m.id));
           const teamMsgs = fresh.filter((m) => m.sender !== "visitor").length;
           if (teamMsgs > 0) {
-            playChime();
+            if (configRef.current.sound) playChime();
             if (!open) {
               setUnread((u) => u + teamMsgs);
               setTeaserDismissed(false); // new message re-surfaces the teaser
@@ -286,11 +311,14 @@ export default function ChatWidget() {
   // the poll reloads the conversation history).
   const lastIncoming = [...messages].reverse().find((m) => m.sender !== "visitor");
 
+  // Chat switched off from the admin — render nothing at all.
+  if (!config.enabled) return null;
+
   return (
     <>
       {/* teaser bubble — visible while the chat is closed */}
       <AnimatePresence>
-        {teaserReady && !open && !teaserDismissed && mode !== "ended" && lastIncoming && (
+        {config.teaser && teaserReady && !open && !teaserDismissed && mode !== "ended" && lastIncoming && (
           <motion.div
             initial={{ opacity: 0, y: 16, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -386,8 +414,19 @@ export default function ChatWidget() {
               )}
             </div>
 
-            {/* messages */}
-            <div ref={scrollRef} data-lenis-prevent className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-neutral-50 px-4 py-4">
+            {/* messages — Calendly links open the on-site booking popup */}
+            <div
+              ref={scrollRef}
+              data-lenis-prevent
+              onClickCapture={(e) => {
+                const a = (e.target as HTMLElement).closest("a");
+                if (a && a.href.includes("calendly.com")) {
+                  e.preventDefault();
+                  setCalendlyOpen(true);
+                }
+              }}
+              className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-neutral-50 px-4 py-4"
+            >
               {messages.map((m) => (
                 <div key={m.id} className={m.sender === "visitor" ? "flex justify-end" : "flex justify-start"}>
                   {m.sender === "visitor" ? (
@@ -552,12 +591,13 @@ export default function ChatWidget() {
                   </button>
                   )}
                   {showMeet && (
-                  <a
-                    href={CALENDLY_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setShowMeet(false)} // one-shot suggestion
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-wine-500/25 bg-wine-500/5 px-3 py-2 font-display text-[11px] font-semibold uppercase tracking-wide text-wine-500 transition hover:bg-wine-500/10"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMeet(false); // one-shot suggestion
+                      setCalendlyOpen(true);
+                    }}
+                    className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full border border-wine-500/25 bg-wine-500/5 px-3 py-2 font-display text-[11px] font-semibold uppercase tracking-wide text-wine-500 transition hover:bg-wine-500/10"
                   >
                     <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" aria-hidden>
                       <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
@@ -565,8 +605,24 @@ export default function ChatWidget() {
                       <path d="m9.5 14.5 1.8 1.8 3.4-3.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     Meet with Luke
-                  </a>
+                  </button>
                   )}
+                  <a
+                    href={config.phone.replace(/\D/g, "").length === 10 ? `tel:+1${config.phone.replace(/\D/g, "")}` : CALL_TEL}
+                    title={`Call ${config.phone}`}
+                    className="flex shrink-0 items-center justify-center gap-1.5 rounded-full border border-wine-500/25 bg-wine-500/5 px-3 py-2 font-display text-[11px] font-semibold uppercase tracking-wide text-wine-500 transition hover:bg-wine-500/10"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" aria-hidden>
+                      <path
+                        d="M5.5 4h3l1.5 4-2 1.5a12 12 0 0 0 6.5 6.5L16 14l4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 3.5 6.2 2 2 0 0 1 5.5 4Z"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    Call
+                  </a>
                 </div>
                 )}
                 <form onSubmit={send} className={`flex items-center gap-2 bg-white px-3 py-3 ${!(showTeam || showMeet) && !waitingHuman ? "border-t" : ""}`}>
@@ -593,6 +649,8 @@ export default function ChatWidget() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <CalendlyModal open={calendlyOpen} onClose={() => setCalendlyOpen(false)} url={config.calendlyUrl} />
     </>
   );
 }

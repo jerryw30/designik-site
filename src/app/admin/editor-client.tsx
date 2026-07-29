@@ -2001,12 +2001,51 @@ function MediaPicker({
   accept: "image" | "video";
   onChange: (v: string) => void;
 }) {
-  const compatible = media.filter((asset) =>
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [extra, setExtra] = useState<MediaAsset[]>([]);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const compatible = [...extra, ...media].filter((asset) =>
     asset.mimeType.startsWith(`${accept}/`),
   );
+  const isImageValue = accept === "image" && value && !/\.(mp4|webm|mp3)/i.test(value);
+
+  const upload = async (file: File) => {
+    setUploading(true);
+    setUploadError("");
+    try {
+      const fd = new FormData();
+      fd.append("files", file);
+      const res = await fetch("/api/media/upload", {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Upload failed");
+      const asset = data.assets?.[0];
+      if (asset) {
+        setExtra((prev) => [{ id: asset.id, title: asset.title, mimeType: asset.mimeType }, ...prev]);
+        onChange(asset.url);
+      }
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
   return (
     <div className={labelClass}>
       {label && <span>{label}</span>}
+      {/* live preview of the current image */}
+      {isImageValue && (
+        <div className="mt-1.5 overflow-hidden rounded-md border border-white/10 bg-[#1a1b20]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={value} alt="" className="mx-auto max-h-24 object-contain" />
+        </div>
+      )}
       <input
         className="admin-input mt-1.5"
         value={value}
@@ -2029,6 +2068,14 @@ function MediaPicker({
             </option>
           ))}
         </select>
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="rounded-md border border-white/10 bg-[#a10140]/80 px-2 py-2 text-xs font-medium text-white transition hover:bg-[#a10140] disabled:opacity-50"
+        >
+          {uploading ? "Uploading…" : "Upload"}
+        </button>
         <a
           href="/admin/media"
           target="_blank"
@@ -2037,6 +2084,17 @@ function MediaPicker({
           Library
         </a>
       </div>
+      <input
+        ref={fileRef}
+        type="file"
+        accept={`${accept}/*`}
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) upload(f);
+        }}
+      />
+      {uploadError && <p className="mt-1 text-[11px] text-red-400">{uploadError}</p>}
     </div>
   );
 }

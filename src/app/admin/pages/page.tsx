@@ -91,6 +91,39 @@ export default async function Pages({
         </form>
       )}
 
+      {/* system pages — built into the site, not stored as CMS pages */}
+      {status === "all" && !search && (
+        <div className="mt-4 rounded-lg border border-[#c3c4c7] bg-white shadow-sm">
+          <div className="border-b px-4 py-2.5">
+            <h3 className="text-[13.5px] font-semibold text-[#1d2327]">System pages</h3>
+            <p className="text-[12px] text-[#50575e]">Built into the site — edit their content from the linked screens.</p>
+          </div>
+          <ul className="divide-y">
+            {[
+              { name: "Blog", url: "/blog", edit: "/admin/posts", editLabel: "Manage posts" },
+              { name: "Blog post template", url: "/blog", edit: "/admin/posts", editLabel: "Manage posts" },
+              { name: "Portfolio", url: "/portfolio", edit: null, editLabel: "Static design page" },
+            ].map((p) => (
+              <li key={p.name} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
+                <div className="flex items-center gap-3">
+                  <span className="text-[13.5px] font-medium text-[#1d2327]">{p.name}</span>
+                  <a href={p.url} target="_blank" className="text-[12px] text-[#50575e] hover:text-[#a10140] hover:underline">
+                    {p.url}
+                  </a>
+                </div>
+                {p.edit ? (
+                  <Link href={p.edit} className={`text-[12.5px] ${wpLink}`}>
+                    {p.editLabel}
+                  </Link>
+                ) : (
+                  <span className="text-[12px] text-[#50575e]">{p.editLabel}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* subsubsub status links */}
       <ul className="mt-4 flex flex-wrap items-center gap-1.5 text-[13px]">
         {views.map((v, i) => (

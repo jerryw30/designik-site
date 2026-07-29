@@ -170,7 +170,7 @@ export const sectionDefaults = {
     columns: [
       ["Home", "About", "Services", "Work"],
       ["Contact", "Careers", "Journal", "Book a Call"],
-      ["Terms and Conditions", "Cookie Policy"],
+      ["Terms and Conditions"],
     ],
     newsletterHeading: "Get the Good Stuff",
     newsletterNote:

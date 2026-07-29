@@ -3,6 +3,7 @@ import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { chatConversations, chatMessages } from "@/db/schema";
 import { sendNotification } from "@/lib/mailer";
+import { getSiteConfig } from "@/lib/site-config";
 import { generateIkoraReply, ikoraProvider } from "@/ai/ikora";
 
 export const dynamic = "force-dynamic";
@@ -20,8 +21,22 @@ export async function POST(request: Request) {
   const text = (body.body || "").trim().slice(0, 4000);
   if (!text) return NextResponse.json({ error: "Message is empty." }, { status: 422 });
 
+  // Visitor geo from the edge headers (Vercel populates these in production).
+  const h = request.headers;
+  const geo = {
+    countryCode: h.get("x-vercel-ip-country") || null,
+    city: h.get("x-vercel-ip-city") ? decodeURIComponent(h.get("x-vercel-ip-city")!) : null,
+    ip: (h.get("x-real-ip") || h.get("x-forwarded-for")?.split(",")[0].trim() || null)?.slice(0, 60) ?? null,
+  };
+
+  // Chat can be switched off from the admin.
+  const config = await getSiteConfig();
+  if (!config.chat.enabled) {
+    return NextResponse.json({ error: "Chat is currently unavailable." }, { status: 503 });
+  }
+
   let conversationId = body.conversationId;
-  let conversation: { id: string; name: string | null; email: string | null; aiEnabled: boolean } | undefined;
+  let conversation: { id: string; name: string | null; email: string | null; aiEnabled: boolean; status?: string } | undefined;
   let isNewConversation = false;
 
   // Validate an existing conversation, or create a new one.
@@ -32,12 +47,18 @@ export async function POST(request: Request) {
         name: chatConversations.name,
         email: chatConversations.email,
         aiEnabled: chatConversations.aiEnabled,
+        status: chatConversations.status,
       })
       .from(chatConversations)
       .where(eq(chatConversations.id, conversationId))
       .limit(1);
-    if (conv) conversation = conv;
-    else conversationId = undefined;
+    if (conv) {
+      // Spam-blocked conversations silently stop accepting messages.
+      if (conv.status === "SPAM") {
+        return NextResponse.json({ error: "This conversation has been closed." }, { status: 403 });
+      }
+      conversation = conv;
+    } else conversationId = undefined;
   }
   if (!conversationId || !conversation) {
     const [conv] = await db
@@ -45,6 +66,7 @@ export async function POST(request: Request) {
       .values({
         name: body.name?.trim().slice(0, 120) || null,
         email: body.email?.trim().slice(0, 200) || null,
+        ...geo,
       })
       .returning({
         id: chatConversations.id,
@@ -68,6 +90,10 @@ export async function POST(request: Request) {
       lastMessageAt: new Date(),
       unreadAdmin: sql`${chatConversations.unreadAdmin} + 1`,
       status: "OPEN",
+      // Backfill geo for conversations that predate geo capture.
+      ...(geo.countryCode ? { countryCode: sql`coalesce(${chatConversations.countryCode}, ${geo.countryCode})` } : {}),
+      ...(geo.city ? { city: sql`coalesce(${chatConversations.city}, ${geo.city})` } : {}),
+      ...(geo.ip ? { ip: sql`coalesce(${chatConversations.ip}, ${geo.ip})` } : {}),
     })
     .where(eq(chatConversations.id, conversationId));
 

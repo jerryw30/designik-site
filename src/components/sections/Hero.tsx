@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useRef, useState } from "react";
 import { assets } from "@/lib/assets";
+import CalendlyModal from "@/components/ui/CalendlyModal";
 import { heroContent, type HeroContent } from "@/cms/defaults";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -25,16 +25,6 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
   const primaryIsExternal = /^https?:/i.test(content.primaryLink);
   const secondaryIsCalendly = content.secondaryLink.includes("calendly.com");
   const [calendlyOpen, setCalendlyOpen] = useState(false);
-  useEffect(() => {
-    if (!calendlyOpen) return;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setCalendlyOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [calendlyOpen]);
 
   return (
     <section
@@ -190,37 +180,7 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
       </motion.div>}
 
       {/* Calendly booking popup (embedded, stays on-site) */}
-      {calendlyOpen &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <div
-            onClick={() => setCalendlyOpen(false)}
-            className="dgk-modal-overlay fixed inset-0 z-[140] flex items-center justify-center p-3 sm:p-6"
-            style={{ backgroundColor: "rgba(240,241,251,0.98)" }}
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="dgk-modal-card relative h-[90vh] w-full max-w-[1000px] overflow-hidden rounded-[16px] bg-white"
-              style={{ boxShadow: "rgba(51,53,71,0.22) 0px 40px 100px -20px" }}
-            >
-              <button
-                onClick={() => setCalendlyOpen(false)}
-                aria-label="Close"
-                className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-ink shadow-[0_4px_16px_rgba(0,0,0,0.18)] backdrop-blur transition-transform duration-300 hover:rotate-90 hover:bg-white"
-              >
-                <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4" aria-hidden>
-                  <path d="M3 3l10 10M13 3 3 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
-              </button>
-              <iframe
-                src={`${content.secondaryLink}${content.secondaryLink.includes("?") ? "&" : "?"}embed_domain=${typeof location !== "undefined" ? location.hostname : ""}&embed_type=Inline&hide_gdpr_banner=1`}
-                title="Book an appointment with Designik"
-                className="h-full w-full border-0"
-              />
-            </div>
-          </div>,
-          document.body,
-        )}
+      <CalendlyModal open={calendlyOpen} onClose={() => setCalendlyOpen(false)} url={content.secondaryLink} />
     </section>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { newWidget, widgetRegistry, type WidgetType } from "@/cms/widgets";
 import { COLUMN_PRESETS, type LayoutColumn, type LayoutRow, type LayoutWidget, rowDefaults } from "@/cms/layout";
 
@@ -56,12 +56,31 @@ function WidgetCard({
   onMoveToColumn: (colIndex: number) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const set = (patch: Partial<LayoutWidget>) => onChange({ ...widget, ...patch });
   const setS = (k: string, v: string | number | boolean) => onChange({ ...widget, settings: { ...widget.settings, [k]: v } });
   const label = widgetRegistry.find((w) => w[0] === widget.type)?.[1] || widget.type;
   const isImage = IMAGE_TYPES.includes(widget.type);
   const contentLabel = MULTILINE[widget.type] || "Content";
   const multiline = widget.type in MULTILINE;
+
+  const uploadFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("files", file);
+      const res = await fetch("/api/media/upload", { method: "POST", headers: { Accept: "application/json" }, body: fd });
+      const data = await res.json();
+      const url = data.assets?.[0]?.url;
+      if (res.ok && url) set({ content: multiline ? `${widget.content}\n${url}`.trim() : url });
+    } catch {
+      /* leave content unchanged */
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
 
   return (
     <div className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
@@ -84,22 +103,63 @@ function WidgetCard({
             )}
           </div>
 
-          {isImage && media.length > 0 && (
+          {isImage && (
             <div>
               <span className={lbl}>Pick from media</span>
-              <select
-                value=""
+              <div className="flex gap-2">
+                <select
+                  value=""
+                  onChange={(e) => {
+                    if (!e.target.value) return;
+                    set({ content: multiline ? `${widget.content}\n${e.target.value}`.trim() : e.target.value });
+                  }}
+                  className={inp}
+                >
+                  <option value="">Choose an image…</option>
+                  {media.filter((m) => m.mimeType.startsWith("image/")).map((m) => (
+                    <option key={m.id} value={mediaUrl(m)}>{m.title}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                  className="shrink-0 rounded-md border border-white/15 bg-[#a10140]/80 px-2.5 py-1.5 text-[11px] font-medium text-white transition hover:bg-[#a10140] disabled:opacity-50"
+                >
+                  {uploading ? "…" : "Upload"}
+                </button>
+              </div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*,video/*"
+                className="hidden"
                 onChange={(e) => {
-                  if (!e.target.value) return;
-                  set({ content: multiline ? `${widget.content}\n${e.target.value}`.trim() : e.target.value });
+                  const f = e.target.files?.[0];
+                  if (f) uploadFile(f);
                 }}
-                className={inp}
-              >
-                <option value="">Choose an image…</option>
-                {media.filter((m) => m.mimeType.startsWith("image/")).map((m) => (
-                  <option key={m.id} value={mediaUrl(m)}>{m.title}</option>
-                ))}
-              </select>
+              />
+            </div>
+          )}
+
+          {widget.type === "image" && (
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className={lbl}>Image fit</span>
+                <select value={String(widget.settings.fit || "contain")} onChange={(e) => setS("fit", e.target.value)} className={inp}>
+                  <option value="contain">Contain (whole image)</option>
+                  <option value="cover">Cover (fill, crop edges)</option>
+                  <option value="fill">Stretch</option>
+                </select>
+              </div>
+              <div>
+                <span className={lbl}>Image position</span>
+                <select value={String(widget.settings.position || "center")} onChange={(e) => setS("position", e.target.value)} className={inp}>
+                  {["center", "top", "bottom", "left", "right", "left top", "right top", "left bottom", "right bottom"].map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 

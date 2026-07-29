@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { count, desc, eq, max } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { adminResources, formSubmissions } from "@/db/schema";
+import { adminResources, formSubmissions, leads } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../admin-shell";
@@ -22,7 +22,7 @@ export default async function FormsPage() {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
   if (!canViewArea(user.role, "forms")) redirect("/admin");
-  const [forms, submissions] = await Promise.all([
+  const [forms, submissions, siteForms] = await Promise.all([
     db
       .select()
       .from(adminResources)
@@ -34,7 +34,19 @@ export default async function FormsPage() {
         status: formSubmissions.status,
       })
       .from(formSubmissions),
+    db
+      .select({ source: leads.source, total: count(), latest: max(leads.createdAt) })
+      .from(leads)
+      .groupBy(leads.source),
   ]);
+
+  // The forms built into the website itself — their submissions land in Leads.
+  const BUILT_IN = [
+    { source: "get-started", name: "Start a Project popup", where: "Header · Hero · Footer Contact · Case studies" },
+    { source: "newsletter", name: "Newsletter signup", where: "Footer" },
+    { source: "contact", name: "Contact form", where: "Site-wide" },
+  ];
+  const bySource = new Map(siteForms.map((s) => [s.source || "contact", s]));
   return (
     <AdminShell user={user} title="Forms">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -54,6 +66,36 @@ export default async function FormsPage() {
           <button className={T.btnPrimary}>Create form</button>
         </form>
       </div>
+
+      {/* Built-in site forms — live on the website, submissions stored as Leads */}
+      <section className={`${T.card} mt-5`}>
+        <div className={T.cardHeader}>
+          <h3 className="text-[15px] font-semibold">Site forms (built in)</h3>
+          <p className="text-[12px] text-neutral-400">These live on the website itself — every submission lands in Leads.</p>
+        </div>
+        <ul className="divide-y">
+          {BUILT_IN.map((f) => {
+            const stat = bySource.get(f.source);
+            return (
+              <li key={f.source} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
+                <div>
+                  <p className="text-[13.5px] font-medium">{f.name}</p>
+                  <p className="text-[12px] text-neutral-400">{f.where}</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-[12.5px] text-neutral-500">
+                    {stat?.total || 0} submissions
+                    {stat?.latest ? ` · last ${wpDate(stat.latest)}` : ""}
+                  </span>
+                  <Link href="/admin/leads" className={T.link}>
+                    View in Leads
+                  </Link>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
 
       <div className={T.tableWrap}>
         <table className={T.table}>

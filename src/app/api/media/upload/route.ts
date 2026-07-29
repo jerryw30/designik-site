@@ -46,21 +46,26 @@ export async function POST(request: Request) {
     if (!allowedTypes.test(file.type))
       return fail("type", `${file.name} is not a supported media type.`, 400);
   }
+  const uploaded: { id: string; url: string; title: string; mimeType: string }[] = [];
   for (const file of files) {
     const filename = cleanFilename(file.name);
     const title = filename.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ");
-    await db.insert(mediaAssets).values({
-      filename,
-      mimeType: file.type,
-      byteSize: file.size,
-      contentBase64: Buffer.from(await file.arrayBuffer()).toString("base64"),
-      title,
-      altText: file.type.startsWith("image/") ? title : "",
-      uploadedBy: user.id,
-    });
+    const [asset] = await db
+      .insert(mediaAssets)
+      .values({
+        filename,
+        mimeType: file.type,
+        byteSize: file.size,
+        contentBase64: Buffer.from(await file.arrayBuffer()).toString("base64"),
+        title,
+        altText: file.type.startsWith("image/") ? title : "",
+        uploadedBy: user.id,
+      })
+      .returning({ id: mediaAssets.id });
+    uploaded.push({ id: asset.id, url: `/api/media/${asset.id}`, title, mimeType: file.type });
     await logActivity(user, "media", "uploaded", filename);
   }
   return wantsJson
-    ? Response.json({ ok: true, count: files.length })
+    ? Response.json({ ok: true, count: files.length, assets: uploaded })
     : Response.redirect(new URL("/admin/media?uploaded=1", request.url), 303);
 }
