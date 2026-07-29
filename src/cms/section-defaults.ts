@@ -182,7 +182,7 @@ export const sectionDefaults = {
     projectHeading: "Creative Agency",
     description:
       "Designik exists to revolutionize the way brands connect and engage with their audiences in the digital era by leveraging innovative strategies and cutting-edge technology.",
-    buttonLabel: "Read More",
+    buttonLabel: "View Project",
     buttonLink: "#contact",
     cards: [
       {
@@ -190,6 +190,10 @@ export const sectionDefaults = {
         device: "/figma/individual/pf-card2-laptop--544-60.png",
         deviceSide: "right",
         light: true,
+        accent: "Tanna’s Botannas",
+        heading: "Bold Flavor. Bigger Personality.",
+        description:
+          "A vibrant e-commerce experience that captures the brand’s energetic personality, showcases its signature spicy candy, and makes every product feel irresistible.",
         year: "2025",
         tags: ["E-Commerce", "Brand", "Web Design"],
         longDescription:
@@ -230,6 +234,10 @@ export const sectionDefaults = {
         device: "/figma/individual/pf-card1-laptop--541-187.png",
         deviceSide: "left",
         light: false,
+        accent: "Kindro",
+        heading: "Turning Kindness Into Action",
+        description:
+          "A welcoming digital platform designed to help people request support, discover meaningful ways to help, and bring communities closer together.",
         year: "2025",
         tags: ["Web App", "UX / UI", "Community"],
         longDescription:
@@ -270,6 +278,10 @@ export const sectionDefaults = {
         device: "/figma/individual/pf-card3-laptop--544-42.png",
         deviceSide: "left",
         light: false,
+        accent: "Rooted",
+        heading: "Real Food. Kept Simple.",
+        description:
+          "A fresh, modern restaurant experience built around simple navigation, transparent ingredients, and wholesome meals made with seven ingredients or fewer.",
         year: "2025",
         tags: ["Web Design", "Food & Beverage", "Conversion"],
         longDescription:

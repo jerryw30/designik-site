@@ -39,7 +39,7 @@ const CARD_SPECS = [
   {
     // Card 1 — sunset Tanna's scene, text left (x=111), laptop right
     textLeft: "7.7083cqw",
-    descLeft: "7.7083cqw",
+    textW: "34.5cqw",
     device: { left: "44.0972cqw", top: "3.8194cqw", w: "40.5686cqw", h: "33.3525cqw" },
     overlay: true, // Figma: black 11% wash over background
     glass: "rgba(255,255,255,0.1)",
@@ -48,7 +48,7 @@ const CARD_SPECS = [
   {
     // Card 2 — green Kindro scene, laptop left, text right (x=675)
     textLeft: "46.875cqw",
-    descLeft: "46.8056cqw",
+    textW: "38.5cqw",
     device: { left: "2.0833cqw", top: "4.1667cqw", w: "45.1794cqw", h: "33.0145cqw" },
     overlay: false,
     glass: "rgba(255,255,255,0.1)",
@@ -57,7 +57,7 @@ const CARD_SPECS = [
   {
     // Card 3 — sky Rooted scene, laptop left, text right (x=701.5)
     textLeft: "48.718cqw",
-    descLeft: "48.718cqw",
+    textW: "37cqw",
     device: { left: "3.8194cqw", top: "3.9335cqw", w: "44.3056cqw", h: "33.2292cqw" },
     overlay: false,
     glass: "rgba(206,227,252,0.2)", // Figma: pale-blue glass panel
@@ -202,15 +202,15 @@ function StackCard({
               <Image src={banner.device} alt="Designik project" fill className="object-cover" sizes="720px" />
             </div>
             {/* mobile device image — flush to the card bottom (card 3's collage keeps a small inset) */}
-            <div className={cn("absolute left-1/2 -translate-x-1/2 md:hidden", spec.deviceShadow ? "bottom-[4%] h-[44%] w-[86%]" : "bottom-0 h-[50%] w-[92%]")}>
+            <div className={cn("absolute left-1/2 -translate-x-1/2 md:hidden", spec.deviceShadow ? "bottom-[4%] h-[44%] w-[86%]" : "bottom-0 h-[46%] w-[92%]")}>
               <Image src={banner.device} alt="Designik project" fill className="object-contain object-bottom" sizes="100vw" />
             </div>
 
             {/* mobile text block — inside the card */}
             <div className="absolute inset-x-0 top-0 z-10 p-6 md:hidden">
-              <h3 className={cn("font-display text-[34px] font-semibold uppercase leading-[1.1]", light ? "text-white" : "text-wine-500")}>{accent}</h3>
-              <p className={cn("font-display text-[24px] font-medium uppercase leading-[1.1]", light ? "text-white" : "text-black")}>{heading}</p>
-              <p className={cn("mt-3 max-w-[44ch] text-[15px] leading-[1.5]", light ? "text-white/90" : "text-black/80")}>{description}</p>
+              <h3 className={cn("font-display text-[27px] font-semibold uppercase leading-[1.1]", light ? "text-white" : "text-wine-500")}>{accent}</h3>
+              <p className={cn("mt-1 font-display text-[17px] font-medium uppercase leading-[1.2]", light ? "text-white" : "text-black")}>{heading}</p>
+              <p className={cn("mt-2 max-w-[44ch] text-[13px] leading-[1.5]", light ? "text-white/90" : "text-black/80")}>{description}</p>
               <button
                 type="button"
                 onClick={openModal}
@@ -225,33 +225,31 @@ function StackCard({
               </button>
             </div>
 
-            {/* text block — exact absolute layout (md+) */}
-            <div className="hidden md:block">
+            {/* text block — flows from the Figma anchor so long titles fit (md+) */}
+            <div
+              className="hidden md:block absolute"
+              style={{ left: spec.textLeft, top: "5.1389cqw", width: spec.textW }}
+            >
               <h3
                 className={cn(
-                  "absolute font-display text-[6.6581cqw] font-semibold uppercase leading-[7.8355cqw] whitespace-nowrap",
+                  "font-display text-[5.2cqw] font-semibold uppercase leading-[1.1]",
                   light ? "text-white" : "text-wine-500"
                 )}
-                style={{ left: spec.textLeft, top: "5.1389cqw" }}
               >
                 {accent}
               </h3>
               <p
                 className={cn(
-                  "absolute font-display text-[4.7372cqw] font-medium uppercase leading-[5.5749cqw] whitespace-nowrap",
+                  "mt-[0.8cqw] font-display text-[2.6cqw] font-medium uppercase leading-[1.2]",
                   light ? "text-white" : "text-black"
                 )}
-                style={{ left: spec.textLeft, top: "12.478cqw" }}
               >
                 {heading}
               </p>
-              <p
-                className={cn("absolute w-[31.736cqw] text-[1.1111cqw] leading-[1.5799cqw]", light ? "text-white" : "text-black")}
-                style={{ left: spec.descLeft, top: "20cqw" }}
-              >
+              <p className={cn("mt-[1.1cqw] max-w-[31.736cqw] text-[1.1111cqw] leading-[1.5799cqw]", light ? "text-white" : "text-black")}>
                 {description}
               </p>
-              <div className="absolute" style={{ left: spec.descLeft, top: "28.194cqw" }}>
+              <div className="mt-[1.6cqw]">
                 <ReadMoreButton label={data.buttonLabel} onClick={openModal} />
               </div>
             </div>
