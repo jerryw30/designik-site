@@ -364,10 +364,10 @@ export const sectionDefaults = {
         title: "Mobile app\nDevelopment",
         image: "/figma/individual/image-236--221-1591.png",
       },
-      seo: { title: "SEO", image: "/figma/individual/seo-rocket.png" },
+      seo: { title: "SEO", image: "/figma/svc-seo-statue.png" },
       website: {
         title: "Website\nDevelopment",
-        image: "/figma/individual/website-mockup.png",
+        image: "/figma/svc-web-noirsymm.png",
         icons: [
           "/figma/individual/developer-1--221-1593.png",
           "/figma/individual/web-development-1--221-1592.png",

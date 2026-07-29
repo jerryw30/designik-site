@@ -60,22 +60,27 @@ export default function Services({ content }: { content?: unknown } = {}) {
 
         <Image src="/figma/group1261153735.svg" alt="View all services" width={81} height={81} className="absolute left-[1219px] top-[359px] h-[80.618px] w-[80.618px] [animation:spin360_14s_linear_infinite]" />
 
-        <article className="group absolute left-[1px] top-[407px] h-[340px] w-[171px] overflow-hidden rounded-[20px] bg-[#fbe9eb] transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
-          <span className="absolute inset-x-0 top-[24px] z-10 text-center font-display text-[10px] font-medium uppercase tracking-[0.14em] leading-[12px] text-wine-500">{data.eyebrow}</span>
-          <h3 className="absolute inset-x-0 top-[37px] z-10 text-center font-display text-[46px] font-semibold uppercase leading-[54px] text-black">{data.cards.seo.title}</h3>
-          <div className="absolute inset-x-0 bottom-[10px] top-[112px]">
-            <Image src={data.cards.seo.image || assets.seo} alt="SEO" fill className="object-contain object-bottom transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]" sizes="171px" />
+        {/* SEO — layer-wise: wine gradient, white type, statue scene + clouds (Figma 486/536) */}
+        <article className="group absolute left-[1px] top-[407px] h-[340px] w-[192px] overflow-hidden rounded-[20px] bg-[linear-gradient(180deg,#a80746_0%,#d92f71_70%)] transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+          <span className="absolute inset-x-0 top-[30px] z-20 text-center font-display text-[10.114px] font-normal uppercase leading-[11.902px] text-white">{data.eyebrow}</span>
+          <h3 className="absolute inset-x-0 top-[48px] z-20 text-center font-display text-[63.868px] font-medium uppercase leading-[75.162px] text-white">{data.cards.seo.title}</h3>
+          <div className="absolute inset-x-0 bottom-0 z-10 h-[227px] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]">
+            <Image src={data.cards.seo.image || assets.seo} alt="SEO" fill className="object-cover object-bottom" sizes="192px" />
+            <Image src="/figma/svc-cloud.png" alt="" width={68} height={34} className="absolute left-[5px] top-[11px] h-[34px] w-[68px]" />
+            <Image src="/figma/svc-cloud.png" alt="" width={68} height={34} className="absolute left-[115px] top-[5px] h-[34px] w-[68px]" />
           </div>
         </article>
 
-        <article className="group absolute left-[192px] top-[407px] h-[340px] w-[287.202px] overflow-hidden rounded-[20px] bg-[#fbe9eb] transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
-          <span className="absolute inset-x-0 top-[26px] z-10 text-center font-display text-[10px] font-medium uppercase tracking-[0.14em] leading-[12px] text-wine-500">{data.eyebrow}</span>
-          <div className="absolute inset-x-[15px] top-[50px] h-[172px]">
-            <Image src={data.cards.website.image} alt="Website development" fill className="object-contain object-top transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]" sizes="258px" />
-          </div>
-          <h3 className="absolute inset-x-0 top-[240px] z-10 text-center font-display text-[28px] font-semibold uppercase leading-[32px] text-black">
+        {/* Website development — layer-wise: cream + grid, title top, laptop scene flush bottom (Figma 538) */}
+        <article className="group absolute left-[216px] top-[407px] h-[340px] w-[269px] overflow-hidden rounded-[20px] bg-[#fff3e9] transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+          <Image src="/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="z-0 object-cover object-bottom opacity-60" sizes="269px" />
+          <span className="absolute inset-x-0 top-[25px] z-20 text-center font-display text-[13.363px] font-normal uppercase leading-[15.726px] text-wine-500">{data.eyebrow}</span>
+          <h3 className="absolute inset-x-0 top-[48px] z-20 text-center font-display text-[29.694px] font-medium uppercase leading-[34.945px] text-black">
             <Lines text={data.cards.website.title} />
           </h3>
+          <div className="absolute inset-x-0 bottom-0 z-10 h-[269px] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]">
+            <Image src={data.cards.website.image} alt="Website development" fill className="object-contain object-bottom" sizes="269px" />
+          </div>
         </article>
 
         <article className="group absolute left-[498px] top-[467.821px] h-[279.141px] w-[802.151px] overflow-hidden rounded-[20px] bg-[linear-gradient(176.398deg,#a10140_10.085%,#db2f73_137.48%)] transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.15)]">
@@ -113,11 +118,15 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <Image src={data.cards.digital.image || assets.digitalMarketing} alt="" width={287} height={250} className="absolute left-[39%] top-[64%] h-[90%] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 object-contain object-center" />
         </article>
 
-        {/* SEO — eyebrow + heading, rocket bottom-center */}
-        <article className="group relative min-h-[430px] overflow-hidden rounded-[20px] bg-[#fbe9eb] shadow-sm">
-          <span className="relative z-10 block pt-7 text-center font-display text-xs font-medium uppercase tracking-[0.14em] text-wine-500">{data.eyebrow}</span>
-          <h3 className="relative z-10 mt-1 px-6 text-center font-display text-[40px] font-semibold uppercase leading-tight text-black">{data.cards.seo.title}</h3>
-          <Image src={data.cards.seo.image || assets.seo} alt="SEO" width={308} height={552} className="absolute inset-x-0 bottom-3 mx-auto h-[74%] w-auto object-contain object-bottom" />
+        {/* SEO — wine gradient, white type, statue scene flush bottom */}
+        <article className="group relative min-h-[430px] overflow-hidden rounded-[20px] bg-[linear-gradient(180deg,#a80746_0%,#d92f71_70%)] shadow-sm">
+          <span className="relative z-20 block pt-7 text-center font-display text-xs font-normal uppercase text-white">{data.eyebrow}</span>
+          <h3 className="relative z-20 mt-1 px-6 text-center font-display text-[64px] font-medium uppercase leading-tight text-white">{data.cards.seo.title}</h3>
+          <div className="absolute inset-x-0 bottom-0 z-10 h-[67%]">
+            <Image src={data.cards.seo.image || assets.seo} alt="SEO" fill className="object-cover object-bottom" sizes="100vw" />
+            <Image src="/figma/svc-cloud.png" alt="" width={110} height={55} className="absolute left-[3%] top-[5%] w-[36%]" />
+            <Image src="/figma/svc-cloud.png" alt="" width={110} height={55} className="absolute right-[2%] top-[2%] w-[36%]" />
+          </div>
         </article>
 
         {/* Mobile App — hand overflowing from the bottom-right */}
@@ -126,11 +135,14 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <Image src={data.cards.mobile.image || assets.mobileAppHand} alt="" width={257} height={254} className="absolute bottom-[-4%] left-[31%] h-[120%] w-auto max-w-none -translate-x-[33%] translate-y-[17%] object-contain object-left-bottom" />
         </article>
 
-        {/* Website Development — eyebrow + mockup + heading */}
-        <article className="group relative flex min-h-[340px] flex-col items-center justify-center gap-5 overflow-hidden rounded-[20px] bg-[#fbe9eb] p-6 shadow-sm">
-          <span className="font-display text-xs font-medium uppercase tracking-[0.14em] text-wine-500">{data.eyebrow}</span>
-          <Image src={data.cards.website.image} alt="Website development" width={452} height={339} className="w-[88%] object-contain" />
-          <h3 className="text-center font-display text-[26px] font-semibold uppercase leading-tight text-black"><Lines text={data.cards.website.title} /></h3>
+        {/* Website Development — cream + grid, title top, laptop scene flush bottom */}
+        <article className="group relative min-h-[430px] overflow-hidden rounded-[20px] bg-[#fff3e9] shadow-sm">
+          <Image src="/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="z-0 object-cover object-bottom opacity-60" sizes="100vw" />
+          <span className="relative z-20 block pt-7 text-center font-display text-xs font-normal uppercase text-wine-500">{data.eyebrow}</span>
+          <h3 className="relative z-20 mt-1 px-6 text-center font-display text-[30px] font-medium uppercase leading-tight text-black"><Lines text={data.cards.website.title} /></h3>
+          <div className="absolute inset-x-0 bottom-0 z-10 aspect-square w-full">
+            <Image src={data.cards.website.image} alt="Website development" fill className="object-contain object-bottom" sizes="100vw" />
+          </div>
         </article>
 
         {/* Brand Identity — wine gradient, hanging tag + big brand strip like desktop */}
