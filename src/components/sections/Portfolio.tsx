@@ -181,16 +181,16 @@ function StackCard({
             <Image src={banner.background} alt="" fill className="object-cover" sizes="100vw" priority={index === 0} />
             {spec.overlay && <div className="absolute inset-0 bg-black/[0.11]" />}
 
-            {/* translucent inner frame (Figma: glass tint + soft shadow, inset 21/16) */}
+            {/* translucent inner frame (Figma: glass tint + backdrop blur + soft shadow, inset 21/16) */}
             <div
               aria-hidden
-              className="hidden md:block absolute left-[1.4583cqw] top-[1.1111cqw] h-[34.931cqw] w-[87.361cqw] rounded-[1.2768cqw] shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
+              className="hidden md:block absolute left-[1.4583cqw] top-[1.1111cqw] h-[34.931cqw] w-[87.361cqw] rounded-[1.2768cqw] shadow-[0_4px_4px_rgba(0,0,0,0.25)] [backdrop-filter:blur(0.6944cqw)]"
               style={{ backgroundColor: spec.glass }}
             />
             {/* mobile inner frame */}
             <div
               aria-hidden
-              className="absolute inset-[10px] rounded-[12px] shadow-[0_4px_4px_rgba(0,0,0,0.25)] md:hidden"
+              className="absolute inset-[10px] rounded-[12px] shadow-[0_4px_4px_rgba(0,0,0,0.25)] [backdrop-filter:blur(8px)] md:hidden"
               style={{ backgroundColor: spec.glass }}
             />
 
