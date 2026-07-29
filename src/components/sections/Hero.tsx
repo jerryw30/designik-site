@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { assets } from "@/lib/assets";
 import { heroContent, type HeroContent } from "@/cms/defaults";
 
@@ -18,6 +19,22 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "14%"]);
   const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+
+  // Primary opens the same project form as the header; a Calendly secondary
+  // link opens in an embedded booking popup instead of navigating away.
+  const primaryIsExternal = /^https?:/i.test(content.primaryLink);
+  const secondaryIsCalendly = content.secondaryLink.includes("calendly.com");
+  const [calendlyOpen, setCalendlyOpen] = useState(false);
+  useEffect(() => {
+    if (!calendlyOpen) return;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setCalendlyOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [calendlyOpen]);
 
   return (
     <section
@@ -127,6 +144,11 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
         >
           <a
             href={content.primaryLink}
+            onClick={(e) => {
+              if (primaryIsExternal) return;
+              e.preventDefault();
+              window.dispatchEvent(new CustomEvent("open-get-started"));
+            }}
             className="hero-primary group inline-flex items-center gap-2 font-display font-semibold uppercase tracking-wide shadow-lg transition-all duration-300 active:scale-95"
             style={{ background: content.primaryBackground, color: content.primaryColor, borderColor: content.primaryBorderColor, borderWidth: content.primaryBorderWidth, borderStyle: "solid", borderRadius: content.buttonRadius, fontSize: content.buttonFontSize, padding: `${content.buttonPaddingY}px ${content.buttonPaddingX}px`, ["--hover-bg" as string]: content.primaryHoverBackground, ["--hover-color" as string]: content.primaryHoverColor, ["--hover-scale" as string]: content.hoverScale }}
           >
@@ -137,6 +159,11 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
           </a>
           <a
             href={content.secondaryLink}
+            onClick={(e) => {
+              if (!secondaryIsCalendly) return;
+              e.preventDefault();
+              setCalendlyOpen(true);
+            }}
             className="hero-secondary group inline-flex items-center gap-2 font-sans font-semibold uppercase tracking-wide transition-all duration-300"
             style={{ background: content.secondaryBackground, color: content.secondaryColor, borderColor: content.secondaryBorderColor, borderWidth: content.secondaryBorderWidth, borderStyle: "solid", borderRadius: content.buttonRadius, fontSize: content.buttonFontSize, padding: `${content.buttonPaddingY}px ${content.buttonPaddingX}px`, ["--hover-bg" as string]: content.secondaryHoverBackground, ["--hover-color" as string]: content.secondaryHoverColor, ["--hover-scale" as string]: content.hoverScale }}
           >
@@ -161,6 +188,39 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
           <span className="h-2 w-1 rounded-full bg-white/80" />
         </motion.div>
       </motion.div>}
+
+      {/* Calendly booking popup (embedded, stays on-site) */}
+      {calendlyOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            onClick={() => setCalendlyOpen(false)}
+            className="dgk-modal-overlay fixed inset-0 z-[140] flex items-center justify-center p-3 sm:p-6"
+            style={{ backgroundColor: "rgba(240,241,251,0.98)" }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="dgk-modal-card relative h-[90vh] w-full max-w-[1000px] overflow-hidden rounded-[16px] bg-white"
+              style={{ boxShadow: "rgba(51,53,71,0.22) 0px 40px 100px -20px" }}
+            >
+              <button
+                onClick={() => setCalendlyOpen(false)}
+                aria-label="Close"
+                className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-ink shadow-[0_4px_16px_rgba(0,0,0,0.18)] backdrop-blur transition-transform duration-300 hover:rotate-90 hover:bg-white"
+              >
+                <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4" aria-hidden>
+                  <path d="M3 3l10 10M13 3 3 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
+              <iframe
+                src={`${content.secondaryLink}${content.secondaryLink.includes("?") ? "&" : "?"}embed_domain=${typeof location !== "undefined" ? location.hostname : ""}&embed_type=Inline&hide_gdpr_banner=1`}
+                title="Book an appointment with Designik"
+                className="h-full w-full border-0"
+              />
+            </div>
+          </div>,
+          document.body,
+        )}
     </section>
   );
 }
