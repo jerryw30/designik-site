@@ -5,6 +5,7 @@ import { chatConversations, chatMessages } from "@/db/schema";
 import { sendNotification } from "@/lib/mailer";
 import { getSiteConfig } from "@/lib/site-config";
 import { generateIkoraReply, ikoraProvider } from "@/ai/ikora";
+import { getSiteSnapshot } from "@/ai/site-snapshot";
 
 export const dynamic = "force-dynamic";
 // Headroom for the background IKORA reply after the response is sent.
@@ -148,7 +149,10 @@ export async function POST(request: Request) {
         // Origin from the live request — links IKORA shares (e.g. /portfolio)
         // follow the domain the site is actually running on.
         const origin = new URL(request.url).origin;
-        const reply = await generateIkoraReply(history, { name: conv.name, email: conv.email }, origin);
+        // Fresh digest of the whole site (pages, links, published content) so
+        // IKORA can point visitors to real pages and answer from site content.
+        const siteContext = await getSiteSnapshot(origin);
+        const reply = await generateIkoraReply(history, { name: conv.name, email: conv.email }, origin, siteContext);
         if (!reply) {
           console.warn(`[ikora] no reply generated (${Date.now() - started}ms) — see earlier error for cause`);
           return;

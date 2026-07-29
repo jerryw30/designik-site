@@ -308,6 +308,9 @@ export async function generateIkoraReply(
   history: IkoraTurn[],
   visitor?: { name?: string | null; email?: string | null },
   origin: string = "https://designik-site.vercel.app",
+  // Live digest of the website (site map + published content) so IKORA can
+  // reference real pages, share exact links, and answer from site content.
+  siteContext: string = "",
 ): Promise<string | null> {
   const provider = ikoraProvider();
   if (!provider) {
@@ -317,6 +320,10 @@ export async function generateIkoraReply(
 
   const turns = buildTurns(history, visitor, origin);
   if (!turns.length) return null;
+
+  const siteBlock = siteContext
+    ? `\n\nLIVE WEBSITE SNAPSHOT (current pages and published content of the site you are chatting on — use it to answer questions about the site and share the exact links listed):\n${siteContext}`
+    : "";
 
   try {
     if (provider === "anthropic") {
@@ -332,6 +339,7 @@ export async function generateIkoraReply(
             text: SYSTEM_PROMPT,
             cache_control: { type: "ephemeral" }, // large stable prefix — cache it
           },
+          ...(siteBlock ? [{ type: "text" as const, text: siteBlock }] : []),
         ],
         messages: turns,
       });
@@ -365,7 +373,7 @@ export async function generateIkoraReply(
           model: process.env.IKORA_MODEL || DEEPSEEK_DEFAULT_MODEL,
           max_tokens: 300, // replies are 20-100 words
           temperature: 0.7,
-          messages: [{ role: "system", content: litePrompt(origin) }, ...merged],
+          messages: [{ role: "system", content: litePrompt(origin) + siteBlock }, ...merged],
         });
         const reply = completion.choices[0]?.message?.content?.trim();
         if (reply) return stripDashes(reply);
@@ -374,11 +382,11 @@ export async function generateIkoraReply(
         console.warn(`[ikora] deepseek failed (${status}) after ${Date.now() - started}ms${process.env.GROQ_API_KEY ? " — falling back to groq" : ""}`);
       }
       // DeepSeek down or out of balance — Groq (free) keeps the chat alive.
-      if (process.env.GROQ_API_KEY) return await groqReply(merged, origin, false);
+      if (process.env.GROQ_API_KEY) return await groqReply(merged, origin, false, siteBlock);
       return null;
     }
 
-    return await groqReply(merged, origin, true);
+    return await groqReply(merged, origin, true, siteBlock);
   } catch (err) {
     console.error(`[ikora] ${provider} reply generation failed:`, err);
     return null;
@@ -398,6 +406,7 @@ async function groqReply(
   // IKORA_MODEL names the PRIMARY provider's model — ignore it when Groq
   // runs as the fallback behind DeepSeek.
   preferEnvModel: boolean,
+  siteBlock: string = "",
 ): Promise<string | null> {
   const groq = new Groq({ maxRetries: 1 });
   const models = [preferEnvModel ? process.env.IKORA_MODEL || GROQ_DEFAULT_MODEL : GROQ_DEFAULT_MODEL, GROQ_FALLBACK_MODEL];
@@ -408,7 +417,7 @@ async function groqReply(
         model,
         max_tokens: 300, // replies are 20-100 words
         temperature: 0.6,
-        messages: [{ role: "system", content: litePrompt(origin) }, ...merged],
+        messages: [{ role: "system", content: litePrompt(origin) + siteBlock }, ...merged],
       });
       const reply = completion.choices[0]?.message?.content?.trim();
       if (reply) {
