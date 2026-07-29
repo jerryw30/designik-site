@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { count, desc, eq, max } from "drizzle-orm";
+import { and, count, desc, eq, max } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources, formSubmissions, leads } from "@/db/schema";
@@ -22,7 +22,7 @@ export default async function FormsPage() {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
   if (!canViewArea(user.role, "forms")) redirect("/admin");
-  const [forms, submissions, siteForms] = await Promise.all([
+  const [forms, submissions, siteForms, [getStartedForm]] = await Promise.all([
     db
       .select()
       .from(adminResources)
@@ -38,6 +38,11 @@ export default async function FormsPage() {
       .select({ source: leads.source, total: count(), latest: max(leads.createdAt) })
       .from(leads)
       .groupBy(leads.source),
+    db
+      .select({ id: adminResources.id })
+      .from(adminResources)
+      .where(and(eq(adminResources.module, "forms"), eq(adminResources.slug, "start-a-project")))
+      .limit(1),
   ]);
 
   // The forms built into the website itself — their submissions land in Leads.
@@ -46,8 +51,8 @@ export default async function FormsPage() {
       source: "get-started",
       name: "Start a Project popup",
       where: "Header · Hero · Footer Contact · Case studies",
-      editHref: "/admin/popups#start-a-project",
-      editLabel: "Edit form",
+      editHref: getStartedForm ? `/admin/forms/${getStartedForm.id}/edit` : "/admin/popups#start-a-project",
+      editLabel: "Edit fields",
     },
     { source: "newsletter", name: "Newsletter signup", where: "Footer", editHref: null, editLabel: null },
     { source: "contact", name: "Contact form", where: "Site-wide", editHref: null, editLabel: null },

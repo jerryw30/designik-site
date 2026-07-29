@@ -1,4 +1,8 @@
+import Link from "next/link";
+import { and, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { db } from "@/db";
+import { adminResources } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
 import { canViewArea } from "@/lib/roles";
 import { getSiteConfig } from "@/lib/site-config";
@@ -62,7 +66,14 @@ export default async function PopupsPage() {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
   if (!canViewArea(user.role, "forms")) redirect("/admin");
-  const config = await getSiteConfig();
+  const [config, [getStartedForm]] = await Promise.all([
+    getSiteConfig(),
+    db
+      .select({ id: adminResources.id })
+      .from(adminResources)
+      .where(and(eq(adminResources.module, "forms"), eq(adminResources.slug, "start-a-project")))
+      .limit(1),
+  ]);
 
   const label = "block text-[12.5px] font-semibold text-neutral-600";
   const hint = "mt-1 text-[12px] text-neutral-400";
@@ -95,17 +106,21 @@ export default async function PopupsPage() {
                 <label className={label}>Success message</label>
                 <textarea name="getStartedSuccess" rows={2} defaultValue={config.popups.getStartedSuccess} className={`${T.input} mt-1.5 w-full`} />
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <label className={label}>Budget options (one per line)</label>
-                  <textarea name="budgetOptions" rows={5} defaultValue={config.popups.budgetOptions.join("\n")} className={`${T.input} mt-1.5 w-full`} />
-                </div>
-                <div>
-                  <label className={label}>Service options (one per line)</label>
-                  <textarea name="serviceOptions" rows={5} defaultValue={config.popups.serviceOptions.join("\n")} className={`${T.input} mt-1.5 w-full`} />
-                </div>
+              <div className="rounded-lg bg-neutral-50 px-4 py-3">
+                <p className="text-[12.5px] font-semibold text-neutral-600">Form fields</p>
+                <p className={hint}>
+                  Add, remove or reorder the fields (name, email, budget options, services…) in the Forms builder.
+                  Keep an Email field — submissions require it.
+                </p>
+                {getStartedForm ? (
+                  <Link href={`/admin/forms/${getStartedForm.id}/edit`} className={`mt-2 inline-block ${T.btnPrimary}`}>
+                    Edit form fields
+                  </Link>
+                ) : (
+                  <p className="mt-2 text-[12px] text-neutral-400">Form definition not found — create one named “Start a Project”.</p>
+                )}
               </div>
-              <button className={T.btnPrimary}>Save Start a Project form</button>
+              <button className={T.btnPrimary}>Save popup text</button>
             </form>
           </section>
 

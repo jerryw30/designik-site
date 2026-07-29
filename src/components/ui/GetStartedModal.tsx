@@ -7,29 +7,45 @@ import { assets } from "@/lib/assets";
 
 type Status = "idle" | "loading" | "success" | "error";
 
+type FormField = {
+  id: string;
+  type: "text" | "email" | "phone" | "textarea" | "select" | "checkbox";
+  label: string;
+  name: string;
+  placeholder: string;
+  required: boolean;
+  options: string[];
+};
+
+/** Fallback fields when the Forms-builder definition isn't available. */
+const DEFAULT_FIELDS: FormField[] = [
+  { id: "name", type: "text", label: "Name", name: "name", placeholder: "Your name", required: true, options: [] },
+  { id: "email", type: "email", label: "Email", name: "email", placeholder: "Email address", required: true, options: [] },
+  { id: "phone", type: "phone", label: "Phone", name: "phone", placeholder: "Phone number", required: true, options: [] },
+  { id: "budget", type: "select", label: "Budget", name: "budget", placeholder: "Budget", required: true, options: ["Under $1,000", "$1,000 – $5,000", "$5,000 – $10,000", "$10,000+"] },
+  { id: "service", type: "select", label: "What do you need?", name: "service", placeholder: "What do you need?", required: true, options: ["Product Design", "Website Development", "Mobile App Development", "Brand Identity & Design", "Digital Marketing", "SEO", "Something else"] },
+  { id: "message", type: "textarea", label: "Project details", name: "message", placeholder: "Tell us about your project…", required: true, options: [] },
+];
+
+// Lead fields /api/contact stores as columns; everything else joins the message.
+const KNOWN_NAMES = new Set(["name", "email", "phone", "budget", "service", "message"]);
+
 /**
  * Global "Get Started" modal. Open it from anywhere with:
  *   window.dispatchEvent(new CustomEvent("open-get-started"))
+ * Fields come from the Forms builder (Start a Project form); copy from Popups.
  */
 export default function GetStartedModal() {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
-  const [form, setForm] = useState({ name: "", email: "", phone: "", budget: "", service: "", message: "" });
+  const [fields, setFields] = useState<FormField[]>(DEFAULT_FIELDS);
+  const [values, setValues] = useState<Record<string, string>>({});
   // Admin-editable copy (Backend → Popups)
   const [copy, setCopy] = useState({
     title: "Let's build\nsomething great",
     success: "Thanks for reaching out — we'll get back to you within 24 hours.",
-    budgets: ["Under $1,000", "$1,000 – $5,000", "$5,000 – $10,000", "$10,000+"],
-    services: [
-      "Product Design",
-      "Website Development",
-      "Mobile App Development",
-      "Brand Identity & Design",
-      "Digital Marketing",
-      "SEO",
-      "Something else",
-    ],
+    submitLabel: "Send message",
   });
 
   useEffect(() => {
@@ -40,12 +56,14 @@ export default function GetStartedModal() {
       fetch("/api/site-config")
         .then((r) => (r.ok ? r.json() : null))
         .then((c) => {
-          if (!c?.popups) return;
+          if (!c) return;
+          if (Array.isArray(c.getStartedForm?.fields) && c.getStartedForm.fields.length) {
+            setFields(c.getStartedForm.fields);
+          }
           setCopy((prev) => ({
-            title: c.popups.getStartedTitle || prev.title,
-            success: c.popups.getStartedSuccess || prev.success,
-            budgets: Array.isArray(c.popups.budgetOptions) && c.popups.budgetOptions.length ? c.popups.budgetOptions : prev.budgets,
-            services: Array.isArray(c.popups.serviceOptions) && c.popups.serviceOptions.length ? c.popups.serviceOptions : prev.services,
+            title: c.popups?.getStartedTitle || prev.title,
+            success: c.popups?.getStartedSuccess || c.getStartedForm?.successMessage || prev.success,
+            submitLabel: c.getStartedForm?.submitLabel || prev.submitLabel,
           }));
         })
         .catch(() => {});
@@ -72,21 +90,31 @@ export default function GetStartedModal() {
       setStatus("loading");
       setError("");
       try {
+        // Known fields map to lead columns; custom fields join the message.
+        const payload: Record<string, string> = { source: "get-started" };
+        const extras: string[] = [];
+        for (const f of fields) {
+          const v = (values[f.name] || "").trim();
+          if (!v) continue;
+          if (KNOWN_NAMES.has(f.name)) payload[f.name] = v;
+          else extras.push(`${f.label}: ${v}`);
+        }
+        if (extras.length) payload.message = [payload.message, ...extras].filter(Boolean).join("\n");
         const res = await fetch("/api/contact", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...form, source: "get-started" }),
+          body: JSON.stringify(payload),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error || "Something went wrong");
         setStatus("success");
-        setForm({ name: "", email: "", phone: "", budget: "", service: "", message: "" });
+        setValues({});
       } catch (err) {
         setStatus("error");
         setError(err instanceof Error ? err.message : "Please try again.");
       }
     },
-    [form, status]
+    [fields, values, status]
   );
 
   const input =
@@ -185,83 +213,74 @@ export default function GetStartedModal() {
                   </motion.div>
                 ) : (
                   <motion.form key="form" onSubmit={submit} className="flex flex-col gap-3.5" exit={{ opacity: 0 }}>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Your name"
-                      value={form.name}
-                      onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                      className={input}
-                    />
-                    <input
-                      type="email"
-                      required
-                      placeholder="Email address"
-                      value={form.email}
-                      onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                      className={input}
-                    />
-                    <div className="grid grid-cols-2 gap-3">
-                      <input
-                        type="tel"
-                        required
-                        placeholder="Phone number"
-                        value={form.phone}
-                        onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                        className={input}
-                      />
-                      <div className="relative">
-                        <select
-                          required
-                          value={form.budget}
-                          onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))}
-                          className={`${input} appearance-none pr-9 ${form.budget ? "text-ink" : "text-neutral-400"}`}
-                        >
-                          <option value="" disabled>
-                            Budget
-                          </option>
-                          {copy.budgets.map((b) => (
-                            <option key={b}>{b}</option>
-                          ))}
-                        </select>
-                        <svg viewBox="0 0 16 16" fill="none" className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" aria-hidden>
-                          <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="relative">
-                      <select
-                        required
-                        value={form.service}
-                        onChange={(e) => setForm((f) => ({ ...f, service: e.target.value }))}
-                        className={`${input} appearance-none pr-9 ${form.service ? "text-ink" : "text-neutral-400"}`}
-                      >
-                        <option value="" disabled>
-                          What do you need?
-                        </option>
-                        {copy.services.map((s) => (
-                          <option key={s}>{s}</option>
-                        ))}
-                      </select>
-                      <svg viewBox="0 0 16 16" fill="none" className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" aria-hidden>
-                        <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                    <textarea
-                      rows={4}
-                      required
-                      placeholder="Tell us about your project…"
-                      value={form.message}
-                      onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-                      className={`${input} min-h-[96px] resize-y`}
-                    />
+                    {fields.map((f) => {
+                      const value = values[f.name] || "";
+                      const setValue = (v: string) => setValues((prev) => ({ ...prev, [f.name]: v }));
+                      if (f.type === "textarea")
+                        return (
+                          <textarea
+                            key={f.id}
+                            rows={4}
+                            required={f.required}
+                            placeholder={f.placeholder || f.label}
+                            value={value}
+                            onChange={(e) => setValue(e.target.value)}
+                            className={`${input} min-h-[96px] resize-y`}
+                          />
+                        );
+                      if (f.type === "select")
+                        return (
+                          <div key={f.id} className="relative">
+                            <select
+                              required={f.required}
+                              value={value}
+                              onChange={(e) => setValue(e.target.value)}
+                              className={`${input} appearance-none pr-9 ${value ? "text-ink" : "text-neutral-400"}`}
+                            >
+                              <option value="" disabled>
+                                {f.placeholder || f.label}
+                              </option>
+                              {f.options.map((o) => (
+                                <option key={o}>{o}</option>
+                              ))}
+                            </select>
+                            <svg viewBox="0 0 16 16" fill="none" className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" aria-hidden>
+                              <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </div>
+                        );
+                      if (f.type === "checkbox")
+                        return (
+                          <label key={f.id} className="flex cursor-pointer items-center gap-2.5 text-[14px] text-ink">
+                            <input
+                              type="checkbox"
+                              required={f.required}
+                              checked={value === "Yes"}
+                              onChange={(e) => setValue(e.target.checked ? "Yes" : "")}
+                              className="h-4 w-4 accent-wine-500"
+                            />
+                            {f.label}
+                          </label>
+                        );
+                      return (
+                        <input
+                          key={f.id}
+                          type={f.type === "email" ? "email" : f.type === "phone" ? "tel" : "text"}
+                          required={f.required}
+                          placeholder={f.placeholder || f.label}
+                          value={value}
+                          onChange={(e) => setValue(e.target.value)}
+                          className={input}
+                        />
+                      );
+                    })}
                     {error && <p className="text-[13px] text-red-500">{error}</p>}
                     <button
                       type="submit"
                       disabled={status === "loading"}
                       className="group mt-1 flex h-12 items-center justify-between rounded-full bg-wine-500 pl-6 pr-1.5 font-display text-[14px] font-semibold uppercase text-white transition-transform duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-60"
                     >
-                      {status === "loading" ? "Sending…" : "Send message"}
+                      {status === "loading" ? "Sending…" : copy.submitLabel}
                       <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-wine-500 transition-transform duration-300 group-hover:rotate-45">
                         {status === "loading" ? (
                           <span className="h-4 w-4 animate-spin rounded-full border-2 border-wine-500/30 border-t-wine-500" />
