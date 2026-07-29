@@ -146,7 +146,7 @@ export default function ProjectModal({
         </button>
 
         {/* scroll area */}
-        <div ref={scrollerRef} data-lenis-prevent className="absolute inset-0 overflow-y-auto overscroll-contain">
+        <div ref={scrollerRef} data-lenis-prevent className="absolute inset-0 overflow-y-auto overscroll-contain md:snap-y md:snap-mandatory">
           <div className="flex min-h-full flex-col md:flex-row">
             {/* LEFT — full-height pinned image that changes on scroll */}
             <div
@@ -173,7 +173,13 @@ export default function ProjectModal({
                     ) : (
                       <div className={`absolute inset-0 flex items-center justify-center ${flush ? "" : "p-6 md:p-12"}`}>
                         <div className="relative h-full w-full">
-                          <Image src={s.image} alt={s.title} fill className="object-contain" sizes="(max-width:768px) 100vw, 620px" />
+                          <Image
+                            src={s.image}
+                            alt={s.title}
+                            fill
+                            className={flush ? "object-contain object-bottom" : "object-contain"}
+                            sizes="(max-width:768px) 100vw, 620px"
+                          />
                         </div>
                       </div>
                     )}
@@ -207,7 +213,7 @@ export default function ProjectModal({
                   ref={(el) => {
                     sectionEls.current[i] = el;
                   }}
-                  className="flex min-h-[82vh] flex-col justify-center px-7 py-[12vh] sm:px-10 md:px-12"
+                  className="flex min-h-[82vh] flex-col justify-center px-7 py-[12vh] sm:px-10 md:h-[90vh] md:min-h-0 md:snap-start md:px-12 md:py-0"
                 >
                   {i === 0 ? (
                     <header>
