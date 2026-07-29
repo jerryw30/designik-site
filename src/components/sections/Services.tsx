@@ -118,14 +118,14 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <Image src={data.cards.digital.image || assets.digitalMarketing} alt="" width={287} height={250} className="absolute left-[39%] top-[64%] h-[90%] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 object-contain object-center" />
         </article>
 
-        {/* SEO — wine gradient, white type, statue scene flush bottom */}
-        <article className="group relative min-h-[430px] overflow-hidden rounded-[20px] bg-[linear-gradient(180deg,#a80746_0%,#d92f71_70%)] shadow-sm">
+        {/* SEO — wine gradient, white type, statue scene flush bottom (aspect-locked, no crop) */}
+        <article className="group relative overflow-hidden rounded-[20px] bg-[linear-gradient(180deg,#a80746_0%,#d92f71_70%)] shadow-sm">
           <span className="relative z-20 block pt-7 text-center font-display text-xs font-normal uppercase text-white">{data.eyebrow}</span>
-          <h3 className="relative z-20 mt-1 px-6 text-center font-display text-[64px] font-medium uppercase leading-tight text-white">{data.cards.seo.title}</h3>
-          <div className="absolute inset-x-0 bottom-0 z-10 h-[67%]">
+          <h3 className="relative z-20 mt-1 px-6 text-center font-display text-[56px] font-medium uppercase leading-tight text-white">{data.cards.seo.title}</h3>
+          <div className="relative mt-3 aspect-[192/227] w-full">
             <Image src={data.cards.seo.image || assets.seo} alt="SEO" fill className="object-cover object-bottom" sizes="100vw" />
-            <Image src="/figma/svc-cloud.png" alt="" width={110} height={55} className="absolute left-[3%] top-[5%] w-[36%]" />
-            <Image src="/figma/svc-cloud.png" alt="" width={110} height={55} className="absolute right-[2%] top-[2%] w-[36%]" />
+            <Image src="/figma/svc-cloud.png" alt="" width={110} height={55} className="absolute left-[3%] top-[5%] w-[35%]" />
+            <Image src="/figma/svc-cloud.png" alt="" width={110} height={55} className="absolute right-[2%] top-[2%] w-[35%]" />
           </div>
         </article>
 
@@ -135,12 +135,12 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <Image src={data.cards.mobile.image || assets.mobileAppHand} alt="" width={257} height={254} className="absolute bottom-[-4%] left-[31%] h-[120%] w-auto max-w-none -translate-x-[33%] translate-y-[17%] object-contain object-left-bottom" />
         </article>
 
-        {/* Website Development — cream + grid, title top, laptop scene flush bottom */}
-        <article className="group relative min-h-[430px] overflow-hidden rounded-[20px] bg-[#fff3e9] shadow-sm">
+        {/* Website Development — cream + grid, title top, laptop scene flush bottom (aspect-locked) */}
+        <article className="group relative overflow-hidden rounded-[20px] bg-[#fff3e9] shadow-sm">
           <Image src="/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="z-0 object-cover object-bottom opacity-60" sizes="100vw" />
           <span className="relative z-20 block pt-7 text-center font-display text-xs font-normal uppercase text-wine-500">{data.eyebrow}</span>
           <h3 className="relative z-20 mt-1 px-6 text-center font-display text-[30px] font-medium uppercase leading-tight text-black"><Lines text={data.cards.website.title} /></h3>
-          <div className="absolute inset-x-0 bottom-0 z-10 aspect-square w-full">
+          <div className="relative z-10 -mt-2 aspect-square w-full">
             <Image src={data.cards.website.image} alt="Website development" fill className="object-contain object-bottom" sizes="100vw" />
           </div>
         </article>
