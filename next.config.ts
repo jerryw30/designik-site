@@ -17,6 +17,19 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [{ source: "/portfolio", destination: "/portfolio/index.html" }];
   },
+  // Static media never changes in place (updates ship under new filenames),
+  // so let browsers and the CDN keep it for a year — repeat visits skip
+  // re-downloading the heavy scenes and videos entirely.
+  async headers() {
+    return [
+      {
+        source: "/:all*(png|jpg|jpeg|webp|avif|gif|svg|mp4|webm|woff2|woff)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

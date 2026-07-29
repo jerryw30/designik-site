@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import { Reveal } from "@/components/ui/Reveal";
@@ -15,8 +16,32 @@ import { sectionContent } from "@/cms/section-defaults";
 export default function Interactive({ content }: { content?: unknown } = {}) {
   const data = sectionContent("interactive", content);
 
+  // Performance: only start fetching the TV video once the section is close
+  // to the viewport (it's below the fold and several MB).
+  const sectionRef = useRef<HTMLElement>(null);
+  const [videoNear, setVideoNear] = useState(false);
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setVideoNear(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setVideoNear(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "900px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  const showVideo = Boolean(data.screenVideo) && videoNear;
+
   return (
-    <section className="relative bg-wine-700">
+    <section ref={sectionRef} className="relative bg-wine-700">
       {/* ============ mobile: zoomed scene, readable heading ============ */}
       <div
         className="relative w-full overflow-hidden md:hidden"
@@ -58,7 +83,7 @@ export default function Interactive({ content }: { content?: unknown } = {}) {
               <Image src={assets.interactiveCloudR} alt="" width={361} height={183} className="h-auto w-full" sizes="361px" />
             </div>
             <div className="absolute left-[41.4583cqw] top-[26.5972cqw] h-[13.3333cqw] w-[18.6806cqw] overflow-hidden rounded-[1.25cqw] bg-black">
-              {data.screenVideo ? (
+              {showVideo ? (
                 <video
                   className="absolute inset-0 h-full w-full object-cover"
                   autoPlay

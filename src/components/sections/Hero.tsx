@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { assets } from "@/lib/assets";
 import CalendlyModal from "@/components/ui/CalendlyModal";
 import { heroContent, type HeroContent } from "@/cms/defaults";
@@ -25,6 +25,25 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
   const primaryIsExternal = /^https?:/i.test(content.primaryLink);
   const secondaryIsCalendly = content.secondaryLink.includes("calendly.com");
   const [calendlyOpen, setCalendlyOpen] = useState(false);
+
+  // Performance: the showreel is tens of MB — start fetching it only after
+  // the page has finished loading so it never competes with images, fonts
+  // and scripts. The TV screen is black until then (its styling already is).
+  const [videoReady, setVideoReady] = useState(false);
+  useEffect(() => {
+    if (document.readyState === "complete") {
+      setVideoReady(true);
+      return;
+    }
+    const onLoad = () => setVideoReady(true);
+    window.addEventListener("load", onLoad);
+    // Safety net: never wait more than a few seconds on slow pages.
+    const t = window.setTimeout(() => setVideoReady(true), 3500);
+    return () => {
+      window.removeEventListener("load", onLoad);
+      window.clearTimeout(t);
+    };
+  }, []);
 
   return (
     <section
@@ -68,18 +87,20 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
               borderRadius: "2% / 11%",
             }}
           >
-            <video
-              className="absolute inset-0 h-full w-full"
-              style={{ objectFit: content.videoFit }}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="auto"
-              aria-label="Designik portfolio showcase"
-            >
-              <source src={content.video} type="video/mp4" />
-            </video>
+            {videoReady && (
+              <video
+                className="absolute inset-0 h-full w-full"
+                style={{ objectFit: content.videoFit }}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                aria-label="Designik portfolio showcase"
+              >
+                <source src={content.video} type="video/mp4" />
+              </video>
+            )}
 
             {/* Curved CRT glass: edge shade plus a restrained reflection. */}
             <div
