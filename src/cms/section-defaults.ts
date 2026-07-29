@@ -196,6 +196,7 @@ export const sectionDefaults = {
           "A vibrant e-commerce experience that captures the brand\u2019s energetic personality, showcases its signature spicy candy, and makes every product feel irresistible.",
         year: "2025",
         tags: ["Web Design", "E-Commerce", "Customer Journey"],
+        link: "https://www.tannasbotannas.com/",
         longDescription:
           "A vibrant e-commerce experience that captures the brand\u2019s energetic personality, showcases its signature spicy candy, and makes every product feel irresistible.",
         story: [
@@ -208,8 +209,9 @@ export const sectionDefaults = {
             highlights: ["Capture the brand\u2019s bold, playful personality", "Create a smoother path from discovery to purchase"],
           },
           {
-            image: "/figma/individual/case-tanna-page.jpg",
+            image: "/figma/individual/case-tanna-pages.jpg",
             bg: "#A32729",
+            pos: "center",
             kicker: "02 \u00b7 The Challenge",
             title: "Big Personality Needed Better Direction",
             body: "The brand had strong visuals, but the online experience needed more structure. Customers had to understand the products quickly, navigate without confusion, and feel confident enough to complete a purchase without losing the excitement that made the brand unique.",
@@ -244,6 +246,7 @@ export const sectionDefaults = {
           "A welcoming digital platform designed to help people request support, discover meaningful ways to help, and bring communities closer together.",
         year: "2025",
         tags: ["Website Design", "UX / UI", "CRM Dashboard"],
+        link: "https://kindro.org/",
         longDescription:
           "A welcoming digital platform designed to help people request support, discover meaningful ways to help, and bring communities closer together.",
         story: [
@@ -256,8 +259,9 @@ export const sectionDefaults = {
             highlights: ["A clear, welcoming public-facing experience", "A custom CRM dashboard for streamlined management"],
           },
           {
-            image: "/figma/individual/case-kindro-page.jpg",
+            image: "/figma/individual/case-kindro-pages.jpg",
             bg: "#01C563",
+            pos: "center",
             kicker: "02 \u00b7 The Challenge",
             title: "One Platform, Two Very Different Users",
             body: "The public website needed to feel simple, human, and approachable, while the internal dashboard had to organise complex information without overwhelming the team. The challenge was creating two distinct experiences that still felt like parts of the same brand.",
@@ -292,6 +296,7 @@ export const sectionDefaults = {
           "A fresh, modern restaurant experience built around simple navigation, transparent ingredients, and wholesome meals made with seven ingredients or fewer.",
         year: "2025",
         tags: ["Web Development", "UX / UI", "Customer Journey"],
+        link: "https://rootedrestaurants.com/",
         longDescription:
           "A fresh, modern restaurant experience built around simple navigation, transparent ingredients, and wholesome meals made with seven ingredients or fewer.",
         story: [
@@ -304,8 +309,9 @@ export const sectionDefaults = {
             highlights: ["Translate the in-person experience into digital", "Guide visitors from interest to action"],
           },
           {
-            image: "/figma/individual/case-rooted-page.jpg",
+            image: "/figma/individual/case-rooted-pages.jpg",
             bg: "#B6D3FB",
+            pos: "center",
             kicker: "02 \u00b7 The Challenge",
             title: "Good Food Should Be Easy to Find",
             body: "Restaurant customers make decisions quickly. The website needed to answer the most important questions without unnecessary searching, while still creating enough atmosphere and personality to make Rooted feel different from nearby alternatives.",

@@ -21,6 +21,8 @@ export type StorySection = {
   image: string;
   /** Solid pane color behind the image — lets a landscape tile read as full-bleed. */
   bg?: string;
+  /** Vertical placement of a flush image: bottom-anchored (default) or centered. */
+  pos?: "bottom" | "center";
   kicker?: string;
   title: string;
   body: string;
@@ -115,11 +117,10 @@ export default function ProjectModal({
   }, [originRect]);
 
   const hasRealLink = !!project.link && !project.link.startsWith("#");
-  const ctaLabel = hasRealLink ? "Visit Live Site" : "Start a Project";
-  const onCta = () => {
+  const onVisit = () => window.open(project.link!, "_blank", "noopener");
+  const onStartProject = () => {
     handleClose();
-    if (hasRealLink) window.open(project.link!, "_blank", "noopener");
-    else window.setTimeout(() => window.dispatchEvent(new CustomEvent("open-get-started")), EXIT_MS + 20);
+    window.setTimeout(() => window.dispatchEvent(new CustomEvent("open-get-started")), EXIT_MS + 20);
   };
 
   return (
@@ -177,7 +178,7 @@ export default function ProjectModal({
                             src={s.image}
                             alt={s.title}
                             fill
-                            className={flush ? "object-contain object-bottom" : "object-contain"}
+                            className={flush && s.pos !== "center" ? "object-contain object-bottom" : "object-contain"}
                             sizes="(max-width:768px) 100vw, 620px"
                           />
                         </div>
@@ -271,14 +272,44 @@ export default function ProjectModal({
                   )}
 
                   {i === story.length - 1 && (
-                    <div className="mt-9">
+                    <div className="mt-9 flex flex-wrap items-center gap-3">
+                      {hasRealLink && (
+                        <button
+                          type="button"
+                          onClick={onVisit}
+                          className="group inline-flex h-12 items-center gap-3 rounded-full bg-wine-500 pl-6 pr-1.5 font-display text-[13px] font-semibold uppercase text-white shadow-sm transition-transform duration-300 hover:scale-[1.04] active:scale-95"
+                        >
+                          Visit Live Site
+                          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-wine-500 transition-transform duration-300 group-hover:rotate-45">
+                            <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4" aria-hidden>
+                              <path
+                                d="M4 12L12 4M12 4H5M12 4V11"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </span>
+                        </button>
+                      )}
                       <button
                         type="button"
-                        onClick={onCta}
-                        className="group inline-flex h-12 items-center gap-3 rounded-full bg-wine-500 pl-6 pr-1.5 font-display text-[13px] font-semibold uppercase text-white shadow-sm transition-transform duration-300 hover:scale-[1.03] active:scale-95"
+                        onClick={onStartProject}
+                        className={
+                          hasRealLink
+                            ? "group inline-flex h-12 items-center gap-3 rounded-full border border-wine-500/30 bg-white pl-6 pr-1.5 font-display text-[13px] font-semibold uppercase text-wine-500 shadow-sm transition-transform duration-300 hover:scale-[1.04] active:scale-95"
+                            : "group inline-flex h-12 items-center gap-3 rounded-full bg-wine-500 pl-6 pr-1.5 font-display text-[13px] font-semibold uppercase text-white shadow-sm transition-transform duration-300 hover:scale-[1.04] active:scale-95"
+                        }
                       >
-                        {ctaLabel}
-                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-wine-500 transition-transform duration-300 group-hover:rotate-45">
+                        Start a Project
+                        <span
+                          className={
+                            hasRealLink
+                              ? "flex h-9 w-9 items-center justify-center rounded-full bg-wine-500 text-white transition-transform duration-300 group-hover:rotate-45"
+                              : "flex h-9 w-9 items-center justify-center rounded-full bg-white text-wine-500 transition-transform duration-300 group-hover:rotate-45"
+                          }
+                        >
                           <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4" aria-hidden>
                             <path
                               d="M4 12L12 4M12 4H5M12 4V11"

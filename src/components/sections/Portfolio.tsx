@@ -80,7 +80,7 @@ function ReadMoreButton({
       onClick={onClick}
       className={cn(
         "group inline-flex items-center gap-[0.9236cqw] whitespace-nowrap rounded-full bg-white pl-[2.3764cqw] pr-[1.0806cqw] shadow-sm",
-        "h-[3.8194cqw]",
+        "h-[3.8194cqw] transition-transform duration-300 hover:scale-[1.04]",
         className
       )}
     >
@@ -214,7 +214,7 @@ function StackCard({
               <button
                 type="button"
                 onClick={openModal}
-                className="group mt-4 inline-flex h-11 items-center gap-2 rounded-full bg-white pl-5 pr-2 font-display text-[13px] font-semibold uppercase text-wine-500 shadow-sm"
+                className="group mt-4 inline-flex h-11 items-center gap-2 rounded-full bg-white pl-5 pr-2 font-display text-[13px] font-semibold uppercase text-wine-500 shadow-sm transition-transform duration-300 hover:scale-[1.04]"
               >
                 {data.buttonLabel}
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-wine-500 text-white transition-transform group-hover:rotate-45">
