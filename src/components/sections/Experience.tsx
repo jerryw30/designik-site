@@ -30,7 +30,8 @@ const PILLS = [
 const ARROWS = [
   { x: 478, y: 244, w: 101, src: assets.expArrow208 },
   { x: 798, y: 272, w: 101, src: assets.expArrow207 },
-  { x: 365, y: 420, w: 93.9, src: assets.expSwirl, flip: "scaleX(-1)" },
+  // Figma: smooth curve mirroring the right-side arrow, arcing down-left into the pill
+  { x: 403, y: 377, w: 122, src: assets.expArrow205, flip: "scaleX(-1)" },
   { x: 915, y: 377, w: 122, src: assets.expArrow205 },
   { x: 408, y: 616, w: 51, src: assets.expArrow209 },
   { x: 943, y: 615, w: 51, src: assets.expArrow210 },
