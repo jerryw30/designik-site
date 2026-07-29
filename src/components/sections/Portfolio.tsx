@@ -37,28 +37,31 @@ type Banner = {
 // Per-card geometry from Figma (card-local px / 14.4 = cqw)
 const CARD_SPECS = [
   {
-    // Card 1 — orange scene, phone-in-hand left, text right (x=658)
-    textLeft: "45.694cqw",
-    descLeft: "45.625cqw",
-    device: { left: "6.25cqw", top: "0.2778cqw", w: "31.25cqw", h: "36.875cqw" },
+    // Card 1 — green Kindro scene, laptop left, text right (x=675)
+    textLeft: "46.875cqw",
+    descLeft: "46.8056cqw",
+    device: { left: "2.0833cqw", top: "4.1667cqw", w: "45.1794cqw", h: "33.0145cqw" },
     overlay: false,
+    glass: "rgba(255,255,255,0.1)",
     deviceShadow: false,
   },
   {
-    // Card 2 — red scene, text left (x=111), laptop right
+    // Card 2 — sunset Tanna's scene, text left (x=111), laptop right
     textLeft: "7.7083cqw",
     descLeft: "7.7083cqw",
-    device: { left: "40.764cqw", top: "2.0604cqw", w: "49.829cqw", h: "35.231cqw" },
+    device: { left: "44.0972cqw", top: "3.8194cqw", w: "40.5686cqw", h: "33.3525cqw" },
     overlay: true, // Figma: black 11% wash over background
+    glass: "rgba(255,255,255,0.1)",
     deviceShadow: false,
   },
   {
-    // Card 3 — lilac scene, phone collage left, text right (x=701.5)
+    // Card 3 — sky Rooted scene, laptop left, text right (x=701.5)
     textLeft: "48.718cqw",
     descLeft: "48.718cqw",
-    device: { left: "2.8472cqw", top: "5.1424cqw", w: "41.56cqw", h: "28.625cqw" },
+    device: { left: "3.8194cqw", top: "3.9335cqw", w: "44.3056cqw", h: "33.2292cqw" },
     overlay: false,
-    deviceShadow: true, // Figma: 0 2px 4px rgba(0,0,0,0.38)
+    glass: "rgba(206,227,252,0.2)", // Figma: pale-blue glass panel
+    deviceShadow: false,
   },
 ];
 
@@ -178,15 +181,17 @@ function StackCard({
             <Image src={banner.background} alt="" fill className="object-cover" sizes="100vw" priority={index === 0} />
             {spec.overlay && <div className="absolute inset-0 bg-black/[0.11]" />}
 
-            {/* translucent inner frame (Figma: white 10% + soft shadow, inset 21/16) */}
+            {/* translucent inner frame (Figma: glass tint + soft shadow, inset 21/16) */}
             <div
               aria-hidden
-              className="hidden md:block absolute left-[1.4583cqw] top-[1.1111cqw] h-[34.931cqw] w-[87.361cqw] rounded-[1.2768cqw] border border-white/60 bg-white/10 shadow-[0_4px_4px_rgba(0,0,0,0.25)] [backdrop-filter:blur(0.5556cqw)]"
+              className="hidden md:block absolute left-[1.4583cqw] top-[1.1111cqw] h-[34.931cqw] w-[87.361cqw] rounded-[1.2768cqw] shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
+              style={{ backgroundColor: spec.glass }}
             />
             {/* mobile inner frame */}
             <div
               aria-hidden
-              className="absolute inset-[10px] rounded-[12px] border border-white/60 bg-white/10 shadow-[0_4px_4px_rgba(0,0,0,0.25)] [backdrop-filter:blur(6px)] md:hidden"
+              className="absolute inset-[10px] rounded-[12px] shadow-[0_4px_4px_rgba(0,0,0,0.25)] md:hidden"
+              style={{ backgroundColor: spec.glass }}
             />
 
             {/* device image (pre-cropped Figma export) */}
