@@ -188,13 +188,15 @@ function ImageTile({
 
 export default function Testimonials({ content }: { content?: unknown } = {}) {
   const data = sectionContent("testimonials", content);
-  const quoteAt = (i: number): QuoteData => ({
-    quote: (data as { quotes?: readonly string[] }).quotes?.[i] || data.quote,
-    author: data.author,
-    role: data.role,
-    rating: data.rating,
-  });
-  const q = quoteAt(0);
+  const quoteAt = (i: number): QuoteData => {
+    const r = (data as { reviews?: readonly { quote?: string; author?: string; role?: string }[] }).reviews?.[i];
+    return {
+      quote: r?.quote || (data as { quotes?: readonly string[] }).quotes?.[i] || data.quote,
+      author: r?.author || data.author,
+      role: r?.role || data.role,
+      rating: data.rating,
+    };
+  };
 
   return (
     <section className="relative bg-white">
@@ -270,7 +272,7 @@ export default function Testimonials({ content }: { content?: unknown } = {}) {
               </div>
             ))}
           </div>
-          {(["cream", "wine", "orange"] as const).map((tone, i) => (
+          {(["cream", "wine", "orange", "cream"] as const).map((tone, i) => (
             <article
               key={i}
               className={cn(
@@ -278,11 +280,11 @@ export default function Testimonials({ content }: { content?: unknown } = {}) {
                 tone === "cream" ? "bg-cream-100 text-black" : tone === "wine" ? "bg-wine-400 text-white" : "bg-orange-brand text-white"
               )}
             >
-              <p className="text-[14px] leading-relaxed">{data.quote}</p>
+              <p className="text-[14px] leading-relaxed">{quoteAt(i).quote}</p>
               <div className="mt-5 flex items-end justify-between">
                 <div>
-                  <h4 className="font-display text-[16px] font-semibold uppercase">{data.author}</h4>
-                  <p className="font-display text-[12px] capitalize opacity-80">{data.role}</p>
+                  <h4 className="font-display text-[16px] font-semibold uppercase">{quoteAt(i).author}</h4>
+                  <p className="font-display text-[12px] capitalize opacity-80">{quoteAt(i).role}</p>
                 </div>
                 <div className="flex gap-1 text-[#FB8C3A]">
                   {Array.from({ length: 5 }).map((_, s) => (

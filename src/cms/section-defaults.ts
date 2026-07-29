@@ -132,9 +132,35 @@ export const sectionDefaults = {
       "They did not just make it look better. They made the entire business feel more credible.",
       "Designik brought strategy, creativity and execution into one room. That changed everything.",
     ],
+    reviews: [
+      {
+        quote:
+          "Designik did a great job creating our website. The team delivered a professional, high-quality site that matched our vision, and the process was smooth from start to finish. Luke was easy to communicate with, kept us updated, and made sure everything was exactly how we wanted it.",
+        author: "Timothy Smith",
+        role: "Google Review",
+      },
+      {
+        quote:
+          "Awesome customer experience. Very knowledgeable in website development and other goodies that go along with the website.",
+        author: "David Montrezza",
+        role: "Google Review",
+      },
+      {
+        quote:
+          "Working with Designik felt like having an in-house design team. Fast, sharp, and better with every revision.",
+        author: "Sarah Mitchell",
+        role: "Startup Founder",
+      },
+      {
+        quote:
+          "Ray was great to work with. He fixed the issues with my website in a short period of time and was patient in directing me with tasks I had to complete on my end for them to expedite the process.",
+        author: "Joel Lawmann",
+        role: "Google Review",
+      },
+    ],
     author: "Client Name",
     role: "Founder, Company",
-    rating: "4.9 out of 5.0",
+    rating: "5.0 out of 5.0",
     images: ["/figma/image23611.png", "/figma/image241.png"],
   },
   footer: {
