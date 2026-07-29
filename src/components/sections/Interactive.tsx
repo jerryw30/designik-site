@@ -57,8 +57,22 @@ export default function Interactive({ content }: { content?: unknown } = {}) {
             <div aria-hidden className="pointer-events-none absolute left-[68.2639cqw] top-[11.1111cqw] w-[25.0694cqw]">
               <Image src={assets.interactiveCloudR} alt="" width={361} height={183} className="h-auto w-full" sizes="361px" />
             </div>
-            <div className="absolute left-[41.4583cqw] top-[26.5972cqw] h-[13.3333cqw] w-[18.6806cqw] overflow-hidden rounded-[1.25cqw]">
-              <Image src={assets.interactiveScreen} alt="" fill sizes="270px" className="object-cover" />
+            <div className="absolute left-[41.4583cqw] top-[26.5972cqw] h-[13.3333cqw] w-[18.6806cqw] overflow-hidden rounded-[1.25cqw] bg-black">
+              {data.screenVideo ? (
+                <video
+                  className="absolute inset-0 h-full w-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  aria-label="Designik showreel"
+                >
+                  <source src={data.screenVideo} type="video/mp4" />
+                </video>
+              ) : (
+                <Image src={assets.interactiveScreen} alt="" fill sizes="270px" className="object-cover" />
+              )}
             </div>
             <div className="absolute inset-x-0 top-[16.3889cqw]">
               <Image src={data.backgroundImage || assets.interactiveScene2} alt="" width={1440} height={720} sizes="200vw" className="h-auto w-full" />
@@ -110,8 +124,22 @@ export default function Interactive({ content }: { content?: unknown } = {}) {
           </motion.div>
 
           {/* TV screen content — sits behind the scene's transparent window */}
-          <div className="absolute left-[41.4583cqw] top-[26.5972cqw] h-[13.3333cqw] w-[18.6806cqw] overflow-hidden rounded-[1.25cqw]">
-            <Image src={assets.interactiveScreen} alt="" fill sizes="270px" className="object-cover" />
+          <div className="absolute left-[41.4583cqw] top-[26.5972cqw] h-[13.3333cqw] w-[18.6806cqw] overflow-hidden rounded-[1.25cqw] bg-black">
+            {data.screenVideo ? (
+              <video
+                className="absolute inset-0 h-full w-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                aria-label="Designik showreel"
+              >
+                <source src={data.screenVideo} type="video/mp4" />
+              </video>
+            ) : (
+              <Image src={assets.interactiveScreen} alt="" fill sizes="270px" className="object-cover" />
+            )}
           </div>
 
           {/* scene: red flower hills + TV with transparent screen window (y236) */}

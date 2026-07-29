@@ -33,6 +33,7 @@ export const sectionDefaults = {
     buttonLabel: "Play the Reel",
     buttonLink: "#contact",
     backgroundImage: "/figma/image252.png",
+    screenVideo: "/video/interactive-tv.mp4",
     heightVh: 80,
     parallax: true,
   },
