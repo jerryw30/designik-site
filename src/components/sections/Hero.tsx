@@ -167,7 +167,7 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
             className="hero-secondary group inline-flex items-center gap-2 font-sans font-semibold uppercase tracking-wide transition-all duration-300"
             style={{ background: content.secondaryBackground, color: content.secondaryColor, borderColor: content.secondaryBorderColor, borderWidth: content.secondaryBorderWidth, borderStyle: "solid", borderRadius: content.buttonRadius, fontSize: content.buttonFontSize, padding: `${content.buttonPaddingY}px ${content.buttonPaddingX}px`, ["--hover-bg" as string]: content.secondaryHoverBackground, ["--hover-color" as string]: content.secondaryHoverColor, ["--hover-scale" as string]: content.hoverScale }}
           >
-            {content.secondaryIcon !== "none" && <PlayIcon />}
+            {content.secondaryIcon !== "none" && (secondaryIsCalendly ? <CalendarIcon /> : <PlayIcon />)}
             {content.secondaryLabel}
           </a>
         </motion.div>
@@ -237,6 +237,16 @@ function PlayIcon() {
   return (
     <svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor" aria-hidden>
       <path d="M2 1.5v9l8-4.5-8-4.5z" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <rect x="1.5" y="3" width="13" height="11.5" rx="2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M1.5 6.8h13M5 1.2v3.2M11 1.2v3.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M4.8 10h2M9.2 10h2M4.8 12.2h2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   );
 }
