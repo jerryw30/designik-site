@@ -11,8 +11,10 @@ import {
   createForm,
   deleteFormForever,
   duplicateForm,
+  saveNotifyEmails,
   setFormStatus,
 } from "./actions";
+import { getNotifyEmails } from "@/lib/site-config";
 
 function pretty(status: string) {
   return status.charAt(0) + status.slice(1).toLowerCase();
@@ -22,7 +24,7 @@ export default async function FormsPage() {
   const user = await currentUser();
   if (!user) redirect("/admin/login");
   if (!canViewArea(user.role, "forms")) redirect("/admin");
-  const [forms, submissions, siteForms, [getStartedForm]] = await Promise.all([
+  const [forms, submissions, siteForms, [getStartedForm], [newsletterForm], notifyEmails] = await Promise.all([
     db
       .select()
       .from(adminResources)
@@ -43,6 +45,12 @@ export default async function FormsPage() {
       .from(adminResources)
       .where(and(eq(adminResources.module, "forms"), eq(adminResources.slug, "start-a-project")))
       .limit(1),
+    db
+      .select({ id: adminResources.id })
+      .from(adminResources)
+      .where(and(eq(adminResources.module, "forms"), eq(adminResources.slug, "newsletter-signup")))
+      .limit(1),
+    getNotifyEmails(),
   ]);
 
   // The forms built into the website itself — their submissions land in Leads.
@@ -54,8 +62,14 @@ export default async function FormsPage() {
       editHref: getStartedForm ? `/admin/forms/${getStartedForm.id}/edit` : "/admin/popups#start-a-project",
       editLabel: "Edit fields",
     },
-    { source: "newsletter", name: "Newsletter signup", where: "Footer", editHref: null, editLabel: null },
-    { source: "contact", name: "Contact form", where: "Site-wide", editHref: null, editLabel: null },
+    {
+      source: "newsletter",
+      name: "Newsletter signup",
+      where: "Footer",
+      editHref: newsletterForm ? `/admin/forms/${newsletterForm.id}/edit` : null,
+      editLabel: "Edit fields",
+    },
+    { source: "contact", name: "Contact form", where: "Shared contact endpoint (no visual form of its own)", editHref: null, editLabel: null },
   ];
   const bySource = new Map(siteForms.map((s) => [s.source || "contact", s]));
   return (
@@ -111,6 +125,31 @@ export default async function FormsPage() {
             );
           })}
         </ul>
+      </section>
+
+      {/* Where submission + chat notification emails go */}
+      <section className={`${T.card} mt-5`}>
+        <div className={T.cardHeader}>
+          <h3 className="text-[15px] font-semibold">Submission notifications</h3>
+          <p className="text-[12px] text-neutral-400">
+            Every form submission and new chat is emailed to these addresses (first is To, the rest are CC). One email per line.
+          </p>
+        </div>
+        <form action={saveNotifyEmails} className="flex flex-wrap items-end gap-3 p-5">
+          <textarea
+            name="emails"
+            rows={3}
+            defaultValue={notifyEmails.join("\n")}
+            placeholder={"you@designik.agency\nteam@designik.agency"}
+            className={`${T.input} w-full max-w-md`}
+          />
+          <button className={T.btnPrimary}>Save emails</button>
+          {!notifyEmails.length && (
+            <p className="w-full text-[12px] text-neutral-400">
+              Currently using the CONTACT_TO / CONTACT_CC environment variables — saving a list here overrides them.
+            </p>
+          )}
+        </form>
       </section>
 
       <div className={T.tableWrap}>

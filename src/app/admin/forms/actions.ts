@@ -58,6 +58,20 @@ const defaults: FormDefinition = {
 async function authorize() {
   return requirePermission("manage_forms");
 }
+
+/** Where form-submission and chat notification emails go (one per line). */
+export async function saveNotifyEmails(form: FormData) {
+  const user = await authorize();
+  const emails = String(form.get("emails") || "")
+    .split(/[\n,;]+/)
+    .map((s) => s.trim())
+    .filter((s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s))
+    .slice(0, 10);
+  const { saveSiteSetting } = await import("@/lib/site-config");
+  await saveSiteSetting("notify_emails", { emails }, user.id);
+  await logActivity(user, "forms", "updated", "notification emails", "notify-emails");
+  revalidatePath("/admin/forms");
+}
 function slugify(value: string) {
   return (
     value

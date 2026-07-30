@@ -1,10 +1,12 @@
 import nodemailer from "nodemailer";
+import { getNotifyEmails } from "@/lib/site-config";
 
 /**
- * Shared notification sender. Sends to CONTACT_TO with CONTACT_CC in copy,
- * using the configured SMTP account (e.g. Gmail app password). Best-effort:
- * returns { sent:false } when SMTP isn't configured or the send fails, so
- * callers never break the request over email.
+ * Shared notification sender. Recipients come from the admin-managed list
+ * (Forms → Submission notifications); when that list is empty it falls back
+ * to CONTACT_TO / CONTACT_CC env vars. Best-effort: returns { sent:false }
+ * when SMTP isn't configured or the send fails, so callers never break the
+ * request over email.
  */
 export async function sendNotification({
   subject,
@@ -20,11 +22,15 @@ export async function sendNotification({
     console.info("[mailer] SMTP not configured — skipping email:", subject);
     return { sent: false };
   }
-  const to = CONTACT_TO || SMTP_USER;
-  const cc = (CONTACT_CC || "")
-    .split(/[,;]+/)
-    .map((s) => s.trim())
-    .filter(Boolean);
+  // Admin-managed recipients first; env fallback keeps existing behavior.
+  const managed = await getNotifyEmails();
+  const to = managed.length ? managed[0] : CONTACT_TO || SMTP_USER;
+  const cc = managed.length
+    ? managed.slice(1)
+    : (CONTACT_CC || "")
+        .split(/[,;]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
   const port = Number(SMTP_PORT) || 465;
   try {
     const transporter = nodemailer.createTransport({

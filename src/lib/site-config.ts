@@ -49,12 +49,15 @@ export type SiteConfig = {
   popups: PopupSettings;
   /** Field definition of the Start a Project popup — editable in the Forms builder. */
   getStartedForm: PublicFormDefinition | null;
+  /** Field definition of the footer newsletter — editable in the Forms builder. */
+  newsletterForm: PublicFormDefinition | null;
 };
 
-/** The Forms-builder slug that powers the Start a Project popup. */
+/** Forms-builder slugs that power the built-in site forms. */
 export const GET_STARTED_FORM_SLUG = "start-a-project";
+export const NEWSLETTER_FORM_SLUG = "newsletter-signup";
 
-async function getStartedFormDefinition(): Promise<PublicFormDefinition | null> {
+async function formDefBySlug(slug: string): Promise<PublicFormDefinition | null> {
   try {
     const [row] = await db
       .select({ data: adminResources.data, status: adminResources.status })
@@ -62,7 +65,7 @@ async function getStartedFormDefinition(): Promise<PublicFormDefinition | null> 
       .where(
         and(
           eq(adminResources.module, "forms"),
-          eq(adminResources.slug, GET_STARTED_FORM_SLUG),
+          eq(adminResources.slug, slug),
           eq(adminResources.status, "PUBLISHED"),
           isNull(adminResources.deletedAt),
         ),
@@ -78,6 +81,23 @@ async function getStartedFormDefinition(): Promise<PublicFormDefinition | null> 
     };
   } catch {
     return null;
+  }
+}
+
+/**
+ * Where form-submission / chat notification emails go. Editable in the admin
+ * (Forms → Submission notifications); falls back to the CONTACT_TO /
+ * CONTACT_CC environment variables when the list is empty. Deliberately NOT
+ * part of the public SiteConfig.
+ */
+export async function getNotifyEmails(): Promise<string[]> {
+  try {
+    const [row] = await db.select().from(siteSettings).where(eq(siteSettings.key, "notify_emails")).limit(1);
+    const list = (row?.value as { emails?: unknown } | undefined)?.emails;
+    if (!Array.isArray(list)) return [];
+    return list.map((e) => String(e).trim()).filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)).slice(0, 10);
+  } catch {
+    return [];
   }
 }
 
@@ -103,18 +123,20 @@ export const DEFAULT_CONFIG: SiteConfig = {
     termsBody: "",
   },
   getStartedForm: null,
+  newsletterForm: null,
 };
 
 const KEYS = ["chat_settings", "site_contact", "popup_settings"] as const;
 
 export async function getSiteConfig(): Promise<SiteConfig> {
   try {
-    const [rows, getStartedForm] = await Promise.all([
+    const [rows, getStartedForm, newsletterForm] = await Promise.all([
       db
         .select()
         .from(siteSettings)
         .where(inArray(siteSettings.key, [...KEYS])),
-      getStartedFormDefinition(),
+      formDefBySlug(GET_STARTED_FORM_SLUG),
+      formDefBySlug(NEWSLETTER_FORM_SLUG),
     ]);
     const byKey = new Map(rows.map((r) => [r.key, r.value as Record<string, unknown>]));
     const chat = { ...DEFAULT_CONFIG.chat, ...(byKey.get("chat_settings") || {}) } as ChatSettings;
@@ -126,13 +148,16 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       phone: contact?.phone || DEFAULT_CONFIG.phone,
       popups,
       getStartedForm,
+      newsletterForm,
     };
   } catch {
-    return { ...DEFAULT_CONFIG, getStartedForm: null };
+    return { ...DEFAULT_CONFIG, getStartedForm: null, newsletterForm: null };
   }
 }
 
-export async function saveSiteSetting(key: (typeof KEYS)[number], value: unknown, userId?: string) {
+export type SettingKey = (typeof KEYS)[number] | "notify_emails";
+
+export async function saveSiteSetting(key: SettingKey, value: unknown, userId?: string) {
   await db
     .insert(siteSettings)
     .values({ key, value: value as object, updatedBy: userId || null })

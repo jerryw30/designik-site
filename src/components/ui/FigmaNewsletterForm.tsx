@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { assets } from "@/lib/assets";
 
 type Status = "idle" | "loading" | "success" | "error";
@@ -10,11 +10,29 @@ type Status = "idle" | "loading" | "success" | "error";
  * Newsletter form styled exactly to the Figma footer:
  * mint (#ebf5f4) input 290x44 r7 + separate mint 46x44 send button.
  * Same POST /api/contact behavior as the original NewsletterForm.
+ * Placeholder + success message are editable in the Forms builder
+ * (the "Newsletter signup" form).
  */
 export default function FigmaNewsletterForm() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
+  const [copy, setCopy] = useState({ placeholder: "Your email, please", success: "You're subscribed — thank you!" });
+
+  useEffect(() => {
+    fetch("/api/site-config")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((c) => {
+        const emailField = c?.newsletterForm?.fields?.find(
+          (f: { type: string; placeholder?: string }) => f.type === "email",
+        );
+        setCopy((prev) => ({
+          placeholder: emailField?.placeholder || prev.placeholder,
+          success: c?.newsletterForm?.successMessage || prev.success,
+        }));
+      })
+      .catch(() => {});
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,7 +48,7 @@ export default function FigmaNewsletterForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Something went wrong");
       setStatus("success");
-      setMessage("You're subscribed — thank you!");
+      setMessage(copy.success);
       setEmail("");
     } catch (err) {
       setStatus("error");
@@ -46,7 +64,7 @@ export default function FigmaNewsletterForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Your email, please"
+          placeholder={copy.placeholder}
           aria-label="Email address"
           className="h-11 w-[190px] rounded-[7px] bg-mint px-3 text-[14px] text-black outline-none placeholder:text-black md:h-[3.0556cqw] md:w-[20.1389cqw] md:rounded-[0.4861cqw] md:px-[0.9722cqw] md:text-[1.0417cqw]"
           style={{ fontFamily: "var(--font-raleway), sans-serif" }}
