@@ -269,7 +269,14 @@ export const mediaAssets = pgTable(
     filename: text("filename").notNull(),
     mimeType: text("mime_type").notNull(),
     byteSize: integer("byte_size").notNull(),
-    contentBase64: text("content_base64").notNull(),
+    // An asset stores its bytes one of two ways, never both:
+    //  · contentBase64 — uploaded through the admin, bytes live in Postgres
+    //    (hence the 4MB cap; base64 inflates payloads by ~33%).
+    //  · filePath — a file already shipped in public/, e.g. "/figma/hero.png".
+    //    The Figma exports register this way so the library can title and alt
+    //    them without copying 149MB of PNGs into Neon.
+    contentBase64: text("content_base64"),
+    filePath: text("file_path"),
     title: text("title").notNull(),
     altText: text("alt_text").default("").notNull(),
     caption: text("caption").default("").notNull(),

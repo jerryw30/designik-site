@@ -5,7 +5,7 @@ import { mediaAssets } from "@/db/schema";
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -17,6 +17,7 @@ export async function GET(
   const [asset] = await db
     .select({
       content: mediaAssets.contentBase64,
+      filePath: mediaAssets.filePath,
       mimeType: mediaAssets.mimeType,
       filename: mediaAssets.filename,
       updatedAt: mediaAssets.updatedAt,
@@ -25,6 +26,15 @@ export async function GET(
     .where(eq(mediaAssets.id, id))
     .limit(1);
   if (!asset) return new Response("Media not found", { status: 404 });
+  // Assets registered from public/ carry no bytes — hand off to the static
+  // file, which already gets the year-long immutable caching from next.config.
+  // The leading-slash test keeps the redirect target same-origin.
+  if (asset.filePath) {
+    if (!asset.filePath.startsWith("/") || asset.filePath.startsWith("//"))
+      return new Response("Media not found", { status: 404 });
+    return Response.redirect(new URL(asset.filePath, request.url), 308);
+  }
+  if (!asset.content) return new Response("Media not found", { status: 404 });
   return new Response(Buffer.from(asset.content, "base64"), {
     headers: {
       "Content-Type": asset.mimeType,

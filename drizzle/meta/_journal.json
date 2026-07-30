@@ -43,6 +43,13 @@
       "when": 1784312368747,
       "tag": "0005_graceful_misty_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785451524559,
+      "tag": "0006_blue_cobalt_man",
+      "breakpoints": true
     }
   ]
 }

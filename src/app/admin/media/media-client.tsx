@@ -114,17 +114,21 @@ export function MediaPreview({
   id,
   mimeType,
   title,
+  filePath,
   className = "",
   interactive = false,
 }: {
   id: string;
   mimeType: string;
   title: string;
+  /** Set for assets registered from public/ — load the static file directly
+   *  rather than bouncing through the redirect at /api/media/[id]. */
+  filePath?: string | null;
   className?: string;
   /** Show playable controls / embedded viewers (edit screen). Grid tiles stay non-interactive so clicks navigate. */
   interactive?: boolean;
 }) {
-  const src = `/api/media/${id}`;
+  const src = filePath || `/api/media/${id}`;
   if (mimeType.startsWith("image/"))
     // Media records can contain arbitrary user uploads, so their dimensions
     // are unknown and the direct asset endpoint is the correct source here.

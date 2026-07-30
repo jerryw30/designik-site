@@ -26,14 +26,17 @@ export async function GET() {
       mimeType: mediaAssets.mimeType,
       byteSize: mediaAssets.byteSize,
       altText: mediaAssets.altText,
+      filePath: mediaAssets.filePath,
       createdAt: mediaAssets.createdAt,
     })
     .from(mediaAssets)
     .where(isNull(mediaAssets.deletedAt))
     .orderBy(desc(mediaAssets.createdAt))
-    .limit(200);
+    .limit(600);
   return Response.json({
-    assets: assets.map((a) => ({ ...a, url: `/api/media/${a.id}` })),
+    // Assets registered from public/ point straight at the static file so the
+    // grid loads them off the CDN instead of bouncing through a redirect.
+    assets: assets.map((a) => ({ ...a, url: a.filePath || `/api/media/${a.id}` })),
   });
 }
 

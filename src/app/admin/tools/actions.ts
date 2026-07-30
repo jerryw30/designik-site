@@ -143,16 +143,21 @@ export async function importBackup(form: FormData) {
       const id = text(asset.id),
         filename = text(asset.filename),
         mime = text(asset.mimeType || asset.mime_type),
-        content = text(asset.contentBase64 || asset.content_base64);
-      if (!id || !filename || !mime || !content) continue;
+        content = text(asset.contentBase64 || asset.content_base64),
+        // Assets registered from public/ carry a path instead of bytes.
+        // Requiring content here would silently drop every site file — and
+        // with it the alt text written against them — on restore.
+        filePath = text(asset.filePath || asset.file_path);
+      if (!id || !filename || !mime || (!content && !filePath)) continue;
       await sql.query(
-        `insert into media_assets(id,filename,mime_type,byte_size,content_base64,title,alt_text,caption,description,tags,uploaded_by,deleted_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,null,$11) on conflict(id) do update set filename=excluded.filename,mime_type=excluded.mime_type,byte_size=excluded.byte_size,content_base64=excluded.content_base64,title=excluded.title,alt_text=excluded.alt_text,caption=excluded.caption,description=excluded.description,tags=excluded.tags,deleted_at=excluded.deleted_at,updated_at=now()`,
+        `insert into media_assets(id,filename,mime_type,byte_size,content_base64,file_path,title,alt_text,caption,description,tags,uploaded_by,deleted_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb,null,$12) on conflict(id) do update set filename=excluded.filename,mime_type=excluded.mime_type,byte_size=excluded.byte_size,content_base64=excluded.content_base64,file_path=excluded.file_path,title=excluded.title,alt_text=excluded.alt_text,caption=excluded.caption,description=excluded.description,tags=excluded.tags,deleted_at=excluded.deleted_at,updated_at=now()`,
         [
           id,
           filename,
           mime,
           Number(asset.byteSize || asset.byte_size || 0),
-          content,
+          content || null,
+          filePath || null,
           text(asset.title) || filename,
           text(asset.altText || asset.alt_text),
           text(asset.caption),

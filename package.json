@@ -24,7 +24,12 @@
     "test:page-actions": "node --env-file=.env.local scripts/smoke-page-actions-ui.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:inspect": "node --env-file=.env.local scripts/db-inspect.mjs",
+    "db:applied": "node --env-file=.env.local scripts/db-migration-state.mjs",
+    "test:media-queries": "node --env-file=.env.local scripts/db-check-media-queries.mjs",
+    "media:import": "node --env-file=.env.local scripts/import-site-media.mjs",
+    "media:import:write": "node --env-file=.env.local scripts/import-site-media.mjs --write"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",

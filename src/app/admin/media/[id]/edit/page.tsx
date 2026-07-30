@@ -39,6 +39,7 @@ export default async function EditMedia({
       caption: mediaAssets.caption,
       description: mediaAssets.description,
       tags: mediaAssets.tags,
+      filePath: mediaAssets.filePath,
       createdAt: mediaAssets.createdAt,
     })
     .from(mediaAssets)
@@ -72,6 +73,7 @@ export default async function EditMedia({
             id={asset.id}
             mimeType={asset.mimeType}
             title={asset.altText || asset.title}
+            filePath={asset.filePath}
             interactive
             className="max-h-[70vh] max-w-full rounded-md object-contain"
           />

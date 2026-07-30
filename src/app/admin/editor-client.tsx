@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { HeroContent } from "@/cms/defaults";
 import { newWidget, widgetRegistry, type WidgetType } from "@/cms/widgets";
 import { normalizeLayout, type LayoutRow } from "@/cms/layout";
@@ -2004,9 +2004,14 @@ function MediaPicker({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [extra, setExtra] = useState<MediaAsset[]>([]);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const compatible = [...extra, ...media].filter((asset) =>
-    asset.mimeType.startsWith(`${accept}/`),
+  const compatible = useMemo(
+    () =>
+      [...extra, ...media].filter((asset) =>
+        asset.mimeType.startsWith(`${accept}/`),
+      ),
+    [extra, media, accept],
   );
   const isImageValue = accept === "image" && value && !/\.(mp4|webm|mp3)/i.test(value);
 
@@ -2053,21 +2058,13 @@ function MediaPicker({
         onChange={(event) => onChange(event.target.value)}
       />
       <div className="mt-2 flex gap-2">
-        <select
-          aria-label={`Choose ${accept} from Media Library`}
-          value=""
-          onChange={(event) =>
-            event.target.value && onChange(event.target.value)
-          }
-          className="min-w-0 flex-1 rounded-md border border-white/10 bg-[#222329] px-2 py-2 text-xs text-white/70"
+        <button
+          type="button"
+          onClick={() => setLibraryOpen(true)}
+          className="min-w-0 flex-1 rounded-md border border-white/10 bg-[#222329] px-2 py-2 text-xs font-medium text-white/75 transition hover:border-[#a10140]/60 hover:text-white"
         >
-          <option value="">Choose from Media Library…</option>
-          {compatible.map((asset) => (
-            <option key={asset.id} value={`/api/media/${asset.id}`}>
-              {asset.title}
-            </option>
-          ))}
-        </select>
+          Choose from Library
+        </button>
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
@@ -2076,13 +2073,6 @@ function MediaPicker({
         >
           {uploading ? "Uploading…" : "Upload"}
         </button>
-        <a
-          href="/admin/media"
-          target="_blank"
-          className="rounded-md border border-white/10 px-2 py-2 text-xs text-white/60"
-        >
-          Library
-        </a>
       </div>
       <input
         ref={fileRef}
@@ -2095,6 +2085,270 @@ function MediaPicker({
         }}
       />
       {uploadError && <p className="mt-1 text-[11px] text-red-400">{uploadError}</p>}
+      {libraryOpen && (
+        <MediaLibraryModal
+          accept={accept}
+          fallback={compatible}
+          onClose={() => setLibraryOpen(false)}
+          onPick={(url) => {
+            onChange(url);
+            setLibraryOpen(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+type LibraryAsset = {
+  id: string;
+  title: string;
+  mimeType: string;
+  url: string;
+  altText?: string;
+  filePath?: string | null;
+};
+
+/**
+ * WordPress-style Select Media modal, dark to match the editor chrome.
+ *
+ * Replaces the old "Library" link, which opened /admin/media in a new tab and
+ * lost the editing context. Alt text is editable right here so SEO copy can be
+ * written while placing the image rather than in a separate trip to the
+ * library screen.
+ */
+function MediaLibraryModal({
+  accept,
+  fallback,
+  onClose,
+  onPick,
+}: {
+  accept: "image" | "video";
+  fallback: MediaAsset[];
+  onClose: () => void;
+  onPick: (url: string) => void;
+}) {
+  const [assets, setAssets] = useState<LibraryAsset[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<LibraryAsset | null>(null);
+  const [altDraft, setAltDraft] = useState("");
+  const [altState, setAltState] = useState<"idle" | "saving" | "saved">("idle");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/media");
+        if (!res.ok) throw new Error("Could not load the media library.");
+        const data = await res.json();
+        if (cancelled) return;
+        setAssets(
+          (data.assets || []).filter((a: LibraryAsset) =>
+            a.mimeType.startsWith(`${accept}/`),
+          ),
+        );
+      } catch {
+        if (cancelled) return;
+        // Fall back to the assets already handed down as props so the modal is
+        // still usable if the fetch fails.
+        setError("Could not refresh the library — showing what's already loaded.");
+        setAssets(
+          fallback.map((a) => ({ ...a, url: `/api/media/${a.id}` })),
+        );
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [accept, fallback]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  const pick = (asset: LibraryAsset) => {
+    setSelected(asset);
+    setAltDraft(asset.altText || "");
+    setAltState("idle");
+  };
+
+  const saveAlt = async () => {
+    if (!selected) return;
+    setAltState("saving");
+    try {
+      const res = await fetch(`/api/admin/media/${selected.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ altText: altDraft }),
+      });
+      if (!res.ok) throw new Error();
+      setAssets((prev) =>
+        prev.map((a) => (a.id === selected.id ? { ...a, altText: altDraft } : a)),
+      );
+      setSelected((s) => (s ? { ...s, altText: altDraft } : s));
+      setAltState("saved");
+      window.setTimeout(() => setAltState("idle"), 1600);
+    } catch {
+      setError("Could not save the alt text.");
+      setAltState("idle");
+    }
+  };
+
+  const term = search.trim().toLowerCase();
+  const filtered = term
+    ? assets.filter((a) => a.title.toLowerCase().includes(term))
+    : assets;
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 p-4"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="flex h-[min(660px,88vh)] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-white/10 bg-[#1a1b20] shadow-2xl"
+      >
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+          <h3 className="text-sm font-semibold text-white">
+            Select {accept === "image" ? "image" : "video"}
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="rounded-md p-1.5 text-white/50 transition hover:bg-white/10 hover:text-white"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="h-4 w-4" aria-hidden>
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="border-b border-white/10 px-4 py-2.5">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search media…"
+            autoFocus
+            className="w-full rounded-md border border-white/10 bg-[#222329] px-3 py-1.5 text-xs text-white/80 outline-none placeholder:text-white/30 focus:border-[#a10140]"
+          />
+        </div>
+
+        {error && (
+          <p className="border-b border-amber-500/20 bg-amber-500/10 px-4 py-2 text-[11px] text-amber-300">
+            {error}
+          </p>
+        )}
+
+        <div className="flex min-h-0 flex-1">
+          <div className="min-h-0 flex-1 overflow-y-auto p-4">
+            {loading ? (
+              <p className="py-16 text-center text-xs text-white/40">Loading library…</p>
+            ) : filtered.length === 0 ? (
+              <p className="py-16 text-center text-xs text-white/40">
+                {assets.length ? "Nothing matches that search." : "The library is empty."}
+              </p>
+            ) : (
+              <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5">
+                {filtered.map((a) => (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => pick(a)}
+                    onDoubleClick={() => onPick(a.url)}
+                    title={a.title}
+                    className={`group relative aspect-square overflow-hidden rounded-md border bg-[#222329] transition ${
+                      selected?.id === a.id
+                        ? "border-transparent ring-2 ring-[#a10140]"
+                        : "border-white/10 hover:ring-2 hover:ring-[#a10140]/40"
+                    }`}
+                  >
+                    {accept === "image" ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={a.url} alt={a.altText || a.title} loading="lazy" className="h-full w-full object-cover" />
+                    ) : (
+                      <video src={a.url} preload="metadata" muted className="h-full w-full object-cover" />
+                    )}
+                    {accept === "image" && !a.altText?.trim() && (
+                      <span
+                        className="absolute left-1 top-1 rounded bg-amber-500/90 px-1 py-px text-[9px] font-bold uppercase text-black"
+                        title="No alt text"
+                      >
+                        alt
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {selected && (
+            <aside className="w-60 shrink-0 overflow-y-auto border-l border-white/10 bg-[#16171b] p-4">
+              <p className="truncate text-xs font-semibold text-white" title={selected.title}>
+                {selected.title}
+              </p>
+              <p className="mt-0.5 truncate text-[10.5px] text-white/40">
+                {selected.filePath || selected.url}
+              </p>
+              <label className="mt-4 block text-[11px] font-medium text-white/70">
+                Alt text
+                <textarea
+                  value={altDraft}
+                  onChange={(e) => {
+                    setAltDraft(e.target.value);
+                    setAltState("idle");
+                  }}
+                  rows={3}
+                  placeholder="Describe the image for search engines and screen readers"
+                  className="mt-1.5 w-full resize-y rounded-md border border-white/10 bg-[#222329] px-2 py-1.5 text-[11px] text-white/85 outline-none placeholder:text-white/25 focus:border-[#a10140]"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={saveAlt}
+                disabled={altState === "saving" || altDraft === (selected.altText || "")}
+                className="mt-2 w-full rounded-md border border-white/10 px-2 py-1.5 text-[11px] font-medium text-white/75 transition hover:border-[#a10140]/60 hover:text-white disabled:opacity-40"
+              >
+                {altState === "saving" ? "Saving…" : altState === "saved" ? "Saved" : "Save alt text"}
+              </button>
+            </aside>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-white/10 px-4 py-3">
+          <span className="truncate pr-3 text-[11px] text-white/40">
+            {selected ? selected.title : `${filtered.length} item${filtered.length === 1 ? "" : "s"}`}
+          </span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md border border-white/10 px-3 py-1.5 text-xs text-white/60 transition hover:text-white"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={!selected}
+              onClick={() => selected && onPick(selected.url)}
+              className="rounded-md bg-[#a10140] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#b81250] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Use this {accept === "image" ? "image" : "video"}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

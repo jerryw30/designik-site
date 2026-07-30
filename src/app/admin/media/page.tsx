@@ -1,4 +1,4 @@
-import { and, desc, ilike, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, isNotNull, isNull, or, sql } from "drizzle-orm";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
@@ -63,6 +63,14 @@ export default async function MediaLibrary({
     );
   if (["image", "video", "audio", "application"].includes(type))
     filters.push(ilike(mediaAssets.mimeType, `${type}/%`));
+  // SEO work-queue: images still missing alt text.
+  if (query.noalt === "1")
+    filters.push(
+      and(
+        ilike(mediaAssets.mimeType, "image/%"),
+        eq(sql`btrim(${mediaAssets.altText})`, ""),
+      )!,
+    );
   const items = await db
     .select({
       id: mediaAssets.id,
@@ -71,13 +79,14 @@ export default async function MediaLibrary({
       byteSize: mediaAssets.byteSize,
       title: mediaAssets.title,
       altText: mediaAssets.altText,
+      filePath: mediaAssets.filePath,
       createdAt: mediaAssets.createdAt,
       deletedAt: mediaAssets.deletedAt,
     })
     .from(mediaAssets)
     .where(and(...filters))
     .orderBy(desc(mediaAssets.createdAt))
-    .limit(250);
+    .limit(600);
   const [total] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(mediaAssets)
@@ -133,7 +142,19 @@ export default async function MediaLibrary({
           <option value="audio">Audio</option>
           <option value="application">Documents</option>
         </select>
-        <button className={T.btn}>Filter</button>
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-1.5 whitespace-nowrap text-[12.5px] text-neutral-600">
+            <input
+              type="checkbox"
+              name="noalt"
+              value="1"
+              defaultChecked={query.noalt === "1"}
+              className="h-3.5 w-3.5 accent-[#a10140]"
+            />
+            Missing alt
+          </label>
+          <button className={T.btn}>Filter</button>
+        </div>
       </form>
       {items.length ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -143,6 +164,7 @@ export default async function MediaLibrary({
                 id={item.id}
                 mimeType={item.mimeType}
                 title={item.altText || item.title}
+                filePath={item.filePath}
                 className="h-full w-full object-cover"
               />
             );
@@ -180,6 +202,26 @@ export default async function MediaLibrary({
                 <p className="mt-0.5 text-[11.5px] text-neutral-400">
                   {item.mimeType} · {formatBytes(item.byteSize)}
                 </p>
+                {!trash && (
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    {item.filePath && (
+                      <span
+                        className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.04em] text-neutral-500"
+                        title="Ships in public/ — referenced, not stored in the database"
+                      >
+                        Site file
+                      </span>
+                    )}
+                    {item.mimeType.startsWith("image/") && !item.altText.trim() && (
+                      <span
+                        className="rounded-full bg-amber-100 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.04em] text-amber-700"
+                        title="No alt text — search engines and screen readers can't describe this image"
+                      >
+                        No alt
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="mt-2.5 flex flex-wrap gap-1.5">
                   {trash ? (
                     <>
@@ -202,7 +244,7 @@ export default async function MediaLibrary({
                       >
                         Edit
                       </Link>
-                      <CopyUrlButton url={`/api/media/${item.id}`} />
+                      <CopyUrlButton url={item.filePath || `/api/media/${item.id}`} />
                     </>
                   )}
                 </div>
