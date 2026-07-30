@@ -5,7 +5,7 @@ import { mediaAssets } from "@/db/schema";
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  request: Request,
+  _: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -29,10 +29,22 @@ export async function GET(
   // Assets registered from public/ carry no bytes — hand off to the static
   // file, which already gets the year-long immutable caching from next.config.
   // The leading-slash test keeps the redirect target same-origin.
+  //
+  // The Location stays relative and is written by hand: Response.redirect()
+  // demands an absolute URL, and building one from request.url sends browsers
+  // to http://0.0.0.0:3000/... on any host that runs Node behind a reverse
+  // proxy (Hostinger does). A relative Location is valid per RFC 7231 and lets
+  // the browser resolve against whatever origin it actually asked for.
   if (asset.filePath) {
     if (!asset.filePath.startsWith("/") || asset.filePath.startsWith("//"))
       return new Response("Media not found", { status: 404 });
-    return Response.redirect(new URL(asset.filePath, request.url), 308);
+    return new Response(null, {
+      status: 308,
+      headers: {
+        Location: encodeURI(asset.filePath),
+        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+      },
+    });
   }
   if (!asset.content) return new Response("Media not found", { status: 404 });
   return new Response(Buffer.from(asset.content, "base64"), {
