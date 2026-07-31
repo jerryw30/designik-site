@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { adminResources } from "@/db/schema";
 import { requirePermission } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
+import { sanitizePostHtml } from "@/lib/rich-text";
 
 async function authorize() {
   return requirePermission("edit_posts");
@@ -48,7 +49,10 @@ async function uniquePostSlug(slug: string, excludeId: string) {
 function postData(form: FormData) {
   return {
     excerpt: String(form.get("excerpt") || ""),
-    content: String(form.get("content") || ""),
+    // Stored already-clean so the blog never has to trust what's in the row.
+    // Post editing is open to CONTENT_EDITOR and MARKETING_MANAGER, who are not
+    // admins, so this is a privilege boundary rather than a formatting nicety.
+    content: sanitizePostHtml(String(form.get("content") || "")),
     category:
       String(form.get("category") || "Uncategorized").trim() || "Uncategorized",
     tags: String(form.get("tags") || "")

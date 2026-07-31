@@ -7,6 +7,75 @@
   .admin-button {
     @apply inline-flex items-center justify-center rounded-lg bg-pink-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-pink-500;
   }
+
+  /* Post rich text — shared by the classic-style editor surface (.post-rte)
+     and the published article (.post-body) so what you type is what ships.
+     Tailwind's preflight flattens headings and lists, so restate them. */
+  .post-rte h2,
+  .post-body h2 {
+    @apply mt-7 mb-3 font-display text-[28px] leading-tight font-bold text-[#1b1c20];
+  }
+  .post-rte h3,
+  .post-body h3 {
+    @apply mt-6 mb-2.5 font-display text-[22px] leading-snug font-bold text-[#1b1c20];
+  }
+  .post-rte h4,
+  .post-body h4 {
+    @apply mt-5 mb-2 font-display text-[18px] leading-snug font-semibold text-[#1b1c20];
+  }
+  .post-rte p,
+  .post-body p {
+    @apply my-3.5;
+  }
+  .post-rte ul,
+  .post-body ul {
+    @apply my-3.5 list-disc pl-6;
+  }
+  .post-rte ol,
+  .post-body ol {
+    @apply my-3.5 list-decimal pl-6;
+  }
+  .post-rte li,
+  .post-body li {
+    @apply my-1;
+  }
+  .post-rte a,
+  .post-body a {
+    @apply text-wine-500 underline underline-offset-2 hover:text-wine-700;
+  }
+  .post-rte blockquote,
+  .post-body blockquote {
+    @apply my-5 border-l-4 border-wine-500/40 pl-4 text-black/70 italic;
+  }
+  .post-rte pre,
+  .post-body pre {
+    @apply my-4 overflow-x-auto rounded-lg bg-neutral-100 p-3.5 font-mono text-[13px] leading-6;
+  }
+  .post-rte code,
+  .post-body code {
+    @apply rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[0.9em];
+  }
+  .post-rte img,
+  .post-body img {
+    @apply my-4 h-auto max-w-full rounded-lg;
+  }
+  .post-rte hr,
+  .post-body hr {
+    @apply my-7 border-black/10;
+  }
+  .post-body table {
+    @apply my-5 w-full border-collapse text-[15px];
+  }
+  .post-body th,
+  .post-body td {
+    @apply border border-black/10 px-3 py-2 text-left;
+  }
+  /* Placeholder for an empty editor. */
+  .post-rte:empty::before,
+  .post-rte > p:only-child:empty::before {
+    content: "Write your post…";
+    @apply text-neutral-400;
+  }
 }
 
 @theme {

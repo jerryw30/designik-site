@@ -7,6 +7,7 @@ import Nav from "@/components/sections/Nav";
 import GlobalPopup from "@/components/GlobalPopup";
 import { blogChrome } from "@/cms/blog-chrome";
 import Footer from "@/components/sections/Footer";
+import { isHtmlContent, sanitizePostHtml } from "@/lib/rich-text";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -152,9 +153,21 @@ export default async function BlogPost({
             className="mt-10 w-full rounded-[20px] shadow-[0_18px_45px_rgba(0,0,0,0.1)]"
           />
         )}
-        <div className="mt-10 whitespace-pre-wrap font-sans text-[17px] leading-[31px] text-black/85">
-          {data.content}
-        </div>
+        {isHtmlContent(data.content || "") ? (
+          // Sanitised twice on purpose: once on save, and again here so rows
+          // written before sanitising existed (or touched outside the admin)
+          // still can't inject script into a public page.
+          <div
+            className="post-body mt-10 font-sans text-[17px] leading-[31px] text-black/85"
+            dangerouslySetInnerHTML={{
+              __html: sanitizePostHtml(data.content || ""),
+            }}
+          />
+        ) : (
+          <div className="mt-10 whitespace-pre-wrap font-sans text-[17px] leading-[31px] text-black/85">
+            {data.content}
+          </div>
+        )}
         {data.tags?.length ? (
           <div className="mt-10 flex flex-wrap gap-2">
             {data.tags.map((tag) => (

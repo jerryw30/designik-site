@@ -4,9 +4,11 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/db";
 import { adminResources, users } from "@/db/schema";
 import { currentUser } from "@/lib/auth";
+import { isHtmlContent } from "@/lib/rich-text";
 import { canViewArea } from "@/lib/roles";
 import { AdminShell } from "../../../admin-shell";
 import { MediaPicker } from "../../../media-picker";
+import { RichEditor } from "../../rich-editor";
 import { SeoPanel } from "../../../seo-panel";
 import { T, statusPill, wpDate } from "../../../theme";
 import { savePost, savePostWithStatus } from "../../actions";
@@ -110,12 +112,10 @@ export default async function EditPostPage({
                 <h2 className={cardTitle}>Content</h2>
               </div>
               <div className="p-5">
-                <textarea
+                <RichEditor
                   name="content"
-                  defaultValue={data.content}
-                  aria-label="Content"
-                  placeholder="Write your post…"
-                  className={`${T.input} min-h-[440px] font-mono text-[13px] leading-6`}
+                  defaultValue={data.content || ""}
+                  isHtml={isHtmlContent(data.content || "")}
                 />
               </div>
             </section>
