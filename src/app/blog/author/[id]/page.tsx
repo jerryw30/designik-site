@@ -5,7 +5,10 @@ import BlogArchive from "@/components/BlogArchive";
 import { db } from "@/db";
 import { adminResources, users } from "@/db/schema";
 
-export const revalidate = 60;
+// Was ISR (revalidate=60): on Hostinger the persisted prerender cache served
+// stale HTML indefinitely (stale-while-revalidate + failed revalidations
+// against cold Neon), surviving deploys and DB fixes. Render per request.
+export const dynamic = "force-dynamic";
 
 const isUuid = (value: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);

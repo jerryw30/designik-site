@@ -5,7 +5,10 @@ import SiteHome from "@/components/SiteHome";
 import { db } from "@/db";
 import { adminResources, sections } from "@/db/schema";
 
-export const revalidate = 60;
+// Was ISR (revalidate=60): on Hostinger the persisted prerender cache served
+// stale HTML indefinitely (stale-while-revalidate + failed revalidations
+// against cold Neon), surviving deploys and DB fixes. Render per request.
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const list = await db

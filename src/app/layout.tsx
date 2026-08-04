@@ -96,7 +96,10 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const revalidate = 60;
+// Was ISR (revalidate=60): on Hostinger the persisted prerender cache served
+// stale HTML indefinitely (stale-while-revalidate + failed revalidations
+// against cold Neon), surviving deploys and DB fixes. Render per request.
+export const dynamic = "force-dynamic";
 export default async function RootLayout({
   children,
 }: Readonly<{
