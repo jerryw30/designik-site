@@ -12,10 +12,25 @@ const nextConfig: NextConfig = {
     deviceSizes: [390, 640, 768, 1080, 1440, 1920],
     minimumCacheTTL: 2678400,
   },
-  // Serve the standalone portfolio page (public/portfolio/index.html) at a
-  // clean /portfolio URL on both dev and Vercel.
   async rewrites() {
-    return [{ source: "/portfolio", destination: "/portfolio/index.html" }];
+    return {
+      // Serve the standalone portfolio page (public/portfolio/index.html) at a
+      // clean /portfolio URL on both dev and Vercel.
+      afterFiles: [{ source: "/portfolio", destination: "/portfolio/index.html" }],
+      // Hostinger stopped serving public/ after the primary-domain change to
+      // designik.us (platform 404s on /figma, /video, /portfolio while /api/*
+      // works). Fallback rewrites only run when the filesystem and every route
+      // have already missed, so on platforms where public/ serves normally
+      // these never fire; on Hostinger they divert the request to
+      // /api/static, which streams the same file from disk.
+      fallback: [
+        { source: "/figma/:path*", destination: "/api/static/figma/:path*" },
+        { source: "/video/:path*", destination: "/api/static/video/:path*" },
+        { source: "/portfolio", destination: "/api/static/portfolio/index.html" },
+        { source: "/portfolio/:path*", destination: "/api/static/portfolio/:path*" },
+        { source: "/ikora-avatar-2.png", destination: "/api/static/ikora-avatar-2.png" },
+      ],
+    };
   },
   // Static media never changes in place (updates ship under new filenames),
   // so let browsers and the CDN keep it for a year — repeat visits skip
