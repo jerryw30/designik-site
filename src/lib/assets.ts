@@ -1,5 +1,10 @@
-// Central registry of Figma-exported assets (public/figma/*)
-const A = (f: string) => `/figma/${f}`;
+// Central registry of Figma-exported assets (public/figma/*).
+// Served via /api/static because Hostinger's CDN intercepts bare static paths
+// (/figma/*.png etc.) at the edge and 404s them from a stale per-domain asset
+// store — /api/* passes through to the app, which streams the same files from
+// disk (src/app/api/static). On platforms whose static serving is healthy the
+// route falls back to a redirect, so this is safe everywhere.
+const A = (f: string) => `/api/static/figma/${f}`;
 
 export const assets = {
   // Backgrounds / scenes

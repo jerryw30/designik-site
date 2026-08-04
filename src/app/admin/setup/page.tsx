@@ -5,6 +5,9 @@ import { users } from "@/db/schema";
 import { setupAdmin } from "../actions";
 import { AuthCard } from "../ui";
 
+// Same build-time Neon dependency as /admin/login — see the note there.
+export const dynamic = "force-dynamic";
+
 export default async function Setup({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const [{ total }] = await db.select({ total: count() }).from(users);
   if (total) redirect("/admin/login");

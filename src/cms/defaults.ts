@@ -23,7 +23,7 @@ export const heroDefaults: HeroContent = {
   heading: "Design that moves", description: "We turn sharp ideas into digital experiences people remember.",
   primaryLabel: "Start Something", primaryLink: "#contact", primaryIcon: "arrow",
   secondaryLabel: "Book an Appointment", secondaryLink: "https://calendly.com/luke-designingenious/", secondaryIcon: "play",
-  video: "/video/portfolio.mp4", backgroundImage: "/figma/hero-scene.png",
+  video: "/api/static/video/portfolio.mp4", backgroundImage: "/api/static/figma/hero-scene.png",
   backgroundColor: "#4d071d", overlayColor: "#25020e", overlayOpacity: 45,
   alignment: "center", contentMaxWidth: 1200, contentTopDesktop: 18, contentTopTablet: 18, contentTopMobile: 17,
   headingFont: "var(--font-display)", headingColor: "#ffffff", headingWeight: 400, headingLetterSpacing: -0.02,

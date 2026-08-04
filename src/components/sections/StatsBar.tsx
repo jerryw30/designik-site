@@ -15,7 +15,7 @@ function ReviewBlock({ data }: { data: ReturnType<typeof sectionContent<"stats">
       <div className="flex h-[62px] min-w-[83px] flex-col justify-between">
         <span className="text-center text-[13.543px] font-normal leading-normal">{data.reviewLabel}</span>
         <Image
-          src="/figma/clutch-co-vector-logo.svg"
+          src="/api/static/figma/clutch-co-vector-logo.svg"
           alt={String(data.reviewSite || "Clutch")}
           width={83}
           height={23}
@@ -23,7 +23,7 @@ function ReviewBlock({ data }: { data: ReturnType<typeof sectionContent<"stats">
         />
       </div>
       <div className="flex h-[62px] flex-col justify-between pt-[2px]">
-        <Image src="/figma/group1261153209.svg" alt="Five-star rating" width={90} height={14} className="h-[14.164px] w-[89.706px]" />
+        <Image src="/api/static/figma/group1261153209.svg" alt="Five-star rating" width={90} height={14} className="h-[14.164px] w-[89.706px]" />
         <span className="text-center text-[13.543px] font-normal leading-normal">{data.reviews}</span>
       </div>
     </div>

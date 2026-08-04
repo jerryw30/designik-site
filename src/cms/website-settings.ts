@@ -21,7 +21,7 @@ export const websiteSettingsDefaults: WebsiteSettings = {
   identity: {
     siteName: "Designik",
     tagline: "Creative Agency",
-    logoUrl: "/figma/vector1.svg",
+    logoUrl: "/api/static/figma/vector1.svg",
     faviconUrl: "/favicon.ico",
   },
   contact: { email: "designguyluke@gmail.com", phone: "", address: "" },

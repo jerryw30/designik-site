@@ -7,6 +7,12 @@ import { login } from "../actions";
 import { PasswordInput } from "../password-input";
 import { AuthCard } from "../ui";
 
+// Queries Neon (user count + site settings via the layout). Prerendering this
+// at build makes every deploy depend on the database being awake — Neon's
+// free-tier compute suspends when idle, and its cold-start intermittently
+// fails Hostinger builds. Render at request time instead.
+export const dynamic = "force-dynamic";
+
 export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   if (await currentUser()) redirect("/admin");
   const [{ total }] = await db.select({ total: count() }).from(users);

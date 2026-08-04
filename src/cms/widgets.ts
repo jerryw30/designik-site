@@ -34,12 +34,12 @@ export const widgetRegistry = [
 export type WidgetType = (typeof widgetRegistry)[number][0];
 export function newWidget(type: WidgetType, id: string) {
   const defaults: Partial<Record<WidgetType, string>> = {
-    image: "/figma/vector1.svg",
-    video: "/video/portfolio.mp4",
-    audio: "/video/portfolio.mp4",
+    image: "/api/static/figma/vector1.svg",
+    video: "/api/static/video/portfolio.mp4",
+    audio: "/api/static/video/portfolio.mp4",
     icon: "★",
-    gallery: "/figma/image213.png\n/figma/image214.png",
-    carousel: "/figma/image213.png\n/figma/image214.png",
+    gallery: "/api/static/figma/image213.png\n/figma/image214.png",
+    carousel: "/api/static/figma/image213.png\n/figma/image214.png",
     map: "https://www.google.com/maps",
     progress: "75",
     counter: "100",
@@ -54,7 +54,7 @@ export function newWidget(type: WidgetType, id: string) {
     testimonial: "A wonderful experience.|Client name",
     blockquote: "A memorable quotation.|Source",
     ["icon-box"]: "★|Icon box title|Supporting description",
-    ["image-box"]: "/figma/image213.png|Image box title|Supporting description",
+    ["image-box"]: "/api/static/figma/image213.png|Image box title|Supporting description",
   };
   return {
     id,

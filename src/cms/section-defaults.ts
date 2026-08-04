@@ -26,14 +26,14 @@ export const sectionDefaults = {
       "We mix strategy, design and technology to build brands that look sharp, move fast and refuse to blend in.",
     buttonLabel: "Meet Designik",
     buttonLink: "#services",
-    backgroundImage: "/figma/image218.png",
+    backgroundImage: "/api/static/figma/image218.png",
   },
   interactive: {
     heading: "Design You Can Feel",
     buttonLabel: "Play the Reel",
     buttonLink: "#contact",
-    backgroundImage: "/figma/image252.png",
-    screenVideo: "/video/interactive-tv.mp4",
+    backgroundImage: "/api/static/figma/image252.png",
+    screenVideo: "/api/static/video/interactive-tv.mp4",
     heightVh: 80,
     parallax: true,
   },
@@ -48,73 +48,73 @@ export const sectionDefaults = {
       {
         name: "Luke Carter",
         role: "Founder",
-        photo: "/figma/team/team-luke-2.png",
+        photo: "/api/static/figma/team/team-luke-2.png",
         background: "#ffc226",
       },
       {
         name: "Ashley Miller",
         role: "Account Executive",
-        photo: "/figma/team/team-ashley-3.png",
+        photo: "/api/static/figma/team/team-ashley-3.png",
         background: "#ff6b6b",
       },
       {
         name: "Lucas Scott",
         role: "Head of Business Development",
-        photo: "/figma/team/team-lucas.png",
+        photo: "/api/static/figma/team/team-lucas.png",
         background: "#2fc6a0",
       },
       {
         name: "Ray Davidson",
         role: "Head of Development and Support",
-        photo: "/figma/team/team-ray.png",
+        photo: "/api/static/figma/team/team-ray.png",
         background: "#4f8ef7",
       },
       {
         name: "Kelly Rogers",
         role: "Billing and Accounts",
-        photo: "/figma/team/team-kelly.png",
+        photo: "/api/static/figma/team/team-kelly.png",
         background: "#d9a066",
       },
       {
         name: "Jerry Wayne",
         role: "Lead Developer",
-        photo: "/figma/team/team-jerry-v3.png",
+        photo: "/api/static/figma/team/team-jerry-v3.png",
         background: "#ff8e22",
       },
       {
         name: "Brian Hernandez",
         role: "Head of Marketing & Strategy",
-        photo: "/figma/team/team-brian.png",
+        photo: "/api/static/figma/team/team-brian.png",
         background: "#a10140",
       },
       {
         name: "Leo Nelson",
         role: "Creative Head",
-        photo: "/figma/team/team-leo.png",
+        photo: "/api/static/figma/team/team-leo.png",
         background: "#d1b7ff",
       },
       {
         name: "Phill Smith",
         role: "Sr Software Architect",
-        photo: "/figma/team/team-phill.png",
+        photo: "/api/static/figma/team/team-phill.png",
         background: "#8d5bff",
       },
       {
         name: "Abraham Kay",
         role: "Design/Dev Strategist",
-        photo: "/figma/team/team-abraham.png",
+        photo: "/api/static/figma/team/team-abraham.png",
         background: "#35c759",
       },
       {
         name: "Frank Scott",
         role: "Client Success Executive",
-        photo: "/figma/team/team-frank.png",
+        photo: "/api/static/figma/team/team-frank.png",
         background: "#ff5f9e",
       },
       {
         name: "Jack Riley",
         role: "SEO & Growth Executive",
-        photo: "/figma/team/team-jack.png",
+        photo: "/api/static/figma/team/team-jack.png",
         background: "#22b8cf",
       },
     ],
@@ -161,12 +161,12 @@ export const sectionDefaults = {
     author: "Client Name",
     role: "Founder, Company",
     rating: "5.0 out of 5.0",
-    images: ["/figma/image23611.png", "/figma/image241.png"],
+    images: ["/api/static/figma/image23611.png", "/api/static/figma/image241.png"],
   },
   footer: {
     brand: "Designik",
     heading: "Let's Make Your\nBrand Hard to Ignore",
-    logo: "/figma/vector1.svg",
+    logo: "/api/static/figma/vector1.svg",
     columns: [
       ["Home", "About", "Services", "Work"],
       ["Contact", "Careers", "Journal", "Book a Call"],
@@ -176,10 +176,10 @@ export const sectionDefaults = {
     newsletterNote:
       "By subscribing, you agree to our privacy policy and terms.",
     copyright: "\u00a9 2026 Designik Agency. All rights reserved.",
-    backgroundImage: "/figma/individual/footer-desert-scene.png",
+    backgroundImage: "/api/static/figma/individual/footer-desert-scene.png",
   },
   header: {
-    logo: "/figma/vector1.svg",
+    logo: "/api/static/figma/vector1.svg",
     logoAlt: "Designik",
     links: [
       { label: "Home", href: "#home" },
@@ -211,7 +211,7 @@ export const sectionDefaults = {
     ],
     buttonLabel: "See the Process",
     buttonLink: "#services",
-    logo: "/figma/vector1.svg",
+    logo: "/api/static/figma/vector1.svg",
     marqueeDuration: 32,
   },
   portfolio: {
@@ -225,8 +225,8 @@ export const sectionDefaults = {
     buttonLink: "#contact",
     cards: [
       {
-        background: "/figma/individual/pf-card2-bg--544-47.jpg",
-        device: "/figma/individual/pf-card2-laptop--544-60.png",
+        background: "/api/static/figma/individual/pf-card2-bg--544-47.jpg",
+        device: "/api/static/figma/individual/pf-card2-laptop--544-60.png",
         deviceSide: "left",
         light: true,
         accent: "Tanna\u2019s Botannas",
@@ -240,7 +240,7 @@ export const sectionDefaults = {
           "A vibrant e-commerce experience that captures the brand\u2019s energetic personality, showcases its signature spicy candy, and makes every product feel irresistible.",
         story: [
           {
-            image: "/figma/individual/case-tanna-laptop.jpg",
+            image: "/api/static/figma/individual/case-tanna-laptop.jpg",
             bg: "#A32729",
             kicker: "Case Study \u00b7 E-Commerce Redesign",
             title: "A Website as Bold as the Brand",
@@ -248,7 +248,7 @@ export const sectionDefaults = {
             highlights: ["Capture the brand\u2019s bold, playful personality", "Create a smoother path from discovery to purchase"],
           },
           {
-            image: "/figma/individual/case-tanna-pages.jpg",
+            image: "/api/static/figma/individual/case-tanna-pages.jpg",
             bg: "#A32729",
             pos: "center",
             kicker: "02 \u00b7 The Challenge",
@@ -257,7 +257,7 @@ export const sectionDefaults = {
             highlights: ["Balance high-energy visuals with usability", "Make products easier to discover and purchase"],
           },
           {
-            image: "/figma/individual/case-tanna-tablet.jpg",
+            image: "/api/static/figma/individual/case-tanna-tablet.jpg",
             bg: "#A32729",
             kicker: "03 \u00b7 What We Designed",
             title: "Flavour, Energy and Conversion",
@@ -265,7 +265,7 @@ export const sectionDefaults = {
             highlights: ["High-impact product and lifestyle storytelling", "Streamlined navigation and shopping experience"],
           },
           {
-            image: "/figma/individual/case-tanna-laptop.jpg",
+            image: "/api/static/figma/individual/case-tanna-laptop.jpg",
             bg: "#A32729",
             kicker: "04 \u00b7 The Outcome",
             title: "A Store Customers Can Taste With Their Eyes",
@@ -275,8 +275,8 @@ export const sectionDefaults = {
         ],
       },
       {
-        background: "/figma/individual/pf-card1-bg--538-113.jpg",
-        device: "/figma/individual/pf-card1-laptop--541-187.png",
+        background: "/api/static/figma/individual/pf-card1-bg--538-113.jpg",
+        device: "/api/static/figma/individual/pf-card1-laptop--541-187.png",
         deviceSide: "right",
         light: false,
         accent: "Kindro",
@@ -290,7 +290,7 @@ export const sectionDefaults = {
           "A welcoming digital platform designed to help people request support, discover meaningful ways to help, and bring communities closer together.",
         story: [
           {
-            image: "/figma/individual/case-kindro-laptop.jpg",
+            image: "/api/static/figma/individual/case-kindro-laptop.jpg",
             bg: "#01C563",
             kicker: "Case Study \u00b7 Website + CRM Platform",
             title: "A Digital Home Built Around Connection",
@@ -298,7 +298,7 @@ export const sectionDefaults = {
             highlights: ["A clear, welcoming public-facing experience", "A custom CRM dashboard for streamlined management"],
           },
           {
-            image: "/figma/individual/case-kindro-pages.jpg",
+            image: "/api/static/figma/individual/case-kindro-pages.jpg",
             bg: "#01C563",
             pos: "center",
             kicker: "02 \u00b7 The Challenge",
@@ -307,7 +307,7 @@ export const sectionDefaults = {
             highlights: ["Simplify complex workflows for everyday users", "Maintain one consistent visual and functional system"],
           },
           {
-            image: "/figma/individual/case-kindro-tablet.jpg",
+            image: "/api/static/figma/individual/case-kindro-tablet.jpg",
             bg: "#01C563",
             kicker: "03 \u00b7 What We Designed",
             title: "A Website That Guides. A Dashboard That Works.",
@@ -315,7 +315,7 @@ export const sectionDefaults = {
             highlights: ["Conversion-focused website architecture", "Custom CRM dashboard with intuitive workflows"],
           },
           {
-            image: "/figma/individual/case-kindro-laptop.jpg",
+            image: "/api/static/figma/individual/case-kindro-laptop.jpg",
             bg: "#01C563",
             kicker: "04 \u00b7 The Outcome",
             title: "Purpose, People and Data in One Place",
@@ -325,8 +325,8 @@ export const sectionDefaults = {
         ],
       },
       {
-        background: "/figma/individual/pf-card3-bg--538-146.jpg",
-        device: "/figma/individual/pf-card3-laptop--544-42.png",
+        background: "/api/static/figma/individual/pf-card3-bg--538-146.jpg",
+        device: "/api/static/figma/individual/pf-card3-laptop--544-42.png",
         deviceSide: "left",
         light: false,
         accent: "Rooted",
@@ -340,7 +340,7 @@ export const sectionDefaults = {
           "A fresh, modern restaurant experience built around simple navigation, transparent ingredients, and wholesome meals made with seven ingredients or fewer.",
         story: [
           {
-            image: "/figma/individual/case-rooted-laptop.jpg",
+            image: "/api/static/figma/individual/case-rooted-laptop.jpg",
             bg: "#B6D3FB",
             kicker: "Case Study \u00b7 Restaurant Website",
             title: "A Fresher Way to Experience Rooted",
@@ -348,7 +348,7 @@ export const sectionDefaults = {
             highlights: ["Translate the in-person experience into digital", "Guide visitors from interest to action"],
           },
           {
-            image: "/figma/individual/case-rooted-pages.jpg",
+            image: "/api/static/figma/individual/case-rooted-pages.jpg",
             bg: "#B6D3FB",
             pos: "center",
             kicker: "02 \u00b7 The Challenge",
@@ -357,7 +357,7 @@ export const sectionDefaults = {
             highlights: ["Surface essential information immediately", "Build appetite without creating visual clutter"],
           },
           {
-            image: "/figma/individual/case-rooted-tablet.jpg",
+            image: "/api/static/figma/individual/case-rooted-tablet.jpg",
             bg: "#B6D3FB",
             kicker: "03 \u00b7 What We Designed",
             title: "A Journey From Browsing to Booking",
@@ -365,7 +365,7 @@ export const sectionDefaults = {
             highlights: ["Mobile-first restaurant browsing experience", "Clear pathways to menus, bookings and visits"],
           },
           {
-            image: "/figma/individual/case-rooted-laptop.jpg",
+            image: "/api/static/figma/individual/case-rooted-laptop.jpg",
             bg: "#B6D3FB",
             kicker: "04 \u00b7 The Outcome",
             title: "Less Searching. More Dining.",
@@ -383,35 +383,35 @@ export const sectionDefaults = {
     cards: {
       product: {
         title: "Product Design\nMade to Feel Easy",
-        image: "/figma/individual/image-229--221-1147.png",
+        image: "/api/static/figma/individual/image-229--221-1147.png",
       },
-      digital: { title: "Digital\nmarketing", image: "/figma/individual/image-233--221-1590.png" },
+      digital: { title: "Digital\nmarketing", image: "/api/static/figma/individual/image-233--221-1590.png" },
       mobile: {
         title: "Mobile app\nDevelopment",
-        image: "/figma/individual/image-236--221-1591.png",
+        image: "/api/static/figma/individual/image-236--221-1591.png",
       },
-      seo: { title: "SEO", image: "/figma/svc-seo-statue.png" },
+      seo: { title: "SEO", image: "/api/static/figma/svc-seo-statue.png" },
       website: {
         title: "Website\nDevelopment",
-        image: "/figma/svc-web-noirsymm.png",
+        image: "/api/static/figma/svc-web-noirsymm.png",
         icons: [
-          "/figma/individual/developer-1--221-1593.png",
-          "/figma/individual/web-development-1--221-1592.png",
-          "/figma/individual/custom-1--221-1594.png",
+          "/api/static/figma/individual/developer-1--221-1593.png",
+          "/api/static/figma/individual/web-development-1--221-1592.png",
+          "/api/static/figma/individual/custom-1--221-1594.png",
         ],
       },
       brand: {
         title: "Brand identity\nAnd design",
-        image: "/figma/individual/image-231--221-1583.png",
+        image: "/api/static/figma/individual/image-231--221-1583.png",
       },
     },
   },
   experience: {
     heading: "Make Your Brand\nThe Main Character",
     wordmark: "Designik",
-    backgroundImage: "/figma/individual/exp-card-final--221-1293.png",
-    statueImage: "/figma/individual/exp-statue-clean--221-1357.png",
-    cloudImage: "/figma/individual/image-218--221-1314.png",
+    backgroundImage: "/api/static/figma/individual/exp-card-final--221-1293.png",
+    statueImage: "/api/static/figma/individual/exp-statue-clean--221-1357.png",
+    cloudImage: "/api/static/figma/individual/image-218--221-1314.png",
     buttonLabel: "Go Social",
     buttonLink: "#services",
     pills: [

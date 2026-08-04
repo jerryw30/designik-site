@@ -63,9 +63,19 @@ export async function GET(
   try {
     stat = await fs.stat(filePath);
   } catch {
-    // Distinct body on purpose: tells us the route ran but the file is not
-    // in the deployed bundle, vs. the platform's own HTML 404.
-    return new Response("Not found in public bundle", { status: 404 });
+    // File not on this runtime's disk (e.g. a serverless bundle that didn't
+    // trace public/). Hand the request back to the platform's own static
+    // serving, which works wherever that's the case. ?direct=1 marks the
+    // retry so a platform that ALSO can't serve it (and rewrites back here)
+    // gets a 404 instead of a redirect loop.
+    const url = new URL(request.url);
+    if (url.searchParams.has("direct")) {
+      return new Response("Not found in public bundle", { status: 404 });
+    }
+    return new Response(null, {
+      status: 308,
+      headers: { Location: `/${segments.map(encodeURIComponent).join("/")}?direct=1` },
+    });
   }
   if (!stat.isFile()) return new Response("Not found", { status: 404 });
 

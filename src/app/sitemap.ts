@@ -4,6 +4,10 @@ import { db } from "@/db";
 import { adminResources, pages, siteSettings } from "@/db/schema";
 import { safeBase, seoSettings } from "@/cms/seo";
 
+// Reads pages/posts/settings from Neon. Built statically, this makes deploys
+// fail whenever Neon's suspended compute is slow to wake — serve per-request.
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [settings, pageList, posts] = await Promise.all([
     db

@@ -16,7 +16,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
     <section id="services" className="relative bg-white">
       <div className="relative mx-auto hidden h-[827px] w-[1300px] min-[1200px]:block">
         <article className="group absolute left-[1px] top-[100px] h-[279px] w-[525px] overflow-hidden rounded-[21px] bg-[#fff3e9] transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
-          <Image src="/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="z-0 object-cover object-bottom opacity-60" sizes="525px" />
+          <Image src="/api/static/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="z-0 object-cover object-bottom opacity-60" sizes="525px" />
           <Image
             src={data.cards.product.image || assets.productDesign}
             alt="Product design"
@@ -31,7 +31,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
         </article>
 
         <article className="group absolute left-[546px] top-[100px] h-[339.604px] w-[287.202px] overflow-hidden rounded-[20px] bg-wine-500 transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
-          <Image src="/figma/rectangle39529.png" alt="" fill className="mix-blend-multiply object-cover" sizes="288px" />
+          <Image src="/api/static/figma/rectangle39529.png" alt="" fill className="mix-blend-multiply object-cover" sizes="288px" />
           <h3 className="absolute inset-x-0 top-[29px] z-10 text-center font-display text-[31.867px] font-medium uppercase leading-[37.502px] text-white">
             <Lines text={data.cards.digital.title} />
           </h3>
@@ -58,7 +58,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
           />
         </article>
 
-        <Image src="/figma/group1261153735.svg" alt="View all services" width={81} height={81} className="absolute left-[1219px] top-[359px] h-[80.618px] w-[80.618px] [animation:spin360_14s_linear_infinite]" />
+        <Image src="/api/static/figma/group1261153735.svg" alt="View all services" width={81} height={81} className="absolute left-[1219px] top-[359px] h-[80.618px] w-[80.618px] [animation:spin360_14s_linear_infinite]" />
 
         {/* SEO — layer-wise: wine gradient, white type, statue scene + clouds (Figma 486/536) */}
         <article className="group absolute left-[1px] top-[407px] h-[340px] w-[192px] overflow-hidden rounded-[20px] bg-[linear-gradient(180deg,#a80746_0%,#d92f71_70%)] transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
@@ -66,14 +66,14 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <h3 className="absolute inset-x-0 top-[48px] z-20 text-center font-display text-[63.868px] font-medium uppercase leading-[75.162px] text-white">{data.cards.seo.title}</h3>
           <div className="absolute inset-x-0 bottom-0 z-10 h-[227px] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]">
             <Image src={data.cards.seo.image || assets.seo} alt="SEO" fill className="object-cover object-bottom" sizes="192px" />
-            <Image src="/figma/svc-cloud.png" alt="" width={68} height={34} className="absolute left-[5px] top-[11px] h-[34px] w-[68px]" />
-            <Image src="/figma/svc-cloud.png" alt="" width={68} height={34} className="absolute left-[115px] top-[5px] h-[34px] w-[68px]" />
+            <Image src="/api/static/figma/svc-cloud.png" alt="" width={68} height={34} className="absolute left-[5px] top-[11px] h-[34px] w-[68px]" />
+            <Image src="/api/static/figma/svc-cloud.png" alt="" width={68} height={34} className="absolute left-[115px] top-[5px] h-[34px] w-[68px]" />
           </div>
         </article>
 
         {/* Website development — layer-wise: cream + grid, title top, laptop scene flush bottom (Figma 538) */}
         <article className="group absolute left-[216px] top-[407px] h-[340px] w-[269px] overflow-hidden rounded-[20px] bg-[#fff3e9] transition-shadow duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
-          <Image src="/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="z-0 object-cover object-bottom opacity-60" sizes="269px" />
+          <Image src="/api/static/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="z-0 object-cover object-bottom opacity-60" sizes="269px" />
           <span className="absolute inset-x-0 top-[25px] z-20 text-center font-display text-[13.363px] font-normal uppercase leading-[15.726px] text-wine-500">{data.eyebrow}</span>
           <h3 className="absolute inset-x-0 top-[48px] z-20 text-center font-display text-[29.694px] font-medium uppercase leading-[34.945px] text-black">
             <Lines text={data.cards.website.title} />
@@ -103,7 +103,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
       <div className="grid gap-4 px-5 py-12 min-[1200px]:hidden sm:grid-cols-2">
         {/* Product Design — full scene fills the card */}
         <article className="group relative min-h-[320px] overflow-hidden rounded-[20px] bg-cream-100 shadow-sm sm:col-span-2">
-          <Image src="/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="object-cover object-bottom opacity-60" sizes="100vw" />
+          <Image src="/api/static/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="object-cover object-bottom opacity-60" sizes="100vw" />
           <Image src={data.cards.product.image || assets.productDesign} alt="Product design" fill className="object-cover object-bottom" sizes="100vw" />
           <div className="relative z-10 p-6">
             <span className="font-display text-xs uppercase tracking-wide text-wine-500">{data.eyebrow}</span>
@@ -113,7 +113,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
 
         {/* Digital Marketing — wine, image anchored bottom */}
         <article className="group relative min-h-[320px] overflow-hidden rounded-[20px] bg-wine-500 text-white shadow-sm">
-          <Image src="/figma/rectangle39529.png" alt="" fill className="object-cover mix-blend-multiply" sizes="50vw" />
+          <Image src="/api/static/figma/rectangle39529.png" alt="" fill className="object-cover mix-blend-multiply" sizes="50vw" />
           <h3 className="relative z-10 px-6 pt-7 text-center font-display text-[26px] font-medium uppercase leading-tight"><Lines text={data.cards.digital.title} /></h3>
           <Image src={data.cards.digital.image || assets.digitalMarketing} alt="" width={287} height={250} className="absolute left-[39%] top-[64%] h-[90%] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 object-contain object-center" />
         </article>
@@ -124,8 +124,8 @@ export default function Services({ content }: { content?: unknown } = {}) {
           <h3 className="relative z-20 mt-1 px-6 text-center font-display text-[56px] font-medium uppercase leading-tight text-white">{data.cards.seo.title}</h3>
           <div className="relative mt-3 aspect-[192/227] w-full">
             <Image src={data.cards.seo.image || assets.seo} alt="SEO" fill className="object-cover object-bottom" sizes="100vw" />
-            <Image src="/figma/svc-cloud.png" alt="" width={110} height={55} className="absolute left-[3%] top-[5%] w-[35%]" />
-            <Image src="/figma/svc-cloud.png" alt="" width={110} height={55} className="absolute right-[2%] top-[2%] w-[35%]" />
+            <Image src="/api/static/figma/svc-cloud.png" alt="" width={110} height={55} className="absolute left-[3%] top-[5%] w-[35%]" />
+            <Image src="/api/static/figma/svc-cloud.png" alt="" width={110} height={55} className="absolute right-[2%] top-[2%] w-[35%]" />
           </div>
         </article>
 
@@ -137,7 +137,7 @@ export default function Services({ content }: { content?: unknown } = {}) {
 
         {/* Website Development — cream + grid, title top, laptop scene flush bottom (aspect-locked) */}
         <article className="group relative overflow-hidden rounded-[20px] bg-[#fff3e9] shadow-sm">
-          <Image src="/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="z-0 object-cover object-bottom opacity-60" sizes="100vw" />
+          <Image src="/api/static/figma/6847051-fca9-d03-f2175253-ef-grid17.png" alt="" fill className="z-0 object-cover object-bottom opacity-60" sizes="100vw" />
           <span className="relative z-20 block pt-7 text-center font-display text-xs font-normal uppercase text-wine-500">{data.eyebrow}</span>
           <h3 className="relative z-20 mt-1 px-6 text-center font-display text-[30px] font-medium uppercase leading-tight text-black"><Lines text={data.cards.website.title} /></h3>
           <div className="relative z-10 -mt-2 aspect-square w-full">

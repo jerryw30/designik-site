@@ -4,6 +4,9 @@ import { db } from "@/db";
 import { siteSettings } from "@/db/schema";
 import { safeBase, seoSettings } from "@/cms/seo";
 
+// Same build-time Neon dependency as sitemap.ts — serve per-request.
+export const dynamic = "force-dynamic";
+
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const [row] = await db
     .select()
