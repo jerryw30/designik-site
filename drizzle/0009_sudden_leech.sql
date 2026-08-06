@@ -1,0 +1,1 @@
+ALTER TABLE "hosting_orders" ADD COLUMN "details" jsonb DEFAULT '{}'::jsonb NOT NULL;

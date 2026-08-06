@@ -97,3 +97,23 @@ export async function domainAvailable(
     return null;
   }
 }
+
+/** Fee for "we connect your own domain for you" (cents). */
+export const DOMAIN_CONNECT_FEE = 1000;
+
+/**
+ * Starter templates the team builds from. Card previews are CSS gradients so
+ * the storefront needs no screenshot assets; swap in real previews later.
+ */
+export const SITE_TEMPLATES = [
+  { key: "business", name: "Business Pro", blurb: "Corporate pages, services grid, team & testimonials.", colors: ["#1d4ed8", "#0f172a"] },
+  { key: "portfolio", name: "Portfolio", blurb: "Visual-first showcase for creatives and studios.", colors: ["#a10140", "#db2f73"] },
+  { key: "restaurant", name: "Restaurant", blurb: "Menu, reservations, gallery and location.", colors: ["#b45309", "#7c2d12"] },
+  { key: "shop", name: "Online Shop", blurb: "WooCommerce storefront ready for products.", colors: ["#047857", "#064e3b"] },
+  { key: "blog", name: "Magazine / Blog", blurb: "Editorial layout built around your writing.", colors: ["#6d28d9", "#312e81"] },
+  { key: "landing", name: "Landing Page", blurb: "Single high-converting page for one offer.", colors: ["#0891b2", "#164e63"] },
+] as const;
+
+export type TemplateKey = (typeof SITE_TEMPLATES)[number]["key"];
+
+export const SITE_PAGE_OPTIONS = ["Home", "About", "Services", "Portfolio", "Contact", "Blog", "Shop"] as const;

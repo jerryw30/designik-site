@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 
 /**
- * 4-step checkout wizard: plan → domain → details → done.
+ * Checkout wizard: plan → domain → template → details → done.
  * Availability checks are debounced against the /api/hosting endpoints;
  * final validation happens server-side in /api/hosting/checkout.
  */
@@ -16,15 +16,32 @@ type Plan = {
   features: string[];
 };
 
+type Template = { key: string; name: string; blurb: string; colors: readonly string[] };
+
 type DomainType = "temp" | "new" | "own";
 
 const usd = (c: number) => `$${(c / 100).toFixed(2)}`;
 
-export function HostingWizard({ plans }: { plans: Plan[] }) {
+const STEPS = ["Plan", "Domain", "Template", "Details"];
+
+export function HostingWizard({
+  plans,
+  templates,
+  pageOptions,
+  connectFee,
+}: {
+  plans: Plan[];
+  templates: Template[];
+  pageOptions: readonly string[];
+  connectFee: number;
+}) {
   const [step, setStep] = useState(0);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [domainType, setDomainType] = useState<DomainType>("temp");
   const [domainInput, setDomainInput] = useState("");
+  const [registrar, setRegistrar] = useState("");
+  const [connectService, setConnectService] = useState(true);
+  const [template, setTemplate] = useState<Template | null>(null);
   const [checked, setChecked] = useState<{
     value: string;
     available: boolean | null;
@@ -33,6 +50,14 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
     error?: string;
   } | null>(null);
   const [checking, setChecking] = useState(false);
+  // site details
+  const [siteName, setSiteName] = useState("");
+  const [tagline, setTagline] = useState("");
+  const [description, setDescription] = useState("");
+  const [brandColor, setBrandColor] = useState("#a10140");
+  const [pages, setPages] = useState<string[]>(["Home", "About", "Contact"]);
+  const [extraNotes, setExtraNotes] = useState("");
+  // customer + submit
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -40,48 +65,50 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
   const [done, setDone] = useState<{ orderRef: string } | null>(null);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const runCheck = useCallback(
-    (value: string, type: DomainType) => {
-      if (debounce.current) clearTimeout(debounce.current);
-      setChecked(null);
-      const v = value.trim();
-      if (!v || type === "own") return;
-      setChecking(true);
-      debounce.current = setTimeout(async () => {
-        try {
-          const url =
-            type === "temp"
-              ? `/api/hosting/subdomain-check?name=${encodeURIComponent(v)}`
-              : `/api/hosting/domain-check?domain=${encodeURIComponent(v)}`;
-          const res = await fetch(url);
-          const data = await res.json();
-          setChecked({
-            value: v,
-            available: data.ok ? data.available : null,
-            priceCents: data.priceCents || 0,
-            host: data.host,
-            error: data.ok ? undefined : data.error,
-          });
-        } catch {
-          setChecked({ value: v, available: null, priceCents: 0, error: "Couldn't check — try again." });
-        } finally {
-          setChecking(false);
-        }
-      }, 450);
-    },
-    [],
-  );
+  const runCheck = useCallback((value: string, type: DomainType) => {
+    if (debounce.current) clearTimeout(debounce.current);
+    setChecked(null);
+    const v = value.trim();
+    if (!v || type === "own") return;
+    setChecking(true);
+    debounce.current = setTimeout(async () => {
+      try {
+        const url =
+          type === "temp"
+            ? `/api/hosting/subdomain-check?name=${encodeURIComponent(v)}`
+            : `/api/hosting/domain-check?domain=${encodeURIComponent(v)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        setChecked({
+          value: v,
+          available: data.ok ? data.available : null,
+          priceCents: data.priceCents || 0,
+          host: data.host,
+          error: data.ok ? undefined : data.error,
+        });
+      } catch {
+        setChecked({ value: v, available: null, priceCents: 0, error: "Couldn't check — try again." });
+      } finally {
+        setChecking(false);
+      }
+    }, 450);
+  }, []);
 
   const domainReady =
     domainType === "own"
       ? /^\S+\.\S{2,}$/.test(domainInput.trim())
-      : Boolean(checked && checked.available === true && checked.value);
+      : Boolean(checked && checked.available === true && checked.value) ||
+        (domainType === "new" && checked?.available === null);
 
   const domainPrice = domainType === "new" && checked ? checked.priceCents : 0;
-  const total = (plan?.priceMonthly || 0) + domainPrice;
+  const connectPrice = domainType === "own" && connectService ? connectFee : 0;
+  const total = (plan?.priceMonthly || 0) + domainPrice + connectPrice;
+
+  const togglePage = (p: string) =>
+    setPages((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]));
 
   async function submit() {
-    if (!plan || submitting) return;
+    if (!plan || !template || submitting) return;
     setSubmitting(true);
     setError("");
     try {
@@ -94,6 +121,17 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
           domain: domainInput.trim(),
           customerName: name,
           customerEmail: email,
+          template: template.key,
+          connectService: domainType === "own" ? connectService : false,
+          registrar: registrar.trim(),
+          site: {
+            siteName: siteName.trim(),
+            tagline: tagline.trim(),
+            description: description.trim(),
+            brandColor,
+            pages,
+            notes: extraNotes.trim(),
+          },
         }),
       });
       const data = await res.json();
@@ -102,15 +140,14 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
         return;
       }
       setDone({ orderRef: data.orderRef });
-      setStep(3);
     } catch {
-      setError("Network problem — your card was not charged. Try again.");
+      setError("Network problem — nothing was charged. Try again.");
     } finally {
       setSubmitting(false);
     }
   }
 
-  /* ---------- step 3: confirmation ---------- */
+  /* ---------- confirmation ---------- */
   if (done) {
     return (
       <div className="mx-auto mt-14 max-w-xl rounded-3xl border border-black/10 bg-blush-100/40 p-10 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)]">
@@ -119,8 +156,9 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
         <p className="mt-3 font-sans text-[15px] leading-6 text-black/70">
           Your order reference is{" "}
           <span className="font-semibold text-black">{done.orderRef}</span>.
-          We&apos;re setting up your WordPress site now — your login details
-          will arrive by email, usually within a few hours.
+          Our team is building your site from the {template?.name} template with
+          your details. Your WordPress login will arrive by email — then you can
+          change anything you like with the visual editor.
         </p>
       </div>
     );
@@ -129,19 +167,15 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
   return (
     <div className="mt-12">
       {/* progress */}
-      <div className="mx-auto flex max-w-md items-center justify-center gap-2">
-        {["Plan", "Domain", "Details"].map((label, i) => (
+      <div className="mx-auto flex max-w-lg flex-wrap items-center justify-center gap-2">
+        {STEPS.map((label, i) => (
           <div key={label} className="flex items-center gap-2">
-            {i > 0 && <div className="h-px w-8 bg-black/15" />}
+            {i > 0 && <div className="h-px w-6 bg-black/15" />}
             <button
               type="button"
               onClick={() => i < step && setStep(i)}
               className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 font-display text-[12px] font-semibold uppercase tracking-wide transition ${
-                i === step
-                  ? "bg-wine-500 text-white"
-                  : i < step
-                    ? "bg-blush-100 text-wine-500"
-                    : "bg-black/5 text-black/40"
+                i === step ? "bg-wine-500 text-white" : i < step ? "bg-blush-100 text-wine-500" : "bg-black/5 text-black/40"
               }`}
             >
               {label}
@@ -162,9 +196,7 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
                 setStep(1);
               }}
               className={`group relative flex flex-col rounded-3xl border p-7 text-left transition hover:-translate-y-1 hover:shadow-[0_24px_50px_rgba(161,1,64,0.15)] ${
-                i === 1
-                  ? "border-wine-500 bg-wine-500 text-white shadow-[0_18px_45px_rgba(161,1,64,0.25)]"
-                  : "border-black/10 bg-white text-black"
+                i === 1 ? "border-wine-500 bg-wine-500 text-white shadow-[0_18px_45px_rgba(161,1,64,0.25)]" : "border-black/10 bg-white text-black"
               }`}
             >
               {i === 1 && (
@@ -179,9 +211,7 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
                 {usd(p.priceMonthly)}
                 <span className={`text-[15px] font-medium ${i === 1 ? "text-white/70" : "text-black/50"}`}>/mo</span>
               </span>
-              <span className={`mt-1.5 font-sans text-[13.5px] ${i === 1 ? "text-white/70" : "text-black/55"}`}>
-                {p.storageGb} GB storage
-              </span>
+              <span className={`mt-1.5 font-sans text-[13.5px] ${i === 1 ? "text-white/70" : "text-black/55"}`}>{p.storageGb} GB storage</span>
               <ul className={`mt-5 space-y-2.5 font-sans text-[14px] leading-5 ${i === 1 ? "text-white/90" : "text-black/75"}`}>
                 {p.features.map((f) => (
                   <li key={f} className="flex gap-2.5">
@@ -192,9 +222,7 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
               </ul>
               <span
                 className={`mt-7 inline-flex items-center justify-center rounded-full px-6 py-3 font-display text-[13px] font-bold uppercase tracking-wide transition ${
-                  i === 1
-                    ? "bg-white text-wine-500 group-hover:bg-blush-100"
-                    : "bg-wine-500 text-white group-hover:bg-wine-700"
+                  i === 1 ? "bg-white text-wine-500 group-hover:bg-blush-100" : "bg-wine-500 text-white group-hover:bg-wine-700"
                 }`}
               >
                 Choose {p.name}
@@ -233,7 +261,7 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
           </div>
 
           <div className="mt-6">
-            {domainType === "temp" && (
+            {domainType === "temp" ? (
               <div className="flex items-center overflow-hidden rounded-2xl border border-black/15 bg-white focus-within:border-wine-500">
                 <input
                   value={domainInput}
@@ -244,12 +272,9 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
                   placeholder="yourbusiness"
                   className="min-w-0 flex-1 px-5 py-4 font-sans text-[16px] outline-none"
                 />
-                <span className="shrink-0 border-l border-black/10 bg-blush-100/50 px-4 py-4 font-sans text-[15px] text-black/60">
-                  .designik.us
-                </span>
+                <span className="shrink-0 border-l border-black/10 bg-blush-100/50 px-4 py-4 font-sans text-[15px] text-black/60">.designik.us</span>
               </div>
-            )}
-            {domainType !== "temp" && (
+            ) : (
               <input
                 value={domainInput}
                 onChange={(e) => {
@@ -276,17 +301,46 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
               {!checking && checked && !checked.error && checked.available === null && (
                 <span className="text-amber-600">Couldn&apos;t verify right now — you can still continue.</span>
               )}
-              {domainType === "own" && (
-                <span className="text-black/55">
-                  We&apos;ll send simple connection steps after setup — or do it for you.
-                </span>
-              )}
             </div>
+
+            {domainType === "own" && (
+              <div className="mt-4 space-y-4 rounded-2xl border border-black/10 bg-blush-100/30 p-5">
+                <div>
+                  <label className="mb-1.5 block font-sans text-[13px] font-medium text-black/70">
+                    Where is your domain registered? <span className="text-black/40">(GoDaddy, Namecheap, Hostinger…)</span>
+                  </label>
+                  <input
+                    value={registrar}
+                    onChange={(e) => setRegistrar(e.target.value)}
+                    placeholder="e.g. GoDaddy"
+                    className="w-full rounded-xl border border-black/15 bg-white px-4 py-3 font-sans text-[15px] outline-none focus:border-wine-500"
+                  />
+                </div>
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={connectService}
+                    onChange={(e) => setConnectService(e.target.checked)}
+                    className="mt-1 h-4 w-4 accent-[#a10140]"
+                  />
+                  <span className="font-sans text-[14px] leading-5 text-black/75">
+                    <span className="font-semibold text-black">
+                      Connect it for me — {usd(connectFee)}
+                    </span>{" "}
+                    <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[11px] font-bold uppercase text-emerald-700">free at launch</span>
+                    <br />
+                    Our team handles the domain pointing with you — we send exact
+                    steps for your registrar and stay on it until your site is
+                    live. We never ask for your registrar password.
+                  </span>
+                </label>
+              </div>
+            )}
           </div>
 
           <button
             type="button"
-            disabled={!domainReady && !(domainType === "new" && checked?.available === null)}
+            disabled={!domainReady}
             onClick={() => setStep(2)}
             className="mt-6 w-full rounded-full bg-wine-500 px-6 py-4 font-display text-[14px] font-bold uppercase tracking-wide text-white transition hover:bg-wine-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
@@ -295,53 +349,121 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
         </div>
       )}
 
-      {/* step 2: details + pay */}
-      {step === 2 && plan && (
-        <div className="mx-auto mt-10 max-w-xl">
+      {/* step 2: template */}
+      {step === 2 && (
+        <div className="mx-auto mt-10 max-w-3xl">
+          <p className="text-center font-sans text-[15px] text-black/60">
+            Pick a starting design. We build it with your content — you can change
+            everything later with the visual editor (Elementor).
+          </p>
+          <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {templates.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => {
+                  setTemplate(t);
+                  setStep(3);
+                }}
+                className={`group overflow-hidden rounded-2xl border text-left transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(0,0,0,0.12)] ${
+                  template?.key === t.key ? "border-wine-500 ring-2 ring-wine-500/30" : "border-black/10"
+                }`}
+              >
+                <div
+                  className="flex h-28 items-end p-4"
+                  style={{ background: `linear-gradient(135deg, ${t.colors[0]}, ${t.colors[1]})` }}
+                >
+                  <div className="space-y-1.5">
+                    <div className="h-2 w-24 rounded bg-white/80" />
+                    <div className="h-2 w-16 rounded bg-white/50" />
+                  </div>
+                </div>
+                <div className="bg-white p-4">
+                  <p className="font-display text-[14px] font-semibold uppercase text-[#1b1c20]">{t.name}</p>
+                  <p className="mt-1 font-sans text-[12.5px] leading-4 text-black/55">{t.blurb}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* step 3: site details + customer + place order */}
+      {step === 3 && plan && template && (
+        <div className="mx-auto mt-10 max-w-2xl">
           <div className="rounded-3xl border border-black/10 bg-white p-7 shadow-[0_18px_45px_rgba(0,0,0,0.06)]">
-            <h3 className="font-display text-[16px] font-semibold uppercase text-wine-500">Order summary</h3>
-            <dl className="mt-4 space-y-2.5 font-sans text-[15px]">
-              <div className="flex justify-between">
-                <dt className="text-black/60">{plan.name} plan · {plan.storageGb} GB</dt>
-                <dd className="font-medium">{usd(plan.priceMonthly)}/mo</dd>
+            <h3 className="font-display text-[16px] font-semibold uppercase text-wine-500">Tell us about your site</h3>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block font-sans text-[13px] font-medium text-black/70">Site name *</label>
+                <input value={siteName} onChange={(e) => setSiteName(e.target.value)} placeholder="Acme Studio" className="w-full rounded-xl border border-black/15 px-4 py-3 font-sans text-[15px] outline-none focus:border-wine-500" />
               </div>
+              <div>
+                <label className="mb-1.5 block font-sans text-[13px] font-medium text-black/70">Tagline</label>
+                <input value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="Design that works" className="w-full rounded-xl border border-black/15 px-4 py-3 font-sans text-[15px] outline-none focus:border-wine-500" />
+              </div>
+            </div>
+            <div className="mt-4">
+              <label className="mb-1.5 block font-sans text-[13px] font-medium text-black/70">What is your site about? *</label>
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="We are a bakery in Denver making custom cakes…" className="w-full rounded-xl border border-black/15 px-4 py-3 font-sans text-[15px] outline-none focus:border-wine-500" />
+            </div>
+            <div className="mt-4 grid gap-4 sm:grid-cols-[110px_1fr]">
+              <div>
+                <label className="mb-1.5 block font-sans text-[13px] font-medium text-black/70">Brand color</label>
+                <input type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="h-11 w-full cursor-pointer rounded-xl border border-black/15 bg-white p-1" />
+              </div>
+              <div>
+                <label className="mb-1.5 block font-sans text-[13px] font-medium text-black/70">Pages you want</label>
+                <div className="flex flex-wrap gap-2">
+                  {pageOptions.map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => togglePage(p)}
+                      className={`rounded-full px-3.5 py-2 font-sans text-[13px] font-medium transition ${
+                        pages.includes(p) ? "bg-wine-500 text-white" : "bg-black/5 text-black/60 hover:bg-black/10"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="mt-4">
+              <label className="mb-1.5 block font-sans text-[13px] font-medium text-black/70">Anything else? (logo, examples you like…)</label>
+              <textarea value={extraNotes} onChange={(e) => setExtraNotes(e.target.value)} rows={2} className="w-full rounded-xl border border-black/15 px-4 py-3 font-sans text-[15px] outline-none focus:border-wine-500" />
+            </div>
+
+            <div className="mt-7 border-t border-black/10 pt-5">
+              <h3 className="font-display text-[16px] font-semibold uppercase text-wine-500">Your details</h3>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" autoComplete="name" className="w-full rounded-xl border border-black/15 px-4 py-3.5 font-sans text-[15px] outline-none focus:border-wine-500" />
+                <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email address" autoComplete="email" className="w-full rounded-xl border border-black/15 px-4 py-3.5 font-sans text-[15px] outline-none focus:border-wine-500" />
+              </div>
+            </div>
+
+            <dl className="mt-6 space-y-2 rounded-2xl bg-blush-100/40 p-4 font-sans text-[14px]">
+              <div className="flex justify-between"><dt className="text-black/60">{plan.name} plan · {plan.storageGb} GB · {template.name} template</dt><dd className="font-medium">{usd(plan.priceMonthly)}/mo</dd></div>
               <div className="flex justify-between">
                 <dt className="text-black/60">
-                  {domainType === "temp" && `${checked?.host || "subdomain"} (free)`}
+                  {domainType === "temp" && `${checked?.host || "your subdomain"} (free)`}
                   {domainType === "new" && `${domainInput.trim()} (1 year)`}
-                  {domainType === "own" && `${domainInput.trim()} (yours)`}
+                  {domainType === "own" && `${domainInput.trim()}${connectService ? " + we connect it" : " (you connect it)"}`}
                 </dt>
-                <dd className="font-medium">{domainPrice ? usd(domainPrice) : "$0.00"}</dd>
+                <dd className="font-medium">{usd(domainPrice + connectPrice)}</dd>
               </div>
-              <div className="flex justify-between border-t border-black/10 pt-3 text-[17px]">
+              <div className="flex justify-between border-t border-black/10 pt-2.5 text-[16px]">
                 <dt className="font-semibold">Due today</dt>
-                <dd className="font-display font-semibold text-emerald-600">FREE <span className="text-black/40 line-through text-[14px]">{usd(total)}</span></dd>
+                <dd className="font-display font-semibold text-emerald-600">FREE <span className="text-[13px] text-black/40 line-through">{usd(total)}</span></dd>
               </div>
             </dl>
-
-            <div className="mt-6 space-y-3">
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
-                autoComplete="name"
-                className="w-full rounded-xl border border-black/15 px-4 py-3.5 font-sans text-[15px] outline-none focus:border-wine-500"
-              />
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                type="email"
-                placeholder="Email address"
-                autoComplete="email"
-                className="w-full rounded-xl border border-black/15 px-4 py-3.5 font-sans text-[15px] outline-none focus:border-wine-500"
-              />
-            </div>
 
             {error && <p className="mt-4 font-sans text-[14px] text-red-600">{error}</p>}
 
             <button
               type="button"
-              disabled={submitting || name.trim().length < 2 || !/^\S+@\S+\.\S+$/.test(email)}
+              disabled={submitting || siteName.trim().length < 2 || description.trim().length < 10 || name.trim().length < 2 || !/^\S+@\S+\.\S+$/.test(email)}
               onClick={submit}
               className="mt-6 w-full rounded-full bg-wine-500 px-6 py-4 font-display text-[14px] font-bold uppercase tracking-wide text-white transition hover:bg-wine-700 disabled:cursor-not-allowed disabled:opacity-40"
             >

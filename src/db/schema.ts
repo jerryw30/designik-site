@@ -333,6 +333,8 @@ export const hostingOrders = pgTable(
     status: text("status").default("PENDING").notNull(),
     /** Admin override of the plan's storage for this customer (GB). */
     storageGbOverride: integer("storage_gb_override"),
+    /** Template choice, site-details form, domain-connection service, etc. */
+    details: jsonb("details").default({}).notNull(),
     /** Blocked customers keep their row but the site is suspended and the
         email can't place new orders. */
     blocked: boolean("blocked").default(false).notNull(),

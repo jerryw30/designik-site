@@ -35,6 +35,14 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
     : [];
 
   const storage = order.storageGbOverride ?? plan?.storageGb;
+  const details = (order.details || {}) as {
+    template?: string;
+    templateName?: string;
+    connectService?: boolean;
+    registrar?: string;
+    site?: { siteName?: string; tagline?: string; description?: string; brandColor?: string; pages?: string[]; notes?: string };
+  };
+  const site = details.site || {};
 
   return (
     <AdminShell user={user} title={`Order ${order.orderRef}`}>
@@ -67,6 +75,32 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_380px]">
         <div className="space-y-5">
+          <section className={T.card}>
+            <div className={T.cardHeader}><h2 className="text-[15px] font-semibold">What to build</h2></div>
+            <dl className="grid gap-x-6 gap-y-2.5 p-5 text-[13.5px] sm:grid-cols-2">
+              <div><dt className="text-neutral-400">Template</dt><dd className="font-medium">{details.templateName || details.template || "—"}</dd></div>
+              <div><dt className="text-neutral-400">Site name</dt><dd className="font-medium">{site.siteName || "—"}</dd></div>
+              <div><dt className="text-neutral-400">Tagline</dt><dd className="font-medium">{site.tagline || "—"}</dd></div>
+              <div>
+                <dt className="text-neutral-400">Brand color</dt>
+                <dd className="flex items-center gap-2 font-medium">
+                  {site.brandColor ? (<><span className="inline-block h-4 w-4 rounded border border-black/10" style={{ background: site.brandColor }} />{site.brandColor}</>) : "—"}
+                </dd>
+              </div>
+              <div className="sm:col-span-2"><dt className="text-neutral-400">Pages</dt><dd className="font-medium">{site.pages?.length ? site.pages.join(", ") : "default set"}</dd></div>
+              <div className="sm:col-span-2"><dt className="text-neutral-400">About the site</dt><dd className="whitespace-pre-wrap">{site.description || "—"}</dd></div>
+              {site.notes ? (<div className="sm:col-span-2"><dt className="text-neutral-400">Customer notes</dt><dd className="whitespace-pre-wrap">{site.notes}</dd></div>) : null}
+              {order.domainType === "own" ? (
+                <div className="sm:col-span-2">
+                  <dt className="text-neutral-400">Domain connection</dt>
+                  <dd className="font-medium">
+                    {details.connectService ? `WE CONNECT IT (service ordered) — registrar: ${details.registrar || "not given"}` : "Customer connects it themselves"}
+                  </dd>
+                </div>
+              ) : null}
+            </dl>
+          </section>
+
           <section className={T.card}>
             <div className={T.cardHeader}><h2 className="text-[15px] font-semibold">Provisioning checklist (manual — Hostinger hPanel)</h2></div>
             <ol className="list-decimal space-y-2 p-5 pl-10 text-[13.5px] text-neutral-700">

@@ -6,6 +6,7 @@ import GlobalPopup from "@/components/GlobalPopup";
 import { blogChrome } from "@/cms/blog-chrome";
 import { db } from "@/db";
 import { hostingPlans } from "@/db/schema";
+import { DOMAIN_CONNECT_FEE, SITE_PAGE_OPTIONS, SITE_TEMPLATES } from "@/lib/hosting";
 import { PAYMENTS_MODE } from "@/lib/payments";
 import { HostingWizard } from "./hosting-client";
 
@@ -56,6 +57,9 @@ export default async function HostingPage() {
               storageGb: p.storageGb,
               features: (p.features as string[]) || [],
             }))}
+            templates={SITE_TEMPLATES.map((t) => ({ ...t }))}
+            pageOptions={SITE_PAGE_OPTIONS}
+            connectFee={DOMAIN_CONNECT_FEE}
           />
         </div>
       </main>

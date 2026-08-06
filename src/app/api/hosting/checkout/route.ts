@@ -3,11 +3,13 @@ import { NextRequest } from "next/server";
 import { db } from "@/db";
 import { hostingOrders, hostingPlans } from "@/db/schema";
 import {
+  DOMAIN_CONNECT_FEE,
   domainAvailable,
   domainPriceFor,
   formatUsd,
   makeOrderRef,
   normalizeSubdomain,
+  SITE_TEMPLATES,
   subdomainProblem,
   TEMP_DOMAIN_SUFFIX,
   validDomain,
@@ -23,6 +25,17 @@ type Body = {
   domain?: string;
   customerName?: string;
   customerEmail?: string;
+  template?: string;
+  connectService?: boolean;
+  registrar?: string;
+  site?: {
+    siteName?: string;
+    tagline?: string;
+    description?: string;
+    brandColor?: string;
+    pages?: string[];
+    notes?: string;
+  };
 };
 
 /**
@@ -63,6 +76,17 @@ export async function POST(request: NextRequest) {
     .limit(1);
   if (!plan)
     return Response.json({ ok: false, error: "Pick a plan." }, { status: 400 });
+
+  const template = SITE_TEMPLATES.find((t) => t.key === String(body.template || ""));
+  if (!template)
+    return Response.json({ ok: false, error: "Pick a template." }, { status: 400 });
+  const site = body.site || {};
+  const siteName = String(site.siteName || "").trim().slice(0, 120);
+  const siteDescription = String(site.description || "").trim().slice(0, 2000);
+  if (siteName.length < 2)
+    return Response.json({ ok: false, error: "Enter your site name." }, { status: 400 });
+  if (siteDescription.length < 10)
+    return Response.json({ ok: false, error: "Tell us a little more about your site." }, { status: 400 });
 
   // Resolve the domain choice.
   const domainType = body.domainType;
@@ -105,7 +129,9 @@ export async function POST(request: NextRequest) {
   if (clash)
     return Response.json({ ok: false, error: "That name was just taken — pick another." }, { status: 409 });
 
-  const total = plan.priceMonthly + domainPrice;
+  const connectService = domainType === "own" && Boolean(body.connectService);
+  const connectPrice = connectService ? DOMAIN_CONNECT_FEE : 0;
+  const total = plan.priceMonthly + domainPrice + connectPrice;
   const payment = await charge({
     amountCents: total,
     description: `Designik hosting: ${plan.name} + ${domainName}`,
@@ -126,8 +152,22 @@ export async function POST(request: NextRequest) {
       customerEmail: email,
       domainType,
       domainName,
-      domainPrice,
+      domainPrice: domainPrice + connectPrice,
       totalPaid: total,
+      details: {
+        template: template.key,
+        templateName: template.name,
+        connectService,
+        registrar: String(body.registrar || "").trim().slice(0, 120),
+        site: {
+          siteName,
+          tagline: String(site.tagline || "").trim().slice(0, 200),
+          description: siteDescription,
+          brandColor: String(site.brandColor || "").trim().slice(0, 20),
+          pages: Array.isArray(site.pages) ? site.pages.map(String).slice(0, 12) : [],
+          notes: String(site.notes || "").trim().slice(0, 2000),
+        },
+      },
       paymentStatus: payment.status,
       paymentProvider: PAYMENTS_MODE === "test" ? "mock" : "stripe",
       paymentRef: payment.reference,
@@ -162,7 +202,10 @@ https://designik.us`,
 
 Customer: ${name} <${email}>
 Plan:     ${plan.name} (${plan.storageGb}GB)
-Domain:   ${domainName} (${domainType})
+Template: ${template.name}
+Domain:   ${domainName} (${domainType})${connectService ? ` — CONNECT SERVICE, registrar: ${String(body.registrar || "?")}` : ""}
+Site:     ${siteName} — ${siteDescription.slice(0, 200)}
+Pages:    ${(Array.isArray(site.pages) ? site.pages : []).join(", ") || "default"}
 Total:    ${formatUsd(total)} ${payment.status}`,
       replyTo: email,
     }),
