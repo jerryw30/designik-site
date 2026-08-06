@@ -291,3 +291,60 @@ export const mediaAssets = pgTable(
     index("media_assets_type_idx").on(t.mimeType),
   ],
 );
+
+/* ---------------- Hosting storefront (Build your WordPress site) ---------- */
+
+export const hostingPlans = pgTable("hosting_plans", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  /** Monthly price in cents (display + checkout). */
+  priceMonthly: integer("price_monthly").notNull(),
+  storageGb: integer("storage_gb").notNull(),
+  /** Marketing bullet points, ordered. */
+  features: jsonb("features").default([]).notNull(),
+  position: integer("position").default(0).notNull(),
+  active: boolean("active").default(true).notNull(),
+  ...audit,
+});
+
+export const hostingOrders = pgTable(
+  "hosting_orders",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    /** Short human ref shown to the customer (e.g. DGK-3F7A2C). */
+    orderRef: text("order_ref").notNull().unique(),
+    planId: uuid("plan_id").references(() => hostingPlans.id),
+    planName: text("plan_name").notNull(),
+    planPrice: integer("plan_price").notNull(),
+    customerName: text("customer_name").notNull(),
+    customerEmail: text("customer_email").notNull(),
+    /** "temp" = subdomain of designik.us · "new" = we register · "own" = customer brings one */
+    domainType: text("domain_type").notNull(),
+    /** Full domain (new/own) or full temp host like "acme.designik.us". */
+    domainName: text("domain_name").notNull(),
+    domainPrice: integer("domain_price").default(0).notNull(),
+    totalPaid: integer("total_paid").notNull(),
+    /** TEST_PAID until a real payment provider is wired in. */
+    paymentStatus: text("payment_status").default("TEST_PAID").notNull(),
+    paymentProvider: text("payment_provider").default("mock").notNull(),
+    paymentRef: text("payment_ref").default("").notNull(),
+    /** PENDING → PROVISIONING → ACTIVE | CANCELLED */
+    status: text("status").default("PENDING").notNull(),
+    /** Admin override of the plan's storage for this customer (GB). */
+    storageGbOverride: integer("storage_gb_override"),
+    /** Blocked customers keep their row but the site is suspended and the
+        email can't place new orders. */
+    blocked: boolean("blocked").default(false).notNull(),
+    wpAdminUrl: text("wp_admin_url").default("").notNull(),
+    wpUsername: text("wp_username").default("").notNull(),
+    notes: text("notes").default("").notNull(),
+    credentialsSentAt: timestamp("credentials_sent_at", { withTimezone: true }),
+    ...audit,
+  },
+  (t) => [
+    index("hosting_orders_status_idx").on(t.status),
+    index("hosting_orders_created_idx").on(t.createdAt),
+    uniqueIndex("hosting_orders_domain_unique").on(t.domainName),
+  ],
+);

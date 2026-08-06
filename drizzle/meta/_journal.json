@@ -50,6 +50,20 @@
       "when": 1785451524559,
       "tag": "0006_blue_cobalt_man",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786009319948,
+      "tag": "0007_flippant_shiva",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1786009583220,
+      "tag": "0008_purple_sir_ram",
+      "breakpoints": true
     }
   ]
 }

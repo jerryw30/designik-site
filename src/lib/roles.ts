@@ -49,6 +49,7 @@ export const AREA_PERMISSIONS: Record<string, Permission | null> = {
   leads: "manage_forms",
   chat: "manage_forms",
   seo: "manage_seo",
+  hosting: "manage_settings",
   settings: "manage_settings",
   tools: "manage_settings",
   users: "manage_users",

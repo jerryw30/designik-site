@@ -30,7 +30,9 @@
     "test:media-queries": "node --env-file=.env.local scripts/db-check-media-queries.mjs",
     "test:sanitizer": "node --experimental-strip-types scripts/test-post-sanitizer.ts",
     "media:import": "node --env-file=.env.local scripts/import-site-media.mjs",
-    "media:import:write": "node --env-file=.env.local scripts/import-site-media.mjs --write"
+    "media:import:write": "node --env-file=.env.local scripts/import-site-media.mjs --write",
+    "hosting:seed": "node --env-file=.env.local scripts/seed-hosting-plans.mjs",
+    "test:hosting": "node --env-file=.env.local scripts/smoke-hosting.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",

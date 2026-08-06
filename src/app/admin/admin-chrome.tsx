@@ -84,6 +84,7 @@ const NAV: { group: string; items: { label: string; href: string; icon: keyof ty
       { label: "Forms", href: "/admin/forms", icon: "forms" },
       { label: "Leads", href: "/admin/leads", icon: "leads", badge: "leads" },
       { label: "Chat", href: "/admin/chat", icon: "chat", badge: "chat" },
+      { label: "Hosting", href: "/admin/hosting", icon: "tools" },
     ],
   },
   {
