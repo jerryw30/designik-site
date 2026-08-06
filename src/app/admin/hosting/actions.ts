@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { hostingOrders, hostingPlans } from "@/db/schema";
+import { hostingCustomers, hostingCustomerSessions, hostingOrders, hostingPlans } from "@/db/schema";
 import { logActivity } from "@/lib/activity";
 import { formatUsd } from "@/lib/hosting";
 import { sendCustomerEmail } from "@/lib/mailer";
@@ -138,4 +138,19 @@ export async function deletePlan(id: string) {
   await db.delete(hostingPlans).where(eq(hostingPlans.id, id));
   await logActivity(user, "hosting.plan.delete", `Plan ${id} deleted`);
   refresh();
+}
+
+/* -------------------------------- customers ------------------------------- */
+
+export async function setCustomerBlocked(id: string, blocked: boolean) {
+  const user = await authorize();
+  await db
+    .update(hostingCustomers)
+    .set({ blocked, updatedAt: new Date() })
+    .where(eq(hostingCustomers.id, id));
+  // Blocking must take effect immediately, not at cookie expiry.
+  if (blocked)
+    await db.delete(hostingCustomerSessions).where(eq(hostingCustomerSessions.customerId, id));
+  await logActivity(user, "hosting.customer.block", `Customer ${id} ${blocked ? "blocked" : "unblocked"}`);
+  revalidatePath("/admin/hosting/customers");
 }

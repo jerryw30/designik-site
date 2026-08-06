@@ -37,6 +37,11 @@ export default async function HostingPage() {
           <p className="text-center font-display text-[13px] font-semibold uppercase tracking-[0.2em] text-wine-500">
             Websites by Designik
           </p>
+          <p className="mt-2 text-center">
+            <a href="/hosting/dashboard" className="font-sans text-[13px] font-medium text-black/50 underline underline-offset-2 hover:text-wine-500">
+              Already a customer? Open your dashboard →
+            </a>
+          </p>
           <h1 className="mt-3 text-center font-display text-[clamp(38px,6vw,64px)] font-semibold uppercase leading-[1.05] text-wine-500">
             Build your WordPress site
           </h1>

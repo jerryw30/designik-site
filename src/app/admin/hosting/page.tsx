@@ -52,6 +52,7 @@ export default async function HostingAdmin({
       <div className="flex items-center justify-between">
         <h1 className={T.screenTitle}>Hosting orders</h1>
         <div className="flex gap-2">
+          <Link href="/admin/hosting/customers" className={T.btn}>Customers</Link>
           <Link href="/hosting" target="_blank" className={T.btn}>View storefront ↗</Link>
           <Link href="/admin/hosting/plans" className={T.btnPrimary}>Manage plans ({plans.length})</Link>
         </div>

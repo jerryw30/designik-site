@@ -317,6 +317,8 @@ export const hostingOrders = pgTable(
     planId: uuid("plan_id").references(() => hostingPlans.id),
     planName: text("plan_name").notNull(),
     planPrice: integer("plan_price").notNull(),
+    /** Set for orders placed by a logged-in storefront account. */
+    customerId: uuid("customer_id"),
     customerName: text("customer_name").notNull(),
     customerEmail: text("customer_email").notNull(),
     /** "temp" = subdomain of designik.us · "new" = we register · "own" = customer brings one */
@@ -350,3 +352,24 @@ export const hostingOrders = pgTable(
     uniqueIndex("hosting_orders_domain_unique").on(t.domainName),
   ],
 );
+
+/** Storefront customer accounts — separate from admin `users` on purpose so
+    hosting customers can never carry CMS roles. */
+export const hostingCustomers = pgTable("hosting_customers", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  blocked: boolean("blocked").default(false).notNull(),
+  ...audit,
+});
+
+export const hostingCustomerSessions = pgTable("hosting_customer_sessions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  customerId: uuid("customer_id")
+    .references(() => hostingCustomers.id, { onDelete: "cascade" })
+    .notNull(),
+  tokenHash: text("token_hash").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  ...audit,
+});

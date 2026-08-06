@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * Checkout wizard: plan → domain → template → details → done.
@@ -57,13 +57,45 @@ export function HostingWizard({
   const [brandColor, setBrandColor] = useState("#a10140");
   const [pages, setPages] = useState<string[]>(["Home", "About", "Contact"]);
   const [extraNotes, setExtraNotes] = useState("");
-  // customer + submit
+  // customer account + submit
+  const [me, setMe] = useState<{ name: string; email: string } | null>(null);
+  const [authMode, setAuthMode] = useState<"signup" | "login">("signup");
+  const [authBusy, setAuthBusy] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<{ orderRef: string } | null>(null);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Restore the signed-in account so returning customers skip the auth form.
+  useEffect(() => {
+    fetch("/api/hosting/auth")
+      .then((r) => r.json())
+      .then((d) => d.customer && setMe(d.customer))
+      .catch(() => {});
+  }, []);
+
+  async function authenticate() {
+    if (authBusy) return;
+    setAuthBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/hosting/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: authMode, name, email, password }),
+      });
+      const data = await res.json();
+      if (!data.ok) setError(data.error || "Couldn't sign you in.");
+      else setMe(data.customer);
+    } catch {
+      setError("Network problem — try again.");
+    } finally {
+      setAuthBusy(false);
+    }
+  }
 
   const runCheck = useCallback((value: string, type: DomainType) => {
     if (debounce.current) clearTimeout(debounce.current);
@@ -119,8 +151,6 @@ export function HostingWizard({
           planSlug: plan.slug,
           domainType,
           domain: domainInput.trim(),
-          customerName: name,
-          customerEmail: email,
           template: template.key,
           connectService: domainType === "own" ? connectService : false,
           registrar: registrar.trim(),
@@ -136,6 +166,7 @@ export function HostingWizard({
       });
       const data = await res.json();
       if (!data.ok) {
+        if (data.needAuth) setMe(null);
         setError(data.error || "Something went wrong — try again.");
         return;
       }
@@ -160,6 +191,12 @@ export function HostingWizard({
           your details. Your WordPress login will arrive by email — then you can
           change anything you like with the visual editor.
         </p>
+        <a
+          href="/hosting/dashboard"
+          className="mt-6 inline-block rounded-full bg-wine-500 px-6 py-3 font-display text-[13px] font-bold uppercase tracking-wide text-white transition hover:bg-wine-700"
+        >
+          Go to my dashboard
+        </a>
       </div>
     );
   }
@@ -436,11 +473,35 @@ export function HostingWizard({
             </div>
 
             <div className="mt-7 border-t border-black/10 pt-5">
-              <h3 className="font-display text-[16px] font-semibold uppercase text-wine-500">Your details</h3>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" autoComplete="name" className="w-full rounded-xl border border-black/15 px-4 py-3.5 font-sans text-[15px] outline-none focus:border-wine-500" />
-                <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email address" autoComplete="email" className="w-full rounded-xl border border-black/15 px-4 py-3.5 font-sans text-[15px] outline-none focus:border-wine-500" />
-              </div>
+              <h3 className="font-display text-[16px] font-semibold uppercase text-wine-500">Your account</h3>
+              {me ? (
+                <p className="mt-3 rounded-xl bg-emerald-50 px-4 py-3 font-sans text-[14px] text-emerald-800">
+                  Ordering as <span className="font-semibold">{me.name}</span> ({me.email}) —
+                  your website will appear in your dashboard.
+                </p>
+              ) : (
+                <div className="mt-4">
+                  <div className="grid grid-cols-2 gap-2 rounded-xl bg-black/5 p-1">
+                    {(["signup", "login"] as const).map((m) => (
+                      <button key={m} type="button" onClick={() => { setAuthMode(m); setError(""); }}
+                        className={`rounded-lg px-3 py-2 font-display text-[12px] font-semibold uppercase tracking-wide transition ${authMode === m ? "bg-white text-wine-500 shadow" : "text-black/50"}`}>
+                        {m === "signup" ? "Create account" : "I have an account"}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    {authMode === "signup" && (
+                      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" autoComplete="name" className="w-full rounded-xl border border-black/15 px-4 py-3.5 font-sans text-[15px] outline-none focus:border-wine-500" />
+                    )}
+                    <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email address" autoComplete="email" className="w-full rounded-xl border border-black/15 px-4 py-3.5 font-sans text-[15px] outline-none focus:border-wine-500" />
+                    <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder={authMode === "signup" ? "Password (8+ characters)" : "Password"} autoComplete={authMode === "signup" ? "new-password" : "current-password"} className="w-full rounded-xl border border-black/15 px-4 py-3.5 font-sans text-[15px] outline-none focus:border-wine-500" />
+                  </div>
+                  <button type="button" disabled={authBusy || !email || password.length < (authMode === "signup" ? 8 : 1) || (authMode === "signup" && name.trim().length < 2)} onClick={authenticate}
+                    className="mt-3 w-full rounded-xl border-2 border-wine-500 px-5 py-3 font-display text-[13px] font-bold uppercase tracking-wide text-wine-500 transition hover:bg-wine-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40">
+                    {authBusy ? "One moment…" : authMode === "signup" ? "Create account" : "Log in"}
+                  </button>
+                </div>
+              )}
             </div>
 
             <dl className="mt-6 space-y-2 rounded-2xl bg-blush-100/40 p-4 font-sans text-[14px]">
@@ -463,7 +524,7 @@ export function HostingWizard({
 
             <button
               type="button"
-              disabled={submitting || siteName.trim().length < 2 || description.trim().length < 10 || name.trim().length < 2 || !/^\S+@\S+\.\S+$/.test(email)}
+              disabled={submitting || !me || siteName.trim().length < 2 || description.trim().length < 10}
               onClick={submit}
               className="mt-6 w-full rounded-full bg-wine-500 px-6 py-4 font-display text-[14px] font-bold uppercase tracking-wide text-white transition hover:bg-wine-700 disabled:cursor-not-allowed disabled:opacity-40"
             >

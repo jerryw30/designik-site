@@ -15,6 +15,7 @@ import {
   validDomain,
 } from "@/lib/hosting";
 import { sendCustomerEmail, sendNotification } from "@/lib/mailer";
+import { currentCustomer } from "@/lib/customer-auth";
 import { charge, PAYMENTS_MODE } from "@/lib/payments";
 
 export const runtime = "nodejs";
@@ -50,14 +51,18 @@ export async function POST(request: NextRequest) {
     return Response.json({ ok: false, error: "Bad request." }, { status: 400 });
   }
 
-  const name = String(body.customerName || "").trim();
-  const email = String(body.customerEmail || "").trim().toLowerCase();
-  if (name.length < 2)
-    return Response.json({ ok: false, error: "Enter your name." }, { status: 400 });
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
-    return Response.json({ ok: false, error: "Enter a valid email." }, { status: 400 });
+  // Ordering requires a storefront account; the wizard collects signup/login
+  // before this call. currentCustomer() already filters blocked accounts.
+  const customer = await currentCustomer();
+  if (!customer)
+    return Response.json(
+      { ok: false, needAuth: true, error: "Please sign in to place your order." },
+      { status: 401 },
+    );
+  const name = customer.name;
+  const email = customer.email;
 
-  // Blocked customers can't order again with the same email.
+  // Belt and braces: an email blocked at the order level can't reorder.
   const [blockedRow] = await db
     .select({ id: hostingOrders.id })
     .from(hostingOrders)
@@ -145,6 +150,7 @@ export async function POST(request: NextRequest) {
     .insert(hostingOrders)
     .values({
       orderRef,
+      customerId: customer.id,
       planId: plan.id,
       planName: plan.name,
       planPrice: plan.priceMonthly,

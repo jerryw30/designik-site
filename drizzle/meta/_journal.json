@@ -71,6 +71,13 @@
       "when": 1786043053853,
       "tag": "0009_sudden_leech",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786050978167,
+      "tag": "0010_crazy_klaw",
+      "breakpoints": true
     }
   ]
 }
