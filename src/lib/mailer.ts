@@ -53,3 +53,42 @@ export async function sendNotification({
     return { sent: false, error: err instanceof Error ? err.message : "send failed" };
   }
 }
+
+/**
+ * Send to a specific customer address (hosting order confirmations and
+ * WordPress credentials). Same best-effort contract as sendNotification.
+ */
+export async function sendCustomerEmail({
+  to,
+  subject,
+  text,
+}: {
+  to: string;
+  subject: string;
+  text: string;
+}): Promise<{ sent: boolean; error?: string }> {
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM } = process.env;
+  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
+    console.info("[mailer] SMTP not configured — skipping email:", subject);
+    return { sent: false };
+  }
+  const port = Number(SMTP_PORT) || 465;
+  try {
+    const transporter = nodemailer.createTransport({
+      host: SMTP_HOST,
+      port,
+      secure: port === 465,
+      auth: { user: SMTP_USER, pass: SMTP_PASS },
+    });
+    await transporter.sendMail({
+      from: SMTP_FROM || `Designik <${SMTP_USER}>`,
+      to,
+      subject,
+      text,
+    });
+    return { sent: true };
+  } catch (error) {
+    console.error("[mailer] customer send failed:", error);
+    return { sent: false, error: String(error) };
+  }
+}
