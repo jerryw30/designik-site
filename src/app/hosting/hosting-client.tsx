@@ -315,7 +315,7 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
               </div>
               <div className="flex justify-between border-t border-black/10 pt-3 text-[17px]">
                 <dt className="font-semibold">Due today</dt>
-                <dd className="font-display font-semibold text-wine-500">{usd(total)}</dd>
+                <dd className="font-display font-semibold text-emerald-600">FREE <span className="text-black/40 line-through text-[14px]">{usd(total)}</span></dd>
               </div>
             </dl>
 
@@ -345,10 +345,10 @@ export function HostingWizard({ plans }: { plans: Plan[] }) {
               onClick={submit}
               className="mt-6 w-full rounded-full bg-wine-500 px-6 py-4 font-display text-[14px] font-bold uppercase tracking-wide text-white transition hover:bg-wine-700 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {submitting ? "Placing order…" : `Pay ${usd(total)} — test mode`}
+              {submitting ? "Placing order…" : "Place my order — free"}
             </button>
             <p className="mt-3 text-center font-sans text-[12.5px] text-black/45">
-              Test mode: no card is charged. Real payments switch on at launch.
+              Free during our launch period — no card needed. Listed prices apply to new orders once launch pricing ends.
             </p>
           </div>
         </div>

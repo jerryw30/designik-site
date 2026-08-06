@@ -43,8 +43,8 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           <Link href="/admin/hosting" className={T.mutedLink}>← Hosting orders</Link>
           <h1 className={`${T.screenTitle} mt-1`}>
             {order.orderRef}
-            {order.paymentStatus === "TEST_PAID" && (
-              <span className="ml-2 align-middle inline-flex rounded bg-amber-500/10 px-2 py-0.5 text-[11px] font-bold uppercase text-amber-700">Test order</span>
+            {(order.paymentStatus === "TEST_PAID" || order.paymentStatus === "FREE") && (
+              <span className="ml-2 align-middle inline-flex rounded bg-amber-500/10 px-2 py-0.5 text-[11px] font-bold uppercase text-amber-700">Free order</span>
             )}
             {order.blocked && (
               <span className={`ml-2 align-middle ${T.pillTrash}`}>BLOCKED</span>

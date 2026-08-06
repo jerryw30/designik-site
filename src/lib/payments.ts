@@ -15,7 +15,7 @@ export const PAYMENTS_MODE: "test" | "live" =
   process.env.PAYMENTS_MODE === "live" ? "live" : "test";
 
 export type ChargeResult =
-  | { ok: true; reference: string; status: "TEST_PAID" | "PAID" }
+  | { ok: true; reference: string; status: "FREE" | "PAID" }
   | { ok: false; error: string };
 
 export async function charge(_opts: {
@@ -29,7 +29,7 @@ export async function charge(_opts: {
   }
   return {
     ok: true,
-    reference: `TEST-${Date.now().toString(36).toUpperCase()}`,
-    status: "TEST_PAID",
+    reference: `FREE-${Date.now().toString(36).toUpperCase()}`,
+    status: "FREE",
   };
 }

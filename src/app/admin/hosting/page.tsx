@@ -103,8 +103,8 @@ export default async function HostingAdmin({
               <tr key={o.id} className={T.row}>
                 <td className={T.td}>
                   <Link href={`/admin/hosting/${o.id}`} className={T.rowTitle}>{o.orderRef}</Link>
-                  {o.paymentStatus === "TEST_PAID" && (
-                    <span className="ml-2 inline-flex rounded bg-amber-500/10 px-1.5 py-0.5 text-[10.5px] font-bold uppercase text-amber-700">Test</span>
+                  {(o.paymentStatus === "TEST_PAID" || o.paymentStatus === "FREE") && (
+                    <span className="ml-2 inline-flex rounded bg-amber-500/10 px-1.5 py-0.5 text-[10.5px] font-bold uppercase text-amber-700">Free</span>
                   )}
                 </td>
                 <td className={T.td}>

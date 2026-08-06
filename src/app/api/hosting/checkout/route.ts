@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
     })
     .returning({ id: hostingOrders.id });
 
-  const testTag = PAYMENTS_MODE === "test" ? " [TEST MODE — no real charge]" : "";
+  const testTag = PAYMENTS_MODE === "test" ? " (free during our launch period)" : "";
   // Best-effort emails; the order stands even if SMTP is down.
   await Promise.all([
     sendCustomerEmail({

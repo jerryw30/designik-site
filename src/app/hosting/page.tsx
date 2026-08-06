@@ -44,8 +44,8 @@ export default async function HostingPage() {
             WordPress site for you — themes and plugins included.
           </p>
           {PAYMENTS_MODE === "test" && (
-            <p className="mx-auto mt-4 w-fit rounded-full bg-amber-100 px-4 py-1.5 text-center font-display text-[12px] font-semibold uppercase tracking-wide text-amber-700">
-              Test mode — orders are recorded, no card is charged
+            <p className="mx-auto mt-4 w-fit rounded-full bg-emerald-100 px-4 py-1.5 text-center font-display text-[12px] font-semibold uppercase tracking-wide text-emerald-700">
+              Launch offer — get set up free, no card needed
             </p>
           )}
           <HostingWizard
