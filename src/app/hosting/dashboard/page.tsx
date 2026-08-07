@@ -81,7 +81,7 @@ export default async function CustomerDashboard({
         <div className="flex items-center justify-between">
           <h1 className="font-display text-[28px] font-semibold uppercase text-[#1b1c20]">My websites</h1>
           <Link
-            href="/hosting"
+            href="/hosting/dashboard/new"
             className="rounded-full bg-wine-500 px-5 py-2.5 font-display text-[12.5px] font-bold uppercase tracking-wide text-white transition hover:bg-wine-700"
           >
             + New website
@@ -176,7 +176,7 @@ export default async function CustomerDashboard({
                 Pick a plan and we&apos;ll build your WordPress site — free during our launch period.
               </p>
               <Link
-                href="/hosting"
+                href="/hosting/dashboard/new"
                 className="mt-5 inline-block rounded-full bg-wine-500 px-6 py-3 font-display text-[13px] font-bold uppercase tracking-wide text-white transition hover:bg-wine-700"
               >
                 Start your first website

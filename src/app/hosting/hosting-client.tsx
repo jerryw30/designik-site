@@ -29,14 +29,21 @@ export function HostingWizard({
   templates,
   pageOptions,
   connectFee,
+  initialPlanSlug,
+  customer,
 }: {
   plans: Plan[];
   templates: Template[];
   pageOptions: readonly string[];
   connectFee: number;
+  /** Preselects the plan (from the public pricing cards) and skips step 0. */
+  initialPlanSlug?: string;
+  /** Server-verified account — the buy flow only renders signed in. */
+  customer?: { name: string; email: string } | null;
 }) {
-  const [step, setStep] = useState(0);
-  const [plan, setPlan] = useState<Plan | null>(null);
+  const preselected = plans.find((p) => p.slug === initialPlanSlug) || null;
+  const [step, setStep] = useState(preselected ? 1 : 0);
+  const [plan, setPlan] = useState<Plan | null>(preselected);
   const [domainType, setDomainType] = useState<DomainType>("temp");
   const [domainInput, setDomainInput] = useState("");
   const [registrar, setRegistrar] = useState("");
@@ -58,7 +65,7 @@ export function HostingWizard({
   const [pages, setPages] = useState<string[]>(["Home", "About", "Contact"]);
   const [extraNotes, setExtraNotes] = useState("");
   // customer account + submit
-  const [me, setMe] = useState<{ name: string; email: string } | null>(null);
+  const [me, setMe] = useState<{ name: string; email: string } | null>(customer ?? null);
   const [authMode, setAuthMode] = useState<"signup" | "login">("signup");
   const [authBusy, setAuthBusy] = useState(false);
   const [name, setName] = useState("");
