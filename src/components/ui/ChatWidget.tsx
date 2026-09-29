@@ -327,7 +327,7 @@ export default function ChatWidget() {
             onClick={() => setOpen(true)}
             role="button"
             aria-label="Open chat"
-            className="fixed bottom-24 right-6 z-[99] w-[calc(100vw-48px)] max-w-[300px] cursor-pointer rounded-2xl bg-white p-3.5 shadow-[0_18px_50px_rgba(0,0,0,0.25)] ring-1 ring-black/5 transition-transform hover:scale-[1.02]"
+            className="fixed bottom-24 left-6 z-[99] w-[calc(100vw-48px)] max-w-[300px] cursor-pointer rounded-2xl bg-white p-3.5 shadow-[0_18px_50px_rgba(0,0,0,0.25)] ring-1 ring-black/5 transition-transform hover:scale-[1.02]"
           >
             <button
               onClick={(e) => {
@@ -356,7 +356,7 @@ export default function ChatWidget() {
       </AnimatePresence>
 
       {/* launcher */}
-      <div className="fixed bottom-6 right-6 z-[100]">
+      <div className="fixed bottom-6 left-6 z-[100]">
         <button
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? "Close chat" : "Open chat"}
@@ -390,7 +390,7 @@ export default function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.96 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed bottom-24 right-6 z-[100] flex h-[660px] max-h-[calc(100dvh-120px)] w-[calc(100vw-48px)] max-w-[430px] flex-col overflow-hidden rounded-[24px] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.35)]"
+            className="fixed bottom-24 left-6 z-[100] flex h-[660px] max-h-[calc(100dvh-120px)] w-[calc(100vw-48px)] max-w-[430px] flex-col overflow-hidden rounded-[24px] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.35)]"
           >
             {/* header */}
             <div

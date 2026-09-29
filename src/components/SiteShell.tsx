@@ -5,6 +5,7 @@ import SmoothScroll from "./SmoothScroll";
 import SiteAnalytics from "./SiteAnalytics";
 import BackToTop from "./ui/BackToTop";
 import GetStartedModal from "./ui/GetStartedModal";
+import ChatWidget from "./ui/ChatWidget";
 import type { WebsiteSettings } from "@/cms/website-settings";
 export default function SiteShell({
   children,
@@ -45,6 +46,7 @@ export default function SiteShell({
       {children}
       <SiteAnalytics />
       <BackToTop />
+      <ChatWidget />
       <GetStartedModal />
       <Script
         id="ghl-chat-widget"

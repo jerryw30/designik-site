@@ -263,7 +263,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
               {data.newsletterNote}
             </p>
             <div
-              className="mt-[0.8333cqw] w-[18.5cqw] text-[0.7639cqw] leading-[1.1458cqw] text-mint/85"
+              className="mt-[0.8333cqw] w-[20cqw] text-[0.92cqw] font-medium leading-[1.35cqw] text-mint/95"
               style={RALEWAY}
             >
               <a
@@ -276,9 +276,15 @@ export default function Footer({ content }: { content?: unknown } = {}) {
               </a>
               <a
                 href="tel:+14122532498"
-                className="mt-[0.2778cqw] block transition-all duration-200 hover:translate-x-[2px] hover:text-white"
+                className="mt-[0.3472cqw] block font-bold transition-all duration-200 hover:translate-x-[2px] hover:text-white"
               >
                 +1 412-253-2498
+              </a>
+              <a
+                href="mailto:info@designik.agency"
+                className="mt-[0.2083cqw] block font-bold transition-all duration-200 hover:translate-x-[2px] hover:text-white"
+              >
+                info@designik.agency
               </a>
             </div>
           </motion.div>
@@ -342,7 +348,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
             <p className="mt-3 text-[12px] leading-relaxed text-mint" style={RALEWAY}>
               {data.newsletterNote}
             </p>
-            <div className="mt-4 text-[12px] leading-relaxed text-mint/85" style={RALEWAY}>
+            <div className="mt-5 text-[15px] font-medium leading-6 text-mint/95" style={RALEWAY}>
               <a
                 href="https://www.google.com/maps/search/?api=1&query=118+Field+Club+Rd%2C+Pittsburgh%2C+PA+15238"
                 target="_blank"
@@ -351,8 +357,11 @@ export default function Footer({ content }: { content?: unknown } = {}) {
               >
                 118 Field Club Rd, Pittsburgh, PA 15238
               </a>
-              <a href="tel:+14122532498" className="mt-1 block transition hover:text-white">
+              <a href="tel:+14122532498" className="mt-2 block font-bold transition hover:text-white">
                 +1 412-253-2498
+              </a>
+              <a href="mailto:info@designik.agency" className="mt-1 block font-bold transition hover:text-white">
+                info@designik.agency
               </a>
             </div>
           </div>
