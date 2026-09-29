@@ -30,13 +30,14 @@ const FOOTER_HREFS: Record<string, string> = {
   careers: "/#contact",
   journal: "/blog",
   blog: "/blog",
+  "terms and conditions": "/terms-and-conditions",
 };
 const footerHref = (label: string) => FOOTER_HREFS[label.toLowerCase().trim()] || "/";
 // Labels that trigger popups instead of navigation
 type FooterAction = "terms" | "calendly" | "form" | null;
 const footerAction = (label: string): FooterAction => {
   const l = label.toLowerCase();
-  if (/terms|privacy/.test(l)) return "terms";
+  if (/privacy/.test(l)) return "terms";
   if (/book a call/.test(l)) return "calendly";
   if (/^contact$/.test(l.trim())) return "form";
   return null;
