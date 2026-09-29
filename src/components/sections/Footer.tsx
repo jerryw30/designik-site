@@ -5,7 +5,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { assets } from "@/lib/assets";
 import FigmaNewsletterForm from "@/components/ui/FigmaNewsletterForm";
-import TermsModal from "@/components/ui/TermsModal";
 import CalendlyModal from "@/components/ui/CalendlyModal";
 import { sectionContent } from "@/cms/section-defaults";
 import PendulumSwing from "@/components/ui/PendulumSwing";
@@ -31,13 +30,13 @@ const FOOTER_HREFS: Record<string, string> = {
   journal: "/blog",
   blog: "/blog",
   "terms and conditions": "/terms-and-conditions",
+  "privacy policy": "/privacy-policy",
 };
 const footerHref = (label: string) => FOOTER_HREFS[label.toLowerCase().trim()] || "/";
 // Labels that trigger popups instead of navigation
-type FooterAction = "terms" | "calendly" | "form" | null;
+type FooterAction = "calendly" | "form" | null;
 const footerAction = (label: string): FooterAction => {
   const l = label.toLowerCase();
-  if (/privacy/.test(l)) return "terms";
   if (/book a call/.test(l)) return "calendly";
   if (/^contact$/.test(l.trim())) return "form";
   return null;
@@ -45,12 +44,32 @@ const footerAction = (label: string): FooterAction => {
 
 export default function Footer({ content }: { content?: unknown } = {}) {
   const data = sectionContent("footer", content);
-  const [termsOpen, setTermsOpen] = useState(false);
+  const columns = (data.columns as readonly (readonly string[])[]).map((links) => {
+    const next: string[] = [...links];
+    const hasPrivacy = next.some(
+      (label) => label.toLowerCase().trim() === "privacy policy",
+    );
+    if (!hasPrivacy) {
+      const termsIndex = next.findIndex(
+        (label) => label.toLowerCase().trim() === "terms and conditions",
+      );
+      if (termsIndex >= 0) next.splice(termsIndex + 1, 0, "Privacy Policy");
+    }
+    return next;
+  });
+  if (
+    !columns.some((links) =>
+      links.some((label) => label.toLowerCase().trim() === "privacy policy"),
+    )
+  ) {
+    const last = Math.max(columns.length - 1, 0);
+    columns[last] = [...(columns[last] || []), "Privacy Policy"];
+  }
   const [calendlyOpen, setCalendlyOpen] = useState(false);
   const runAction = (action: FooterAction) => {
-    if (action === "terms") setTermsOpen(true);
-    else if (action === "calendly") setCalendlyOpen(true);
-    else if (action === "form") window.dispatchEvent(new CustomEvent("open-get-started"));
+    if (action === "calendly") setCalendlyOpen(true);
+    else if (action === "form")
+      window.dispatchEvent(new CustomEvent("open-get-started"));
   };
   const globalStyle = (
     content as { _globalStyle?: Record<string, unknown> } | undefined
@@ -181,7 +200,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
               style={{ left: `${[4.8611, 18.9931, 33.1597][c]}cqw` }}
             />
           ))}
-          {data.columns.map((links, c) => (
+          {columns.map((links, c) => (
             <motion.nav
               key={c}
               initial={{ opacity: 0, y: 24 }}
@@ -277,7 +296,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
             <span className="block text-[21px] font-medium">{data.heading.split("\n")[1] || ""}</span>
           </h2>
           <div className="relative z-10 mt-8 grid grid-cols-2 gap-6 border-t border-black/25 pt-8">
-            {data.columns.map((links, i) => (
+            {columns.map((links, i) => (
               <nav key={i} className="flex flex-col gap-2">
                 {links.map((l) => {
                   const action = footerAction(l);
@@ -311,7 +330,6 @@ export default function Footer({ content }: { content?: unknown } = {}) {
         </div>
       </div>
 
-      <TermsModal open={termsOpen} onClose={() => setTermsOpen(false)} />
       <CalendlyModal open={calendlyOpen} onClose={() => setCalendlyOpen(false)} />
     </footer>
   );

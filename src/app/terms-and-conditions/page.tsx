@@ -199,10 +199,10 @@ export default function TermsAndConditionsPage() {
                     <p className="mt-3">
                       or contact:{" "}
                       <a
-                        href="mailto:onfo@designik.agency"
+                        href="mailto:info@designik.agency"
                         className="font-semibold text-white underline decoration-white/40 underline-offset-4 transition hover:decoration-white"
                       >
-                        onfo@designik.agency
+                        info@designik.agency
                       </a>
                     </p>
                   </div>
@@ -297,18 +297,18 @@ export default function TermsAndConditionsPage() {
                 <p className="mt-2">118 Field Club Rd, Pittsburgh, PA 15238</p>
                 <p className="mt-1">
                   <a
-                    href="tel:+17875659255"
+                    href="tel:+14122532498"
                     className="transition hover:text-wine-500"
                   >
-                    +1 (787) 565-9255
+                    +1 412-253-2498
                   </a>
                 </p>
                 <p className="mt-1">
                   <a
-                    href="mailto:onfo@designik.agency"
+                    href="mailto:info@designik.agency"
                     className="transition hover:text-wine-500"
                   >
-                    onfo@designik.agency
+                    info@designik.agency
                   </a>
                 </p>
               </div>
