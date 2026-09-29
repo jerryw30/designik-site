@@ -20,8 +20,8 @@ const MEET_INTENT_RE = /(meeting|meet with|meet luke|call|schedule|book|calendly
 
 const STORAGE_KEY = "designik_chat_conversation";
 const CALENDLY_URL = "https://calendly.com/luke-designingenious/";
-const CALL_TEL = "tel:+14122061270";
-const CALL_DISPLAY = "412-206-1270";
+const CALL_TEL = "tel:+14122532498";
+const CALL_DISPLAY = "+1 412-253-2498";
 const GREETING: Msg = {
   id: "greeting",
   sender: "assistant",

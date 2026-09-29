@@ -1,10 +1,10 @@
 "use client";
 import { usePathname } from "next/navigation";
+import Script from "next/script";
 import SmoothScroll from "./SmoothScroll";
 import SiteAnalytics from "./SiteAnalytics";
 import BackToTop from "./ui/BackToTop";
 import GetStartedModal from "./ui/GetStartedModal";
-import ChatWidget from "./ui/ChatWidget";
 import type { WebsiteSettings } from "@/cms/website-settings";
 export default function SiteShell({
   children,
@@ -45,8 +45,15 @@ export default function SiteShell({
       {children}
       <SiteAnalytics />
       <BackToTop />
-      <ChatWidget />
       <GetStartedModal />
+      <Script
+        id="ghl-chat-widget"
+        src="https://widgets.leadconnectorhq.com/loader.js"
+        data-resources-url="https://widgets.leadconnectorhq.com/chat-widget/loader.js"
+        data-widget-id="6abb06172b6d9dcee81428a2"
+        data-source="WEB_USER"
+        strategy="afterInteractive"
+      />
       {settings.custom.footerCode && (
         <script
           dangerouslySetInnerHTML={{ __html: settings.custom.footerCode }}

@@ -262,6 +262,25 @@ export default function Footer({ content }: { content?: unknown } = {}) {
             <p className="mt-[1.0417cqw] w-[16.4583cqw] text-[0.9028cqw] leading-[1.1458cqw] text-mint" style={RALEWAY}>
               {data.newsletterNote}
             </p>
+            <div
+              className="mt-[0.8333cqw] w-[18.5cqw] text-[0.7639cqw] leading-[1.1458cqw] text-mint/85"
+              style={RALEWAY}
+            >
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=118+Field+Club+Rd%2C+Pittsburgh%2C+PA+15238"
+                target="_blank"
+                rel="noreferrer"
+                className="block transition-all duration-200 hover:translate-x-[2px] hover:text-white"
+              >
+                118 Field Club Rd, Pittsburgh, PA 15238
+              </a>
+              <a
+                href="tel:+14122532498"
+                className="mt-[0.2778cqw] block transition-all duration-200 hover:translate-x-[2px] hover:text-white"
+              >
+                +1 412-253-2498
+              </a>
+            </div>
           </motion.div>
 
           {/* copyright (y623, centered) */}
@@ -323,6 +342,19 @@ export default function Footer({ content }: { content?: unknown } = {}) {
             <p className="mt-3 text-[12px] leading-relaxed text-mint" style={RALEWAY}>
               {data.newsletterNote}
             </p>
+            <div className="mt-4 text-[12px] leading-relaxed text-mint/85" style={RALEWAY}>
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=118+Field+Club+Rd%2C+Pittsburgh%2C+PA+15238"
+                target="_blank"
+                rel="noreferrer"
+                className="block transition hover:text-white"
+              >
+                118 Field Club Rd, Pittsburgh, PA 15238
+              </a>
+              <a href="tel:+14122532498" className="mt-1 block transition hover:text-white">
+                +1 412-253-2498
+              </a>
+            </div>
           </div>
           <p className="relative z-10 mt-12 text-center text-[13px]" style={RALEWAY}>
             {data.copyright}
