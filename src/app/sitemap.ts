@@ -43,12 +43,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     null,
   );
   return [
-    {
-      url: `${base}/terms-and-conditions`,
-      lastModified: new Date("2026-09-28"),
-      changeFrequency: "yearly" as const,
-      priority: 0.4,
-    },
     // The blog archive is a static route that always exists; only skip it if
     // a CMS page already claims the /blog slug.
     ...(pageList.some((page) => page.slug === "blog")
