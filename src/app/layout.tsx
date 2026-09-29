@@ -140,7 +140,7 @@ export default async function RootLayout({
       style={variables}
     >
       <head>
-        <link rel="icon" href={website.identity.faviconUrl} />
+        <link rel="icon" type="image/svg+xml" href="/designik-favicon.svg" />
         {(fontCss || website.custom.css) && (
           <style
             dangerouslySetInnerHTML={{
