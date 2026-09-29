@@ -50,7 +50,7 @@ export default function SiteShell({
         id="ghl-chat-widget"
         src="https://widgets.leadconnectorhq.com/loader.js"
         data-resources-url="https://widgets.leadconnectorhq.com/chat-widget/loader.js"
-        data-widget-id="6abb06172b6d9dcee81428a2"
+        data-widget-id="6abc4d7cd2e8beb1e4e864fb"
         data-source="WEB_USER"
         strategy="afterInteractive"
       />
