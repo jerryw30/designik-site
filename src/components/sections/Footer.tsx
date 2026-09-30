@@ -217,7 +217,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
                     key={l + r}
                     type="button"
                     onClick={() => runAction(action)}
-                    className="cursor-pointer whitespace-nowrap text-left font-display text-[1.2902cqw] font-medium leading-[2.1528cqw] tracking-[-0.0348em] text-white transition-opacity hover:opacity-70"
+                    className={`cursor-pointer whitespace-nowrap text-left font-display text-[1.2902cqw] font-medium leading-[2.1528cqw] tracking-[-0.0348em] text-white transition-opacity hover:opacity-70 ${l.toLowerCase().trim() === "book a call" ? "hidden" : ""}`}
                   >
                     {l}
                   </button>
@@ -326,7 +326,7 @@ export default function Footer({ content }: { content?: unknown } = {}) {
                 {links.map((l) => {
                   const action = footerAction(l);
                   return action ? (
-                    <button key={l} type="button" onClick={() => runAction(action)} className="cursor-pointer text-left font-display text-[15px] font-medium text-white/90">
+                    <button key={l} type="button" onClick={() => runAction(action)} className={`cursor-pointer text-left font-display text-[15px] font-medium text-white/90 ${l.toLowerCase().trim() === "book a call" ? "hidden" : ""}`}>
                       {l}
                     </button>
                   ) : (

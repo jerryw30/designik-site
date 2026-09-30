@@ -175,7 +175,7 @@ export default function Hero({ content: input }: { content?: Partial<HeroContent
               e.preventDefault();
               setCalendlyOpen(true);
             }}
-            className="hero-secondary group inline-flex items-center gap-2 font-sans font-semibold uppercase tracking-wide transition-all duration-300"
+            className={`hero-secondary group items-center gap-2 font-sans font-semibold uppercase tracking-wide transition-all duration-300 ${content.secondaryLabel.trim().toLowerCase() === "book an appointment" ? "hidden" : "inline-flex"}`}
             style={{ background: content.secondaryBackground, color: content.secondaryColor, borderColor: content.secondaryBorderColor, borderWidth: content.secondaryBorderWidth, borderStyle: "solid", borderRadius: content.buttonRadius, fontSize: content.buttonFontSize, padding: `${content.buttonPaddingY}px ${content.buttonPaddingX}px`, ["--hover-bg" as string]: content.secondaryHoverBackground, ["--hover-color" as string]: content.secondaryHoverColor, ["--hover-scale" as string]: content.hoverScale }}
           >
             {content.secondaryIcon !== "none" && (secondaryIsCalendly ? <CalendarIcon /> : <PlayIcon />)}
