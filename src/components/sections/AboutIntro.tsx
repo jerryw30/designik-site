@@ -66,6 +66,25 @@ export default function AboutIntro({ content }: { content?: unknown } = {}) {
             </PillButton>
           </div>
         </Reveal>
+        <Reveal delay={0.22}>
+          <div className="mx-auto mt-7 max-w-[520px] border-t border-black/15 pt-4">
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+              <a
+                href="/terms-and-conditions"
+                className="font-display text-[12px] font-medium uppercase tracking-[0.04em] text-black/60 transition-colors hover:text-wine-500 md:text-[13px]"
+              >
+                Terms and Conditions
+              </a>
+              <span aria-hidden className="hidden h-3.5 w-px bg-black/20 sm:block" />
+              <a
+                href="/privacy-policy"
+                className="font-display text-[12px] font-medium uppercase tracking-[0.04em] text-black/60 transition-colors hover:text-wine-500 md:text-[13px]"
+              >
+                Privacy Policy
+              </a>
+            </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   );

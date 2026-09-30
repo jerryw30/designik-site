@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 import type { HeroContent } from "@/cms/defaults";
 import Nav from "@/components/sections/Nav";
 import Hero from "@/components/sections/Hero";
@@ -84,9 +83,8 @@ export default function SiteHome({
               ?._layout || {}),
           };
           return (
-            <Fragment key={section.id}>
-              {section.type === "footer" && <LegalLinksBar />}
-              <div
+            <div
+              key={section.id}
               data-cms-section={section.id}
               data-desktop-visible={layout.desktopVisible}
               data-tablet-visible={layout.tabletVisible}
@@ -121,8 +119,7 @@ export default function SiteHome({
               ) : (
                 componentMap[section.type]?.(section.content)
               )}
-              </div>
-            </Fragment>
+            </div>
           );
         })}
     </main>
@@ -148,36 +145,8 @@ function LegacyHome({ hero }: { hero?: Partial<HeroContent> }) {
       <AgencyMarquee figmaGray />
       <Testimonials />
       <AgencyMarquee />
-      <LegalLinksBar />
       <Footer />
     </main>
   );
 }
 
-function LegalLinksBar() {
-  return (
-    <section
-      aria-label="Legal policies"
-      className="bg-[#580a25] px-5 py-5 text-white"
-    >
-      <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-center gap-x-5 gap-y-2 md:gap-x-7">
-        <span className="font-display text-[11px] font-medium uppercase tracking-[0.18em] text-white/55">
-          Legal
-        </span>
-        <a
-          href="/terms-and-conditions"
-          className="font-display text-[14px] font-medium uppercase tracking-[0.02em] text-white transition-colors hover:text-[#f4c7d9]"
-        >
-          Terms and Conditions
-        </a>
-        <span aria-hidden className="hidden h-4 w-px bg-white/25 sm:block" />
-        <a
-          href="/privacy-policy"
-          className="font-display text-[14px] font-medium uppercase tracking-[0.02em] text-white transition-colors hover:text-[#f4c7d9]"
-        >
-          Privacy Policy
-        </a>
-      </div>
-    </section>
-  );
-}
