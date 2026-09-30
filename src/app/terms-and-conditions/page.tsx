@@ -3,9 +3,9 @@ import Nav from "@/components/sections/Nav";
 import Footer from "@/components/sections/Footer";
 
 export const metadata: Metadata = {
-  title: "Terms and Conditions | Designik Agency",
+  title: "Terms and Conditions | RX Marketers LLC dba Designik Agency",
   description:
-    "Terms and Conditions for Designik Agency, including SMS messaging terms, opt-out instructions, and business communication policies.",
+    "Terms and Conditions for RX Marketers LLC dba Designik Agency, including SMS messaging terms, opt-out instructions, and business communication policies.",
   alternates: {
     canonical: "/terms-and-conditions",
   },
@@ -46,7 +46,7 @@ export default function TermsAndConditionsPage() {
               Terms and Conditions
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-7 text-white/70 md:text-lg">
-              These Terms and Conditions govern your use of Designik Agency&apos;s
+              These Terms and Conditions govern your use of RX Marketers LLC dba Designik Agency&apos;s
               website, services, and business communications.
             </p>
             <p className="mt-5 text-sm text-white/50">
@@ -61,7 +61,7 @@ export default function TermsAndConditionsPage() {
               <p>
                 By accessing this website, requesting a consultation, purchasing
                 services, signing a proposal or agreement, or otherwise engaging
-                with Designik Agency, you agree to these Terms and Conditions.
+                with RX Marketers LLC dba Designik Agency, you agree to these Terms and Conditions.
                 If a separate written agreement applies to a project, that
                 agreement will control if there is a conflict with these terms.
               </p>
@@ -69,7 +69,7 @@ export default function TermsAndConditionsPage() {
 
             <Section title="2. Services">
               <p>
-                Designik Agency provides creative, marketing, design,
+                RX Marketers LLC dba Designik Agency provides creative, marketing, design,
                 development, technology, consulting, and related business
                 services. The specific scope, deliverables, schedule, and fees
                 for a project may be defined in a proposal, statement of work,
@@ -78,7 +78,7 @@ export default function TermsAndConditionsPage() {
               <p>
                 Timelines and results can depend on timely client feedback,
                 approvals, access, content, third-party platforms, and other
-                factors outside Designik Agency&apos;s direct control.
+                factors outside RX Marketers LLC dba Designik Agency&apos;s direct control.
               </p>
             </Section>
 
@@ -105,7 +105,7 @@ export default function TermsAndConditionsPage() {
             <Section title="5. Intellectual Property">
               <p>
                 Ownership and usage rights for project deliverables are governed
-                by the applicable project agreement. Designik Agency retains
+                by the applicable project agreement. RX Marketers LLC dba Designik Agency retains
                 ownership of its pre-existing tools, processes, know-how,
                 reusable code, frameworks, templates, and other materials that
                 were not created exclusively for a client.
@@ -122,7 +122,7 @@ export default function TermsAndConditionsPage() {
                 Some services may rely on third-party providers such as hosting
                 companies, advertising platforms, payment processors, domain
                 registrars, software vendors, analytics providers, or
-                communications platforms. Designik Agency is not responsible for
+                communications platforms. RX Marketers LLC dba Designik Agency is not responsible for
                 outages, policy changes, account restrictions, pricing changes,
                 or other actions taken by third-party providers.
               </p>
@@ -140,7 +140,7 @@ export default function TermsAndConditionsPage() {
                 <div className="mt-8 space-y-6 text-[15px] leading-7 text-white/78 md:text-base">
                   <div>
                     <h3 className="font-semibold text-white">Program Name</h3>
-                    <p>Designik Agency SMS Messaging Program</p>
+                    <p>RX Marketers LLC dba Designik Agency SMS Messaging Program</p>
                   </div>
 
                   <div>
@@ -148,7 +148,7 @@ export default function TermsAndConditionsPage() {
                       Program Description
                     </h3>
                     <p>
-                      Designik Agency sends SMS messages to customers and leads
+                      RX Marketers LLC dba Designik Agency sends SMS messages to customers and leads
                       who have voluntarily opted in to receive communications
                       regarding services, consultations, updates, promotions,
                       and business-related information.
@@ -161,7 +161,7 @@ export default function TermsAndConditionsPage() {
                     </h3>
                     <p>
                       Message frequency varies based on your interaction with
-                      Designik Agency.
+                      RX Marketers LLC dba Designik Agency.
                     </p>
                   </div>
 
@@ -240,7 +240,7 @@ export default function TermsAndConditionsPage() {
 
             <Section title="8. No Guarantee of Specific Results">
               <p>
-                Designik Agency works to provide professional services and
+                RX Marketers LLC dba Designik Agency works to provide professional services and
                 commercially reasonable strategies, but specific business,
                 marketing, advertising, search, revenue, traffic, conversion,
                 ranking, or other performance results are not guaranteed unless
@@ -262,7 +262,7 @@ export default function TermsAndConditionsPage() {
 
             <Section title="10. Termination">
               <p>
-                Designik Agency may suspend or terminate access to services when
+                RX Marketers LLC dba Designik Agency may suspend or terminate access to services when
                 required by an applicable agreement, nonpayment, unlawful use,
                 abuse, security concerns, or a material breach of agreed terms.
                 Client cancellation and termination rights are governed by the
@@ -281,19 +281,19 @@ export default function TermsAndConditionsPage() {
 
             <Section title="12. Changes to These Terms">
               <p>
-                Designik Agency may update these Terms and Conditions from time
+                RX Marketers LLC dba Designik Agency may update these Terms and Conditions from time
                 to time. The current version will be posted on this page with an
                 updated effective date.
               </p>
             </Section>
 
-            <Section title="13. Contact Designik Agency">
+            <Section title="13. Contact RX Marketers LLC dba Designik Agency">
               <p>
                 Questions about these Terms and Conditions or the SMS Messaging
-                Program can be directed to Designik Agency.
+                Program can be directed to RX Marketers LLC dba Designik Agency.
               </p>
               <div className="mt-5 rounded-2xl bg-cream-50 p-5 text-black/75 ring-1 ring-black/5">
-                <p className="font-semibold text-wine-900">Designik Agency</p>
+                <p className="font-semibold text-wine-900">RX Marketers LLC dba Designik Agency</p>
                 <p className="mt-2">118 Field Club Rd, Pittsburgh, PA 15238</p>
                 <p className="mt-1">
                   <a
