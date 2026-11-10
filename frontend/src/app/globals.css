@@ -1,0 +1,350 @@
+@import "tailwindcss";
+
+@layer components {
+  .admin-input {
+    @apply block w-full rounded-xl border border-white/15 bg-black/25 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-pink-400;
+  }
+  .admin-button {
+    @apply inline-flex items-center justify-center rounded-lg bg-pink-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-pink-500;
+  }
+
+  /* Post rich text — shared by the classic-style editor surface (.post-rte)
+     and the published article (.post-body) so what you type is what ships.
+     Tailwind's preflight flattens headings and lists, so restate them. */
+  .post-rte h2,
+  .post-body h2 {
+    @apply mt-7 mb-3 font-display text-[28px] leading-tight font-bold text-[#1b1c20];
+  }
+  .post-rte h3,
+  .post-body h3 {
+    @apply mt-6 mb-2.5 font-display text-[22px] leading-snug font-bold text-[#1b1c20];
+  }
+  .post-rte h4,
+  .post-body h4 {
+    @apply mt-5 mb-2 font-display text-[18px] leading-snug font-semibold text-[#1b1c20];
+  }
+  .post-rte p,
+  .post-body p {
+    @apply my-3.5;
+  }
+  .post-rte ul,
+  .post-body ul {
+    @apply my-3.5 list-disc pl-6;
+  }
+  .post-rte ol,
+  .post-body ol {
+    @apply my-3.5 list-decimal pl-6;
+  }
+  .post-rte li,
+  .post-body li {
+    @apply my-1;
+  }
+  .post-rte a,
+  .post-body a {
+    @apply text-wine-500 underline underline-offset-2 hover:text-wine-700;
+  }
+  .post-rte blockquote,
+  .post-body blockquote {
+    @apply my-5 border-l-4 border-wine-500/40 pl-4 text-black/70 italic;
+  }
+  .post-rte pre,
+  .post-body pre {
+    @apply my-4 overflow-x-auto rounded-lg bg-neutral-100 p-3.5 font-mono text-[13px] leading-6;
+  }
+  .post-rte code,
+  .post-body code {
+    @apply rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[0.9em];
+  }
+  .post-rte img,
+  .post-body img {
+    @apply my-4 h-auto max-w-full rounded-lg;
+  }
+  .post-rte hr,
+  .post-body hr {
+    @apply my-7 border-black/10;
+  }
+  .post-body table {
+    @apply my-5 w-full border-collapse text-[15px];
+  }
+  .post-body th,
+  .post-body td {
+    @apply border border-black/10 px-3 py-2 text-left;
+  }
+  /* Placeholder for an empty editor. */
+  .post-rte:empty::before,
+  .post-rte > p:only-child:empty::before {
+    content: "Write your post…";
+    @apply text-neutral-400;
+  }
+}
+
+@theme {
+  /* ---- Brand palette (extracted from Figma) ---- */
+  --color-wine-950: #3f0119;
+  --color-wine-900: #530823;
+  --color-wine-850: #580a25;
+  --color-wine-800: #720130;
+  --color-wine-700: #840135;
+  --color-wine-600: #8e0038;
+  --color-wine-500: #a10140;
+  --color-wine-400: #ad0b4b;
+  --color-wine-300: #b12a4a;
+  --color-pink-brand: #db2f73;
+  --color-magenta: #c4136a;
+
+  --color-orange-brand: #f16f04;
+  --color-orange-light: #ff8e22;
+  --color-redorange: #fe503f;
+
+  --color-cream-50: #fff7f3;
+  --color-cream-100: #fff3e9;
+  --color-blush-100: #ffefef;
+  --color-blush-200: #fdeded;
+  --color-blush-300: #ffe3e3;
+  --color-blush-400: #ffc5c4;
+  --color-rose-200: #ceacac;
+
+  --color-lilac: #d1b7ff;
+  --color-mint: #ebf5f4;
+  --color-ink: #1a1416;
+
+  /* ---- Fonts ---- */
+  --font-display: var(--font-oswald), "Oswald", system-ui, sans-serif;
+  --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
+  --font-marquee: var(--font-akshar), "Akshar", system-ui, sans-serif;
+
+  /* ---- Motion ---- */
+  --animate-marquee: marquee var(--marquee-duration, 30s) linear infinite;
+  --animate-marquee-rev: marquee-rev var(--marquee-duration, 30s) linear
+    infinite;
+}
+
+@keyframes spin360 {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes marquee-rev {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #1a1416;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  font-size: var(--global-body-size, 16px);
+  line-height: var(--global-body-line-height, 1.5);
+}
+
+.cms-global-button {
+  border-radius: var(--global-button-radius, 999px);
+  padding: var(--global-button-padding-y, 12px)
+    var(--global-button-padding-x, 24px);
+  font-weight: var(--global-button-weight, 600);
+}
+
+/* Hide scrollbar utility for marquees */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.cms-widget:hover {
+  color: var(--widget-hover-color) !important;
+  background-color: var(--widget-hover-background) !important;
+}
+
+.hero-editable .hero-content {
+  padding-top: var(--hero-top-mobile);
+}
+.builder-grid > aside:nth-child(2) {
+  display: none;
+}
+.marquee-editable-text {
+  font-size: var(--marquee-mobile);
+}
+@media (min-width: 1024px) {
+  .marquee-editable-text {
+    font-size: var(--marquee-desktop);
+  }
+}
+.cms-animation-fade {
+  animation: cmsFade both;
+}
+.cms-animation-slide-up {
+  animation: cmsSlideUp both;
+}
+.cms-animation-zoom {
+  animation: cmsZoom both;
+}
+@keyframes cmsFade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes cmsSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+}
+@keyframes cmsZoom {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@media (max-width: 639px) {
+  .cms-section[data-mobile-visible="false"],
+  .cms-widget[data-mobile-visible="false"] {
+    display: none;
+  }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  .cms-section[data-tablet-visible="false"],
+  .cms-widget[data-tablet-visible="false"] {
+    display: none;
+  }
+}
+@media (min-width: 1024px) {
+  .cms-section[data-desktop-visible="false"],
+  .cms-widget[data-desktop-visible="false"] {
+    display: none;
+  }
+}
+.hero-editable .hero-heading {
+  font-size: var(--hero-h1-mobile);
+}
+.hero-editable .hero-description {
+  font-size: var(--hero-p-mobile);
+}
+.hero-editable .hero-primary:hover,
+.hero-editable .hero-secondary:hover {
+  background: var(--hover-bg) !important;
+  color: var(--hover-color) !important;
+  transform: scale(var(--hover-scale));
+}
+@media (min-width: 640px) {
+  .hero-editable .hero-content {
+    padding-top: var(--hero-top-tablet);
+  }
+  .hero-editable .hero-heading {
+    font-size: var(--hero-h1-tablet);
+  }
+  .hero-editable .hero-description {
+    font-size: var(--hero-p-tablet);
+  }
+}
+@media (min-width: 1024px) {
+  .hero-editable .hero-content {
+    padding-top: var(--hero-top-desktop);
+  }
+  .hero-editable .hero-heading {
+    font-size: var(--hero-h1-desktop);
+  }
+  .hero-editable .hero-description {
+    font-size: var(--hero-p-desktop);
+  }
+}
+
+/* ---- Portfolio case-study popup (pure-CSS enter/exit; framer doesn't
+   fire reliably through the modal's portal + AnimatePresence here) ---- */
+@keyframes dgkModalOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes dgkModalOverlayOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes dgkModalCardIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes dgkModalCardOut {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(16px) scale(0.94); }
+}
+@keyframes dgkModalRise {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+.dgk-modal-overlay {
+  animation: dgkModalOverlayIn 300ms ease both;
+}
+.dgk-modal-overlay[data-closing="true"] {
+  animation: dgkModalOverlayOut 300ms ease both;
+}
+.dgk-modal-card {
+  animation: dgkModalCardIn 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.dgk-modal-overlay[data-closing="true"] .dgk-modal-card {
+  animation: dgkModalCardOut 280ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+.dgk-modal-rise {
+  animation: dgkModalRise 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dgk-modal-overlay,
+  .dgk-modal-overlay[data-closing="true"],
+  .dgk-modal-card,
+  .dgk-modal-overlay[data-closing="true"] .dgk-modal-card,
+  .dgk-modal-rise {
+    animation-duration: 1ms;
+  }
+}

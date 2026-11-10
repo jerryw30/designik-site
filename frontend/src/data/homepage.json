@@ -1,0 +1,186 @@
+{
+  "sections": [
+    {
+      "id": "9483b349-5f06-4093-9813-de5eb63abc0f",
+      "type": "header",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "df82272e-a828-4348-9126-b44fe31dca5f",
+      "type": "hero",
+      "visible": true,
+      "content": {
+        "video": "/api/static/video/portfolio.mp4",
+        "heading": "Design with ease ",
+        "textGap": 20,
+        "videoFit": "cover",
+        "alignment": "center",
+        "buttonGap": 12,
+        "buttonsTop": 25,
+        "hoverScale": 1.04,
+        "sceneScale": 1.12,
+        "description": "Designik drives brand engagement with innovative digital solutions.",
+        "headingFont": "var(--font-display)",
+        "primaryIcon": "arrow",
+        "primaryLink": "#contact",
+        "buttonRadius": 999,
+        "headingColor": "#ffffff",
+        "overlayColor": "#25020e",
+        "primaryColor": "#b0164d",
+        "primaryLabel": "Get Started",
+        "headingWeight": 400,
+        "secondaryIcon": "play",
+        "secondaryLink": "https://calendly.com/luke-designingenious/",
+        "showScrollCue": true,
+        "animationDelay": 0.25,
+        "buttonFontSize": 13,
+        "buttonPaddingX": 24,
+        "buttonPaddingY": 10,
+        "overlayOpacity": 45,
+        "secondaryColor": "#ffffff",
+        "secondaryLabel": "Book an Appointment",
+        "backgroundColor": "#4d071d",
+        "backgroundImage": "/api/static/figma/hero-scene.png",
+        "contentMaxWidth": 1200,
+        "descriptionFont": "var(--font-sans)",
+        "contentTopMobile": 17,
+        "contentTopTablet": 18,
+        "descriptionColor": "#ffffffe6",
+        "animationDuration": 0.9,
+        "contentTopDesktop": 18,
+        "descriptionWeight": 300,
+        "entranceAnimation": "fade-up",
+        "headingSizeMobile": 44,
+        "headingSizeTablet": 58,
+        "primaryBackground": "#ffffff",
+        "primaryHoverColor": "#b0164d",
+        "headingSizeDesktop": 72,
+        "primaryBorderColor": "#ffffff",
+        "primaryBorderWidth": 0,
+        "secondaryBackground": "#ffffff00",
+        "secondaryHoverColor": "#ffffff",
+        "headingLetterSpacing": -0.02,
+        "secondaryBorderColor": "#ffffffcc",
+        "secondaryBorderWidth": 1,
+        "descriptionSizeMobile": 15,
+        "descriptionSizeTablet": 17,
+        "descriptionSizeDesktop": 20,
+        "primaryHoverBackground": "#ffffff",
+        "secondaryHoverBackground": "#ffffff1a"
+      }
+    },
+    {
+      "id": "73884548-ab15-4020-a4b8-2f1f45d152f3",
+      "type": "agency-marquee",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "6d72795d-249a-42a6-8d60-71d14a994d79",
+      "type": "stats",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "6a68bd28-2b0c-4543-b255-1d6352f0b4d7",
+      "type": "about",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "7e3f4202-7139-4a25-b4fd-7d7dec0f76cd",
+      "type": "agency-marquee",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "966fb19c-e82f-4ec1-a77d-6e08d03a3be6",
+      "type": "services",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "9ef23a72-1a31-45e2-b3b7-bbcba22f8366",
+      "type": "brand-heights",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "246f8eaf-7626-4169-93fc-61ff30dc95a5",
+      "type": "experience",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "e127e685-60ae-4c80-ba5d-b0a0bf9a4ff5",
+      "type": "agency-marquee",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "10a4232b-96e8-4def-b14a-2415fcdbcd40",
+      "type": "portfolio",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "9f6661c6-eb3d-4315-8a7e-443fbef4cff9",
+      "type": "team",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "1913195c-592c-403a-8d77-ed1f1af3111d",
+      "type": "interactive",
+      "visible": true,
+      "content": {
+        "_layout": {
+          "maxWidth": 0,
+          "alignment": "left",
+          "animation": "none",
+          "marginTop": 0,
+          "paddingTop": 0,
+          "marginBottom": 0,
+          "mobileVisible": true,
+          "paddingBottom": 0,
+          "tabletVisible": true,
+          "desktopVisible": true,
+          "backgroundColor": "transparent",
+          "animationDuration": 0.6
+        },
+        "heading": "Visit Our Interactive Website",
+        "heightVh": 80,
+        "parallax": true,
+        "buttonLink": "#contact",
+        "buttonLabel": "Visit Interactive ",
+        "screenVideo": "/api/static/video/interactive-tv.mp4",
+        "backgroundImage": "/api/static/figma/image252.png"
+      }
+    },
+    {
+      "id": "10dfca2f-f74a-44aa-9925-eb6a34211f13",
+      "type": "agency-marquee",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "a78869c4-3eb7-444e-86de-ff5cde2ab1b9",
+      "type": "testimonials",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "2a7c53b1-c9df-4bc5-9cf6-e8d71ecbe024",
+      "type": "agency-marquee",
+      "visible": true,
+      "content": {}
+    },
+    {
+      "id": "c2dee7a7-a172-4ec8-a8c4-a23f385e5799",
+      "type": "footer",
+      "visible": true,
+      "content": {}
+    }
+  ]
+}

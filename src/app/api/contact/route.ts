@@ -1,10 +1,49 @@
+
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { leads } from "@/db/schema";
 import { sendNotification } from "@/lib/mailer";
 
+const allowedOrigins = new Set([
+  "http://localhost:4173",
+]);
+
+function withCors(response: NextResponse, request: Request) {
+  const origin = request.headers.get("origin");
+
+  if (origin && allowedOrigins.has(origin)) {
+    response.headers.set("Access-Control-Allow-Origin", origin);
+  }
+
+  response.headers.set("Vary", "Origin");
+  return response;
+}
+
+// Handle browser CORS preflight requests.
+export function OPTIONS(request: Request) {
+  const origin = request.headers.get("origin");
+
+  if (!origin || !allowedOrigins.has(origin)) {
+    return new Response(null, { status: 403 });
+  }
+
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Max-Age": "600",
+      Vary: "Origin",
+    },
+  });
+}
+
 function isEmail(v: unknown): v is string {
-  return typeof v === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  return (
+    typeof v === "string" &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+  );
 }
 
 export async function POST(request: Request) {
@@ -17,17 +56,36 @@ export async function POST(request: Request) {
     budget?: string;
     service?: string;
   };
+
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    return withCors(
+      NextResponse.json(
+        { error: "Invalid request." },
+        { status: 400 }
+      ),
+      request
+    );
   }
 
-  const { email, name, message, source, phone, budget, service } = body;
+  const {
+    email,
+    name,
+    message,
+    source,
+    phone,
+    budget,
+    service,
+  } = body;
+
   if (!isEmail(email)) {
-    return NextResponse.json(
-      { error: "Please enter a valid email address." },
-      { status: 422 },
+    return withCors(
+      NextResponse.json(
+        { error: "Please enter a valid email address." },
+        { status: 422 }
+      ),
+      request
     );
   }
 
@@ -36,7 +94,6 @@ export async function POST(request: Request) {
       ? `New Designik newsletter subscriber: ${email}`
       : `New Designik enquiry from ${name || email}`;
 
-  // Store the lead for the admin panel (best-effort; never blocks the reply)
   try {
     await db.insert(leads).values({
       name: name || null,
@@ -64,8 +121,14 @@ export async function POST(request: Request) {
     .filter(Boolean)
     .join("\n");
 
-  // Email the team (best-effort — the lead is already saved either way).
-  await sendNotification({ subject, text, replyTo: email });
+  await sendNotification({
+    subject,
+    text,
+    replyTo: email,
+  });
 
-  return NextResponse.json({ ok: true });
+  return withCors(
+    NextResponse.json({ ok: true }),
+    request
+  );
 }

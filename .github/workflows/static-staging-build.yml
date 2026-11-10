@@ -1,0 +1,58 @@
+
+name: Designik Static Frontend - Staging
+
+on:
+  push:
+    branches:
+      - feat/static-frontend-backend
+
+permissions:
+  contents: read
+
+jobs:
+  build-static:
+    name: Build Staging Static Website
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: staging
+
+    env:
+      DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+
+      - name: Verify staging database configuration
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "STAGING_DATABASE_URL secret is missing."
+            exit 1
+          fi
+
+      - name: Install backend build dependencies
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Export CMS content and build static site
+        run: node scripts/build-static-site.mjs
+
+      - name: Upload static website artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: designik-staging-static
+          path: frontend/out/
+          if-no-files-found: error
+          retention-days: 7
