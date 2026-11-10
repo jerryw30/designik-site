@@ -33,5 +33,5 @@
   // scripts/ are standalone maintenance tools run through node's type
   // stripping, which requires explicit .ts import extensions that the app's
   // bundler-resolution typecheck rejects. They are not part of the build.
-  "exclude": ["node_modules", "scripts"]
+  "exclude": ["node_modules", "scripts", "frontend"]
 }
