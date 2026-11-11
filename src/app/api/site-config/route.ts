@@ -4,10 +4,15 @@ import { getSiteConfig } from "@/lib/site-config";
 
 export const dynamic = "force-dynamic";
 
-const allowedOrigins = new Set([
-  "http://localhost:4173",
-]);
-
+const allowedOrigins = new Set(
+  [
+    "http://localhost:4173",
+    "http://localhost:4174",
+    ...(process.env.FRONTEND_ORIGINS || "").split(","),
+  ]
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+);
 export async function GET(request: Request) {
   const origin = request.headers.get("origin");
 

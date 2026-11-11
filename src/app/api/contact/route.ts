@@ -4,9 +4,15 @@ import { db } from "@/db";
 import { leads } from "@/db/schema";
 import { sendNotification } from "@/lib/mailer";
 
-const allowedOrigins = new Set([
-  "http://localhost:4173",
-]);
+const allowedOrigins = new Set(
+  [
+    "http://localhost:4173",
+    "http://localhost:4174",
+    ...(process.env.FRONTEND_ORIGINS || "").split(","),
+  ]
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+);
 
 function withCors(response: NextResponse, request: Request) {
   const origin = request.headers.get("origin");
