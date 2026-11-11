@@ -6,6 +6,7 @@ import SiteAnalytics from "./SiteAnalytics";
 import BackToTop from "./ui/BackToTop";
 import ChatWidget from "./ui/ChatWidget";
 import type { WebsiteSettings } from "@/cms/website-settings";
+import GetStartedModal from "./ui/GetStartedModal";
 export default function SiteShell({
   children,
   settings,
@@ -41,6 +42,7 @@ export default function SiteShell({
     );
   }
   return (
+  <>
     <SmoothScroll>
       {children}
       <SiteAnalytics />
@@ -56,9 +58,14 @@ export default function SiteShell({
       />
       {settings.custom.footerCode && (
         <script
-          dangerouslySetInnerHTML={{ __html: settings.custom.footerCode }}
+          dangerouslySetInnerHTML={{
+            __html: settings.custom.footerCode,
+          }}
         />
       )}
     </SmoothScroll>
-  );
+
+    <GetStartedModal />
+  </>
+);
 }
