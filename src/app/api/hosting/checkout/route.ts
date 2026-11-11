@@ -1,3 +1,4 @@
+
 import { and, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { db } from "@/db";
@@ -40,112 +41,339 @@ type Body = {
 };
 
 /**
- * POST /api/hosting/checkout — validates the order, takes payment (TEST mode
- * for now), records it, and emails both the customer and the admin team.
+ * POST /api/hosting/checkout
+ *
+ * Validates the order, processes test payments,
+ * records the hosting order and sends notifications.
+ *
+ * SAFETY:
+ * Hosting checkout is disabled on Vercel Preview
+ * deployments to prevent staging orders,
+ * payment attempts and customer notifications.
  */
 export async function POST(request: NextRequest) {
+
+  // --------------------------------------------------
+  // STAGING / PREVIEW SAFETY GUARD
+  // --------------------------------------------------
+  // Block checkout before reading request data,
+  // accessing the database or processing payments.
+  //
+  // This applies only to Vercel Preview deployments.
+  // Production retains its existing behavior.
+  // --------------------------------------------------
+
+  if (process.env.VERCEL_ENV === "preview") {
+    console.info(
+      "[hosting] Checkout blocked in Vercel Preview environment."
+    );
+
+    return Response.json(
+      {
+        ok: false,
+        error: "Checkout is disabled in preview mode.",
+      },
+      { status: 403 }
+    );
+  }
+
+  // --------------------------------------------------
+  // PARSE REQUEST
+  // --------------------------------------------------
+
   let body: Body;
+
   try {
     body = await request.json();
   } catch {
-    return Response.json({ ok: false, error: "Bad request." }, { status: 400 });
+    return Response.json(
+      {
+        ok: false,
+        error: "Bad request.",
+      },
+      { status: 400 }
+    );
   }
 
-  // Ordering requires a storefront account; the wizard collects signup/login
-  // before this call. currentCustomer() already filters blocked accounts.
+  // --------------------------------------------------
+  // CUSTOMER AUTHENTICATION
+  // --------------------------------------------------
+
+  // Ordering requires a storefront account.
+  // currentCustomer() already filters blocked accounts.
+
   const customer = await currentCustomer();
-  if (!customer)
+
+  if (!customer) {
     return Response.json(
-      { ok: false, needAuth: true, error: "Please sign in to place your order." },
-      { status: 401 },
+      {
+        ok: false,
+        needAuth: true,
+        error: "Please sign in to place your order.",
+      },
+      { status: 401 }
     );
+  }
+
   const name = customer.name;
   const email = customer.email;
 
-  // Belt and braces: an email blocked at the order level can't reorder.
+  // --------------------------------------------------
+  // CHECK BLOCKED CUSTOMERS
+  // --------------------------------------------------
+
   const [blockedRow] = await db
     .select({ id: hostingOrders.id })
     .from(hostingOrders)
-    .where(and(eq(hostingOrders.customerEmail, email), eq(hostingOrders.blocked, true)))
+    .where(
+      and(
+        eq(hostingOrders.customerEmail, email),
+        eq(hostingOrders.blocked, true)
+      )
+    )
     .limit(1);
-  if (blockedRow)
+
+  if (blockedRow) {
     return Response.json(
-      { ok: false, error: "This account can't place orders. Contact support@designik.us." },
-      { status: 403 },
+      {
+        ok: false,
+        error:
+          "This account can't place orders. Contact support@designik.us.",
+      },
+      { status: 403 }
     );
+  }
+
+  // --------------------------------------------------
+  // VALIDATE HOSTING PLAN
+  // --------------------------------------------------
 
   const [plan] = await db
     .select()
     .from(hostingPlans)
-    .where(and(eq(hostingPlans.slug, String(body.planSlug || "")), eq(hostingPlans.active, true)))
+    .where(
+      and(
+        eq(hostingPlans.slug, String(body.planSlug || "")),
+        eq(hostingPlans.active, true)
+      )
+    )
     .limit(1);
-  if (!plan)
-    return Response.json({ ok: false, error: "Pick a plan." }, { status: 400 });
 
-  const template = SITE_TEMPLATES.find((t) => t.key === String(body.template || ""));
-  if (!template)
-    return Response.json({ ok: false, error: "Pick a template." }, { status: 400 });
+  if (!plan) {
+    return Response.json(
+      {
+        ok: false,
+        error: "Pick a plan.",
+      },
+      { status: 400 }
+    );
+  }
+
+  // --------------------------------------------------
+  // VALIDATE WEBSITE TEMPLATE
+  // --------------------------------------------------
+
+  const template = SITE_TEMPLATES.find(
+    (t) => t.key === String(body.template || "")
+  );
+
+  if (!template) {
+    return Response.json(
+      {
+        ok: false,
+        error: "Pick a template.",
+      },
+      { status: 400 }
+    );
+  }
+
   const site = body.site || {};
-  const siteName = String(site.siteName || "").trim().slice(0, 120);
-  const siteDescription = String(site.description || "").trim().slice(0, 2000);
-  if (siteName.length < 2)
-    return Response.json({ ok: false, error: "Enter your site name." }, { status: 400 });
-  if (siteDescription.length < 10)
-    return Response.json({ ok: false, error: "Tell us a little more about your site." }, { status: 400 });
 
-  // Resolve the domain choice.
+  const siteName = String(site.siteName || "")
+    .trim()
+    .slice(0, 120);
+
+  const siteDescription = String(site.description || "")
+    .trim()
+    .slice(0, 2000);
+
+  if (siteName.length < 2) {
+    return Response.json(
+      {
+        ok: false,
+        error: "Enter your site name.",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (siteDescription.length < 10) {
+    return Response.json(
+      {
+        ok: false,
+        error: "Tell us a little more about your site.",
+      },
+      { status: 400 }
+    );
+  }
+
+  // --------------------------------------------------
+  // RESOLVE DOMAIN CHOICE
+  // --------------------------------------------------
+
   const domainType = body.domainType;
+
   let domainName = "";
   let domainPrice = 0;
 
   if (domainType === "temp") {
-    const sub = normalizeSubdomain(String(body.domain || ""));
+    const sub = normalizeSubdomain(
+      String(body.domain || "")
+    );
+
     const problem = subdomainProblem(sub);
-    if (problem) return Response.json({ ok: false, error: problem }, { status: 400 });
+
+    if (problem) {
+      return Response.json(
+        {
+          ok: false,
+          error: problem,
+        },
+        { status: 400 }
+      );
+    }
+
     domainName = `${sub}.${TEMP_DOMAIN_SUFFIX}`;
   } else if (domainType === "new") {
-    const d = String(body.domain || "").toLowerCase().trim();
-    if (!validDomain(d))
-      return Response.json({ ok: false, error: "Enter a valid domain." }, { status: 400 });
+    const d = String(body.domain || "")
+      .toLowerCase()
+      .trim();
+
+    if (!validDomain(d)) {
+      return Response.json(
+        {
+          ok: false,
+          error: "Enter a valid domain.",
+        },
+        { status: 400 }
+      );
+    }
+
     const price = domainPriceFor(d);
-    if (price === null)
-      return Response.json({ ok: false, error: "That domain ending isn't supported." }, { status: 400 });
-    // Re-verify availability server-side; a stale UI check must not sell a
-    // domain someone else owns.
-    if ((await domainAvailable(d)) === false)
-      return Response.json({ ok: false, error: "That domain is already taken." }, { status: 400 });
+
+    if (price === null) {
+      return Response.json(
+        {
+          ok: false,
+          error: "That domain ending isn't supported.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Re-verify domain availability server-side.
+
+    if ((await domainAvailable(d)) === false) {
+      return Response.json(
+        {
+          ok: false,
+          error: "That domain is already taken.",
+        },
+        { status: 400 }
+      );
+    }
+
     domainName = d;
     domainPrice = price;
   } else if (domainType === "own") {
-    const d = String(body.domain || "").toLowerCase().trim();
-    if (!validDomain(d))
-      return Response.json({ ok: false, error: "Enter the domain you own." }, { status: 400 });
+    const d = String(body.domain || "")
+      .toLowerCase()
+      .trim();
+
+    if (!validDomain(d)) {
+      return Response.json(
+        {
+          ok: false,
+          error: "Enter the domain you own.",
+        },
+        { status: 400 }
+      );
+    }
+
     domainName = d;
   } else {
-    return Response.json({ ok: false, error: "Choose a domain option." }, { status: 400 });
+    return Response.json(
+      {
+        ok: false,
+        error: "Choose a domain option.",
+      },
+      { status: 400 }
+    );
   }
 
-  // One active order per domain/subdomain.
+  // --------------------------------------------------
+  // CHECK DUPLICATE DOMAIN ORDERS
+  // --------------------------------------------------
+
   const [clash] = await db
     .select({ id: hostingOrders.id })
     .from(hostingOrders)
     .where(eq(hostingOrders.domainName, domainName))
     .limit(1);
-  if (clash)
-    return Response.json({ ok: false, error: "That name was just taken — pick another." }, { status: 409 });
 
-  const connectService = domainType === "own" && Boolean(body.connectService);
-  const connectPrice = connectService ? DOMAIN_CONNECT_FEE : 0;
-  const total = plan.priceMonthly + domainPrice + connectPrice;
+  if (clash) {
+    return Response.json(
+      {
+        ok: false,
+        error: "That name was just taken — pick another.",
+      },
+      { status: 409 }
+    );
+  }
+
+  // --------------------------------------------------
+  // CALCULATE ORDER TOTAL
+  // --------------------------------------------------
+
+  const connectService =
+    domainType === "own" &&
+    Boolean(body.connectService);
+
+  const connectPrice = connectService
+    ? DOMAIN_CONNECT_FEE
+    : 0;
+
+  const total =
+    plan.priceMonthly +
+    domainPrice +
+    connectPrice;
+
+  // --------------------------------------------------
+  // PAYMENT PROCESSING
+  // --------------------------------------------------
+
   const payment = await charge({
     amountCents: total,
     description: `Designik hosting: ${plan.name} + ${domainName}`,
     customerEmail: email,
   });
-  if (!payment.ok)
-    return Response.json({ ok: false, error: payment.error }, { status: 402 });
+
+  if (!payment.ok) {
+    return Response.json(
+      {
+        ok: false,
+        error: payment.error,
+      },
+      { status: 402 }
+    );
+  }
+
+  // --------------------------------------------------
+  // CREATE HOSTING ORDER
+  // --------------------------------------------------
 
   const orderRef = makeOrderRef();
+
   const [order] = await db
     .insert(hostingOrders)
     .values({
@@ -164,25 +392,46 @@ export async function POST(request: NextRequest) {
         template: template.key,
         templateName: template.name,
         connectService,
-        registrar: String(body.registrar || "").trim().slice(0, 120),
+        registrar: String(body.registrar || "")
+          .trim()
+          .slice(0, 120),
         site: {
           siteName,
-          tagline: String(site.tagline || "").trim().slice(0, 200),
+          tagline: String(site.tagline || "")
+            .trim()
+            .slice(0, 200),
           description: siteDescription,
-          brandColor: String(site.brandColor || "").trim().slice(0, 20),
-          pages: Array.isArray(site.pages) ? site.pages.map(String).slice(0, 12) : [],
-          notes: String(site.notes || "").trim().slice(0, 2000),
+          brandColor: String(site.brandColor || "")
+            .trim()
+            .slice(0, 20),
+          pages: Array.isArray(site.pages)
+            ? site.pages.map(String).slice(0, 12)
+            : [],
+          notes: String(site.notes || "")
+            .trim()
+            .slice(0, 2000),
         },
       },
       paymentStatus: payment.status,
-      paymentProvider: PAYMENTS_MODE === "test" ? "mock" : "stripe",
+      paymentProvider:
+        PAYMENTS_MODE === "test" ? "mock" : "stripe",
       paymentRef: payment.reference,
       status: "PENDING",
     })
     .returning({ id: hostingOrders.id });
 
-  const testTag = PAYMENTS_MODE === "test" ? " (free during our launch period)" : "";
-  // Best-effort emails; the order stands even if SMTP is down.
+  // --------------------------------------------------
+  // CUSTOMER AND ADMIN EMAIL NOTIFICATIONS
+  // --------------------------------------------------
+
+  const testTag =
+    PAYMENTS_MODE === "test"
+      ? " (free during our launch period)"
+      : "";
+
+  // Emails are best-effort.
+  // The order remains recorded if SMTP is unavailable.
+
   await Promise.all([
     sendCustomerEmail({
       to: email,
@@ -202,6 +451,7 @@ details in a separate email shortly (usually within a few hours).
 — The Designik team
 https://designik.us`,
     }),
+
     sendNotification({
       subject: `New hosting order ${orderRef}: ${plan.name} for ${domainName}${testTag}`,
       text: `Provision this order in hPanel, then mark it active in /admin/hosting.
@@ -217,5 +467,13 @@ Total:    ${formatUsd(total)} ${payment.status}`,
     }),
   ]);
 
-  return Response.json({ ok: true, orderRef, orderId: order.id });
+  // --------------------------------------------------
+  // SUCCESS RESPONSE
+  // --------------------------------------------------
+
+  return Response.json({
+    ok: true,
+    orderRef,
+    orderId: order.id,
+  });
 }
